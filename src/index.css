@@ -1,14 +1,54 @@
 @import "tailwindcss";
 
-/* OneMoment Modular CSS Architecture */
-@import "./styles/variables.css";
-@import "./styles/base.css";
-@import "./styles/buttons.css";
-@import "./styles/navbar.css";
-@import "./styles/hero.css";
-@import "./styles/sections.css";
-@import "./styles/footer.css";
-@import "./styles/mobile.css";
-@import "./styles/pages.css";
-@import "./styles/auth.css";
-@import "./styles/responsive.css";
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi_Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi_VariableItalic.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-satoshi: "Satoshi", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-background: #ffffff;
+  --color-foreground: #f7f7f7;
+  --color-text-primary: #0a0a0a;
+  --color-text-secondary: #707070;
+}
+
+html {
+  overflow-x: clip;
+  width: 100%;
+}
+
+*, *::before, *::after {
+  font-family: var(--font-satoshi);
+}
+
+/* Transisi warna halus untuk elemen interaktif */
+a, button, input, textarea {
+  transition: color 0.2s ease-out, background-color 0.2s ease-out, border-color 0.2s ease-out;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-satoshi);
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100vw;
+}
+
+#root {
+  overflow-x: clip;
+  max-width: 100vw;
+}

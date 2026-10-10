@@ -1,6 +1,0 @@
-{
-  "name": "One Moment - Digital Wedding Invitation",
-  "description": "Digital wedding invitation website builder platform with Vite, React, TanStack Router, and SSG static prerendering.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

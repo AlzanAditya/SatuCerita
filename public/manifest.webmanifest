@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Satu Cerita - Buat Momen Spesial Jadi Lebih Berkesan",
+  "short_name": "Satu Cerita",
+  "description": "Platform undangan digital dan manajemen perayaan modern dengan RSVP real-time dan buku tamu digital.",
+  "lang": "id",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#7d6aee",
+  "categories": ["lifestyle", "productivity", "business"],
+  "icons": [
+    { "src": "/icons/pwa-64x64.png", "sizes": "64x64", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/pwa-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/pwa-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

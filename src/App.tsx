@@ -1,150 +1,123 @@
-import React from 'react';
-import { RouterProvider, createRouter, createRoute, createRootRoute } from './lib/tanstack-router';
-import { RootLayout } from './routes/__root';
-import { HomePage } from './routes/index';
-import { PricingPage } from './routes/pricing';
-import { ThemesPage } from './routes/themes';
-import { HowToCreatePage } from './routes/how-to-create';
-import { AboutPage } from './routes/about';
-import { FAQPage } from './routes/faq';
-import { BlogPage } from './routes/blog';
-import { VideoPage } from './routes/video';
-import { CetakPage } from './routes/cetak';
-import { LoginPage } from './routes/login';
-import { RegisterPage } from './routes/register';
-import { OtpPage } from './routes/otp';
+import React, { useCallback, useEffect, useState } from "react";
+import { LanguageProvider } from "@/context/LanguageContext";
+import { useSeo } from "@/hooks/useSeo";
+import { NOT_FOUND_META, normalizePath, resolveRoute } from "@/routes";
+import { HomePage } from "@/pages/HomePage";
+import { LoginPage } from "@/pages/LoginPage";
+import { KatalogPage } from "@/pages/KatalogPage";
+import { CaraPesanPage } from "@/pages/CaraPesanPage";
+import { KontakPage } from "@/pages/KontakPage";
+import { KebijakanPage } from "@/pages/KebijakanPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
+import { UserApp } from "@/pages/app/UserApp";
 
-// Setup file-based route tree
-const rootRoute = createRootRoute({
-  component: RootLayout,
-});
+function getInitialPath(): string {
+  if (typeof window === "undefined") return "/";
+  return normalizePath(window.location.pathname);
+}
 
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: HomePage,
-});
+function AppRouter() {
+  const [path, setPath] = useState<string>(getInitialPath);
+  const route = resolveRoute(path);
 
-const pricingRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/pricing',
-  component: PricingPage,
-});
+  // Alias (mis. /carapesan, /app) -> ganti URL ke path kanonik.
+  useEffect(() => {
+    if (route && route.path !== path) {
+      window.history.replaceState(null, "", route.path);
+      setPath(route.path);
+    }
+  }, [route, path]);
 
-const hargaRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/harga',
-  component: PricingPage,
-});
+  // Biarkan SPA yang mengatur scroll, bukan browser.
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
 
-const themesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/themes',
-  component: ThemesPage,
-});
+  // Tombol back / forward browser.
+  useEffect(() => {
+    const onPopState = () => {
+      setPath(normalizePath(window.location.pathname));
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
-const temaRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/tema',
-  component: ThemesPage,
-});
+  const navigate = useCallback(
+    (to: string) => {
+      const hashIndex = to.indexOf("#");
+      const hash = hashIndex >= 0 ? to.slice(hashIndex) : "";
+      const next = to.startsWith("#") ? path : normalizePath(to);
 
-const howToCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/how-to-create',
-  component: HowToCreatePage,
-});
+      // Link anchor di halaman yang sama.
+      if (hash && next === path) {
+        document.querySelector(hash)?.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
 
-const websiteRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/website',
-  component: HowToCreatePage,
-});
+      // Halaman yang sama -> cukup scroll ke atas.
+      if (next === path) {
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+        return;
+      }
 
-const aboutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/about',
-  component: AboutPage,
-});
+      window.history.pushState(null, "", next + hash);
+      setPath(next);
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
 
-const faqRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/faq',
-  component: FAQPage,
-});
+      if (hash) {
+        setTimeout(
+          () => document.querySelector(hash)?.scrollIntoView({ behavior: "smooth" }),
+          50
+        );
+      }
+    },
+    [path]
+  );
 
-const blogRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/blog',
-  component: BlogPage,
-});
+  // Metadata SEO dibaca dari src/routes.ts (sumber yang sama dengan SSG).
+  useSeo({
+    title: route?.title ?? NOT_FOUND_META.title,
+    description: route?.description ?? NOT_FOUND_META.description,
+    path: route?.path ?? path,
+    noindex: route ? !route.indexable : true,
+  });
 
-const videoRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/video',
-  component: VideoPage,
-});
-
-const cetakRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/cetak',
-  component: CetakPage,
-});
-
-const loginRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/login',
-  component: LoginPage,
-});
-
-const signinRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/signin',
-  component: LoginPage,
-});
-
-const registerRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/register',
-  component: RegisterPage,
-});
-
-const signupRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/signup',
-  component: RegisterPage,
-});
-
-const otpRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/otp',
-  component: OtpPage,
-});
-
-const routeTree = rootRoute.addChildren([
-  indexRoute,
-  pricingRoute,
-  hargaRoute,
-  themesRoute,
-  temaRoute,
-  howToCreateRoute,
-  websiteRoute,
-  aboutRoute,
-  faqRoute,
-  blogRoute,
-  videoRoute,
-  cetakRoute,
-  loginRoute,
-  signinRoute,
-  registerRoute,
-  signupRoute,
-  otpRoute,
-]);
-
-const router = createRouter({
-  routeTree,
-});
+  switch (route?.id) {
+    case "home":
+      return <HomePage currentPath={path} onNavigate={navigate} />;
+    case "login":
+    case "signup":
+      return <LoginPage currentPath={path} onNavigate={navigate} />;
+    case "katalog":
+      return <KatalogPage currentPath={path} onNavigate={navigate} />;
+    case "caraPesan":
+      return <CaraPesanPage currentPath={path} onNavigate={navigate} />;
+    case "kontak":
+      return <KontakPage currentPath={path} onNavigate={navigate} />;
+    case "kebijakan":
+      return <KebijakanPage currentPath={path} onNavigate={navigate} />;
+    case "appHome":
+      return <UserApp activeTab="home" currentPath={path} onNavigate={navigate} />;
+    case "appProses":
+      return <UserApp activeTab="proses" currentPath={path} onNavigate={navigate} />;
+    case "appProfile":
+      return <UserApp activeTab="profile" currentPath={path} onNavigate={navigate} />;
+    default:
+      return <NotFoundPage currentPath={path} onNavigate={navigate} />;
+  }
+}
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <LanguageProvider>
+      <div className="min-h-screen w-full overflow-x-clip bg-background text-text-primary flex flex-col font-sans selection:bg-[#7d6aee]/20 selection:text-[#7d6aee]">
+        <div id="main-content-container" className="flex-1 w-full">
+          <AppRouter />
+        </div>
+      </div>
+    </LanguageProvider>
+  );
 }
