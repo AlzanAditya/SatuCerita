@@ -20,6 +20,7 @@ export const PATHS = {
   appHome: "/app/home",
   appProses: "/app/proses",
   appProfile: "/app/profile",
+  dash: "/dash",
 } as const;
 
 export type RouteId =
@@ -32,7 +33,8 @@ export type RouteId =
   | "kebijakan"
   | "appHome"
   | "appProses"
-  | "appProfile";
+  | "appProfile"
+  | "dash";
 
 export interface RouteMeta {
   id: RouteId;
@@ -139,6 +141,14 @@ export const ROUTES: RouteMeta[] = [
     aliases: ["/app/profil"],
     title: "Profil | Satu Cerita",
     description: "Kelola profil akun Satu Cerita Anda.",
+    indexable: false,
+  },
+  {
+    id: "dash",
+    path: PATHS.dash,
+    aliases: ["/admin", "/dash/overview"],
+    title: "Admin Dashboard | Satu Cerita",
+    description: "Portal admin dan manajemen sistem Satu Cerita.",
     indexable: false,
   },
 ];

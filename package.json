@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsx scripts/generate-ssg.ts",
+    "build": "tsx scripts/build.ts",
     "ssg": "tsx scripts/generate-ssg.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",

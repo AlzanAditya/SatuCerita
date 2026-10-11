@@ -2,14 +2,17 @@ import React, { useCallback, useEffect, useState } from "react";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { useSeo } from "@/hooks/useSeo";
 import { NOT_FOUND_META, normalizePath, resolveRoute } from "@/routes";
-import { HomePage } from "@/pages/HomePage";
-import { LoginPage } from "@/pages/LoginPage";
-import { KatalogPage } from "@/pages/KatalogPage";
-import { CaraPesanPage } from "@/pages/CaraPesanPage";
-import { KontakPage } from "@/pages/KontakPage";
-import { KebijakanPage } from "@/pages/KebijakanPage";
-import { NotFoundPage } from "@/pages/NotFoundPage";
-import { UserApp } from "@/pages/app/UserApp";
+import {
+  HomePage,
+  LoginPage,
+  KatalogPage,
+  CaraPesanPage,
+  KontakPage,
+  KebijakanPage,
+  NotFoundPage,
+} from "@/pages/landing-page";
+import { UserApp } from "@/pages/app";
+import { AdminDash } from "@/pages/dash";
 
 function getInitialPath(): string {
   if (typeof window === "undefined") return "/";
@@ -105,6 +108,8 @@ function AppRouter() {
       return <UserApp activeTab="proses" currentPath={path} onNavigate={navigate} />;
     case "appProfile":
       return <UserApp activeTab="profile" currentPath={path} onNavigate={navigate} />;
+    case "dash":
+      return <AdminDash currentPath={path} onNavigate={navigate} />;
     default:
       return <NotFoundPage currentPath={path} onNavigate={navigate} />;
   }

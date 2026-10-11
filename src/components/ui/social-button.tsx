@@ -96,7 +96,8 @@ export const SocialButton: React.FC<SocialButtonProps> = ({
       {...props}
     >
       {renderIcon()}
-      {children && <span>{children}</span>}
+      {children &&
+        (typeof children === "string" ? <span>{children}</span> : children)}
     </button>
   );
 };

@@ -390,22 +390,221 @@ export const UserApp: React.FC<UserAppProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#faf9ff] flex flex-col justify-between font-sans text-neutral-800 pb-20 select-none">
-      {/* Top Navbar */}
-      <AppNavbar
-        currentPath={currentPath}
-        onNavigate={onNavigate}
-        activeTab={activeTab}
-        title={getAppNavbarTitle()}
-        userProfile={{
-          name: userProfile.name,
-          email: userProfile.email,
-          avatar: userProfile.avatar,
-        }}
-      />
+    <div className="min-h-screen bg-[#faf9ff] flex flex-col md:flex-row font-sans text-neutral-800 pb-20 md:pb-0 select-none">
+      {/* ========================================================================= */}
+      {/* DESKTOP SIDEBAR (SatuCerita User App)                                     */}
+      {/* Di bagian bawah sidebarnya ada avatar, nama & email, dan di baris yang    */}
+      {/* sama di bagian kanan ada tombol untuk logout                              */}
+      {/* ========================================================================= */}
+      <aside className="hidden md:flex flex-col w-64 lg:w-72 bg-white border-r border-purple-100 min-h-screen h-screen sticky top-0 shrink-0 z-30 justify-between p-4 lg:p-5">
+        <div className="flex flex-col gap-6">
+          {/* Logo / Brand Header */}
+          <div className="flex items-center justify-between pb-4 border-b border-purple-50">
+            <div className="flex items-center gap-2.5">
+              <div className="size-9 rounded-xl bg-gradient-to-tr from-[#7d6aee] to-[#a394ff] flex items-center justify-center text-white font-black shadow-xs text-sm">
+                SC
+              </div>
+              <div>
+                <span className="text-base font-black tracking-tight text-neutral-900 block leading-tight">
+                  Satu<span className="text-[#7d6aee]">Cerita</span>
+                </span>
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+                  Dashboard Pengguna
+                </span>
+              </div>
+            </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-6 animate-fadeIn">
+            <button
+              type="button"
+              onClick={() => {
+                onNavigate(PATHS.home);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              title="Ke Halaman Web Utama"
+              className="p-1.5 text-neutral-400 hover:text-[#7d6aee] hover:bg-purple-50 rounded-lg transition-colors cursor-pointer"
+            >
+              <SquareArrowOutUpRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Sidebar Menu Items */}
+          <nav className="space-y-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 px-3 pb-1 block">
+              Menu Utama
+            </span>
+
+            {/* 1. Undangan Saya */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedOrderId(null);
+                onNavigate(`${prefix}/home`);
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold transition-all cursor-pointer ${
+                !selectedOrderId && activeTab === "home"
+                  ? "bg-[#7d6aee] text-white shadow-xs font-bold"
+                  : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Home className="w-4 h-4" />
+                <span>Undangan Saya</span>
+              </div>
+              {invitations.length > 0 && (
+                <span
+                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                    !selectedOrderId && activeTab === "home"
+                      ? "bg-white/20 text-white"
+                      : "bg-purple-100 text-[#7d6aee]"
+                  }`}
+                >
+                  {invitations.length}
+                </span>
+              )}
+            </button>
+
+            {/* 2. Pesanan & Tagihan */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedOrderId(null);
+                onNavigate(`${prefix}/proses`);
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold transition-all cursor-pointer ${
+                selectedOrderId || activeTab === "proses"
+                  ? "bg-[#7d6aee] text-white shadow-xs font-bold"
+                  : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <ShoppingBag className="w-4 h-4" />
+                <span>Pesanan &amp; Tagihan</span>
+              </div>
+              {orders.filter((o) => o.status === "pending").length > 0 && (
+                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">
+                  {orders.filter((o) => o.status === "pending").length}
+                </span>
+              )}
+            </button>
+
+            {/* 3. Profil Akun */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedOrderId(null);
+                onNavigate(`${prefix}/profile`);
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold transition-all cursor-pointer ${
+                !selectedOrderId && activeTab === "profile"
+                  ? "bg-[#7d6aee] text-white shadow-xs font-bold"
+                  : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <UserRound className="w-4 h-4" />
+                <span>Profil Akun</span>
+              </div>
+            </button>
+
+            {/* 4. Katalog Template */}
+            <button
+              type="button"
+              onClick={() => {
+                onNavigate(PATHS.katalog);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900 transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <LayoutGrid className="w-4 h-4" />
+                <span>Katalog Template</span>
+              </div>
+            </button>
+          </nav>
+        </div>
+
+        {/* ===================================================================== */}
+        {/* SIDEBAR FOOTER: USER AVATAR + NAMA & EMAIL + LOGOUT DI BARIS YANG SAMA */}
+        {/* ===================================================================== */}
+        <div className="pt-4 border-t border-neutral-100">
+          <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-neutral-50 border border-neutral-200/70">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img
+                src={userProfile.avatar}
+                alt={userProfile.name}
+                className="size-9 rounded-full object-cover border border-[#7d6aee]/30 shrink-0 shadow-2xs"
+              />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-neutral-900 truncate leading-tight">
+                  {userProfile.name}
+                </p>
+                <p className="text-[11px] text-neutral-500 truncate leading-tight">
+                  {userProfile.email}
+                </p>
+              </div>
+            </div>
+
+            {/* Tombol Logout di baris yang sama, di bagian kanan */}
+            <button
+              type="button"
+              onClick={() => setIsLogoutModalOpen(true)}
+              title="Keluar dari akun"
+              className="p-2 rounded-xl text-neutral-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
+              aria-label="Tombol Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Container Right Side */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between">
+        {/* Top Navbar (Mobile only) */}
+        <div className="md:hidden">
+          <AppNavbar
+            currentPath={currentPath}
+            onNavigate={onNavigate}
+            activeTab={activeTab}
+            title={getAppNavbarTitle()}
+            userProfile={{
+              name: userProfile.name,
+              email: userProfile.email,
+              avatar: userProfile.avatar,
+            }}
+          />
+        </div>
+
+        {/* Desktop Top Header Bar for Breadcrumbs & Title */}
+        <header className="hidden md:flex items-center justify-between px-6 lg:px-8 py-4 bg-white border-b border-purple-50 shrink-0">
+          <div>
+            <h1 className="text-lg font-black text-neutral-900 tracking-tight">
+              {getAppNavbarTitle()}
+            </h1>
+            <p className="text-xs text-neutral-400">
+              {activeTab === "home" && "Kelola dan pantau undangan digital yang telah Anda buat."}
+              {activeTab === "proses" && "Daftar pesanan aktif dan status proses verifikasi pembayaran."}
+              {activeTab === "profile" && "Informasi akun dan pengaturan data kontak Satu Cerita."}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                onNavigate(PATHS.katalog);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-[#7d6aee] text-xs font-bold transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Buat Undangan Baru</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 animate-fadeIn">
         {/* ========================================================= */}
         {/* VIEW 1: DETAIL PESANAN (GAMBAR 4, 5, 6)                   */}
         {/* Ditampilkan saat user mengklik pesanan dari list pesanan  */}
@@ -1436,10 +1635,10 @@ export const UserApp: React.FC<UserAppProps> = ({
         )}
       </main>
 
-      {/* Floating Bottom Nav for Satu Cerita App */}
+      {/* Floating Bottom Nav for Satu Cerita App (Hanya di Mobile, Desktop Menggunakan Sidebar) */}
       <nav
         id="satucerita-app-bottom-navbar"
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
         aria-label="Satu Cerita App Navigation"
       >
         <div className="max-w-md mx-auto grid grid-cols-4 h-16 px-1">
@@ -1539,6 +1738,7 @@ export const UserApp: React.FC<UserAppProps> = ({
           </button>
         </div>
       </nav>
+      </div>
 
       {/* Modal Edit Profil */}
       {isEditProfileOpen && (

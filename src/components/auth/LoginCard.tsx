@@ -46,7 +46,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({
           <h2 className="text-2xl sm:text-[28px] font-black tracking-tight text-neutral-900">
             {isSignUp ? "Daftar Akun" : "Login"}
           </h2>
-          <p className="text-[14px] md:text-[18px] text-neutral-500 mt-1 font-medium">
+          <p className="text-[14px] text-neutral-500 mt-1 font-medium">
             {isSignUp ? "Sudah Punya Akun? " : "Belum Punya Akun? "}
             <button
               type="button"
@@ -58,7 +58,36 @@ export const LoginCard: React.FC<LoginCardProps> = ({
           </p>
         </div>
 
-        {/* Form Inputs (Email dan Password dengan placeholder dan ukuran teks text-base md:text-xl) */}
+        {/* Tombol Google di Paling Atas */}
+        <div className="mb-3.5">
+          <SocialButton
+            social="google"
+            theme="brand"
+            size="xl"
+            type="button"
+            onClick={onLogin}
+            aria-label="Masuk dengan Google"
+            title="Masuk dengan Google"
+            className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-neutral-50 border border-neutral-200 border-b-[3px] border-b-neutral-300 shadow-2xs hover:shadow-xs active:scale-[0.99] active:border-b-[2px] transition-all flex items-center justify-center gap-3 cursor-pointer"
+          >
+            <span className="text-black text-[16px] font-bold">
+              Masuk dengan Google
+            </span>
+          </SocialButton>
+        </div>
+
+        {/* Divider: Atau */}
+        <div className="mb-4">
+          <div className="relative flex items-center justify-center">
+            <div className="border-t border-neutral-200 w-full" />
+            <span className="bg-white px-3 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider shrink-0">
+              Atau
+            </span>
+            <div className="border-t border-neutral-200 w-full" />
+          </div>
+        </div>
+
+        {/* Form Inputs */}
         <form onSubmit={handleSubmit} className="space-y-3.5">
           {/* Email Field */}
           <div className="relative">
@@ -70,7 +99,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Masukkan alamat email"
-              className="w-full bg-[#f4f7f6] border border-neutral-200/80 rounded-2xl pl-12 pr-4 py-3.5 text-base md:text-xl font-medium text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#7d6aee]/20 focus:border-[#7d6aee] transition-all"
+              className="w-full bg-[#f4f7f6] border border-neutral-200/80 rounded-2xl pl-12 pr-4 py-3.5 text-[16px] font-medium text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#7d6aee]/20 focus:border-[#7d6aee] transition-all"
             />
           </div>
 
@@ -84,7 +113,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Kata sandi"
-              className="w-full bg-[#f4f7f6] border border-neutral-200/80 rounded-2xl pl-12 pr-12 py-3.5 text-base md:text-xl font-medium text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#7d6aee]/20 focus:border-[#7d6aee] transition-all"
+              className="w-full bg-[#f4f7f6] border border-neutral-200/80 rounded-2xl pl-12 pr-12 py-3.5 text-[16px] font-medium text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#7d6aee]/20 focus:border-[#7d6aee] transition-all"
             />
             <button
               type="button"
@@ -107,7 +136,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Ulangi kata sandi"
-                className="w-full bg-[#f4f7f6] border border-neutral-200/80 rounded-2xl pl-12 pr-12 py-3.5 text-base md:text-xl font-medium text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#7d6aee]/20 focus:border-[#7d6aee] transition-all"
+                className="w-full bg-[#f4f7f6] border border-neutral-200/80 rounded-2xl pl-12 pr-12 py-3.5 text-[16px] font-medium text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#7d6aee]/20 focus:border-[#7d6aee] transition-all"
               />
               <button
                 type="button"
@@ -124,7 +153,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({
             <button
               type="button"
               onClick={() => {}}
-              className="text-[14px] md:text-[18px] text-[#7d6aee] hover:text-[#6954e5] font-bold hover:underline cursor-pointer transition-colors"
+              className="text-[14px] text-[#7d6aee] hover:text-[#6954e5] font-bold hover:underline cursor-pointer transition-colors"
             >
               Lupa kata sandi?
             </button>
@@ -132,54 +161,28 @@ export const LoginCard: React.FC<LoginCardProps> = ({
 
           {/* 
             Main Submit Button: Login
-            - Menggunakan gradasi ungu selaras Satu Cerita (bg-gradient-to-r from-[#7d6aee] to-[#ad9fff])
-            - Shadow dan Outline mengikuti Untitled UI
+            - Menggunakan gradasi ungu selaras Satu Cerita
+            - Border-b tebal [3px] sesuai style card
           */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#7d6aee] to-[#ad9fff] hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-xl border border-[#7d6aee]/30 shadow-[0px_1px_2px_rgba(16,24,40,0.05)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#7d6aee]/20 transition-all duration-150 active:scale-[0.99] cursor-pointer text-base sm:text-lg tracking-wide flex items-center justify-center gap-2 mt-1 select-none"
+            className="w-full bg-gradient-to-r from-[#7d6aee] to-[#ad9fff] hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-xl border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc] shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#7d6aee]/20 transition-all duration-150 active:scale-[0.99] active:border-b-[2px] cursor-pointer text-[16px] tracking-wide flex items-center justify-center gap-2 mt-1 select-none"
           >
             <span>{isSignUp ? "Daftar Akun" : "Login"}</span>
           </button>
         </form>
 
-        {/* Divider: Or Continue With */}
-        <div className="mt-4 mb-3">
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-neutral-200 w-full" />
-            <span className="bg-white px-3 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider shrink-0">
-              Atau Lanjutkan Dengan
-            </span>
-            <div className="border-t border-neutral-200 w-full" />
-          </div>
-        </div>
-
-        {/* Google Button */}
-        <div>
-          <SocialButton
-            social="google"
-            theme="brand"
-            size="xl"
-            type="button"
-            onClick={onLogin}
-            aria-label="Login dengan Google"
-            title="Login dengan Google"
-            className="w-full py-3.5 px-4 rounded-xl"
-          />
-        </div>
-
-        {/* Teks Kebijakan & Syarat Privasi (Diperbesar 2px dari 12px ke 14px) */}
-        <p className="mt-4 text-center text-[14px] text-neutral-500 font-medium leading-relaxed select-none">
-          Dengan masuk, Anda menyetujui{" "}
+        {/* Teks Kebijakan & Syarat Privasi */}
+        <div className="mt-4 text-center text-[14px] text-neutral-500 font-medium leading-relaxed select-none">
+          <p>Dengan masuk, Anda menyetujui</p>
           <button
             type="button"
             onClick={onNavigateToKebijakan}
-            className="underline underline-offset-2 text-neutral-800 hover:text-[#7d6aee] font-bold transition-colors cursor-pointer"
+            className="inline-block mt-0.5 underline underline-offset-2 text-neutral-800 hover:text-[#7d6aee] font-bold transition-colors cursor-pointer"
           >
-            syarat &amp; kebijakan privasi
-          </button>{" "}
-          SatuCerita
-        </p>
+            Syarat &amp; Kebijakan Privasi
+          </button>
+        </div>
       </div>
     </div>
   );

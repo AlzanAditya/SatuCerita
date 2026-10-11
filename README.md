@@ -20,22 +20,39 @@ dari default (`https://satucerita.zanxa.studio`).
 ## Struktur
 
 ```
-├─ index.html                 # shell HTML + PWA tags (placeholder <!--ssg:head--> diisi SSG)
-├─ scripts/generate-ssg.ts    # SSG: HTML per route, sitemap.xml, robots.txt, 404.html
-├─ public/                    # disajikan apa adanya di root domain
-│   ├─ favicon.ico, sw.js, manifest.webmanifest
-│   ├─ fonts/  icons/  logos/
+├─ index.html                 # shell HTML preview lokal / dev server
+├─ supabase/                  # ★ skema, config.toml & migrasi database PostgreSQL
+│   ├─ config.toml
+│   ├─ migrations/
+│   └─ seed.sql
+├─ scripts/
+│   ├─ build.ts               # ★ build mandiri Cloudflare Pages (dist/landing-page, dist/app, dist/dash)
+│   └─ generate-ssg.ts        # SSG untuk landing-page: HTML per route, sitemap.xml, robots.txt, 404.html
+├─ public/                    # aset statis global (fonts, icons, logos, manifest, sw.js)
 └─ src/
-    ├─ main.tsx               # entry + registrasi service worker (production saja)
-    ├─ App.tsx                # router client-side + useSeo
-    ├─ routes.ts              # ★ tabel route + metadata SEO (dipakai App & SSG)
-    ├─ config/site.ts         # ★ nama, domain, kontak, OG image
-    ├─ context/               # LanguageContext (ID/EN)
-    ├─ hooks/useSeo.ts        # sinkron <title>/meta saat navigasi SPA
-    ├─ components/{layout,app,auth,ui}
-    └─ pages/                 # Home, Katalog, CaraPesan, Kontak, Kebijakan, Login, NotFound
-        └─ app/UserApp.tsx    # dashboard user (/app/*)
+    ├─ entries/               # entry points mandiri per aplikasi
+    │   ├─ landing/           # index.html, AppLanding.tsx, main.tsx
+    │   ├─ app/               # index.html, AppUser.tsx, main.tsx
+    │   └─ dash/              # index.html, AppDash.tsx, main.tsx
+    ├─ pages/                 # ★ halaman terkelompok
+    │   ├─ landing-page/      # HomePage, KatalogPage, CaraPesan, Kontak, Kebijakan, LoginPage, NotFoundPage
+    │   ├─ app/               # UserApp (dashboard pemesan)
+    │   └─ dash/              # AdminDash (dashboard admin)
+    ├─ routes.ts              # tabel route + metadata SEO
+    ├─ config/site.ts         # konfigurasi domain, kontak, OG image
+    └─ lib/supabase.ts        # helper client Supabase
 ```
+
+## Cloudflare Pages (Build Mandiri)
+
+Saat menjalankan `npm run build`, folder `dist/` menghasilkan 3 aplikasi mandiri:
+
+1. **`dist/landing-page/`**  
+   Untuk Cloudflare Pages proyek Landing Page (mis. `satucerita.zanxa.studio`). Dilengkapi seluruh halaman SSG statis, meta SEO lengkap, sitemap.xml, robots.txt, dan `_redirects`.
+2. **`dist/app/`**  
+   Untuk Cloudflare Pages proyek User Dashboard (mis. `app.satucerita.zanxa.studio`). Memiliki bundle SPA sendiri, routing mandiri, aset lengkap, dan `_redirects` (`/* /index.html 200`).
+3. **`dist/dash/`**  
+   Untuk Cloudflare Pages proyek Admin Dashboard (mis. `dash.satucerita.zanxa.studio` / `admin.satucerita.zanxa.studio`). Mandiri dengan SPA rewrite `_redirects`.
 
 ## Route
 

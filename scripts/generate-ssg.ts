@@ -1,14 +1,13 @@
 /**
- * Static Site Generation (SSG) untuk Satu Cerita.
+ * Static Site Generation (SSG) untuk Satu Cerita (Landing Page).
  *
- * Dijalankan SETELAH `vite build` (lihat script "build" di package.json).
- * Untuk setiap route di `src/routes.ts` script ini menulis HTML statis yang
+ * Dijalankan SETELAH build landing-page.
+ * Untuk setiap route landing page di `src/routes.ts` script ini menulis HTML statis yang
  * sudah berisi <title>, meta description, canonical, Open Graph, Twitter Card,
- * robots, dan JSON-LD, sehingga crawler (Google, WhatsApp, Telegram, dsb.)
- * langsung melihat metadata yang benar tanpa menjalankan JavaScript.
+ * robots, dan JSON-LD.
  *
- * Output (di dalam dist/):
- *   - <route>/index.html + <route>.html   untuk setiap route
+ * Output (di dalam dist/landing-page/):
+ *   - <route>/index.html + <route>.html   untuk setiap route landing page
  *   - 404.html                            halaman not-found (noindex)
  *   - sitemap.xml & robots.txt
  */
@@ -17,8 +16,6 @@ import path from "path";
 import { SITE } from "../src/config/site";
 import { NOT_FOUND_META, ROUTES, type RouteMeta } from "../src/routes";
 
-const DIST_DIR = path.resolve(process.cwd(), "dist");
-const TEMPLATE_PATH = path.join(DIST_DIR, "index.html");
 const HEAD_PLACEHOLDER = "<!--ssg:head-->";
 
 /* ------------------------------------------------------------------ */
@@ -129,7 +126,7 @@ function buildSeoHead(page: PageHead): { title: string; block: string } {
   return { title, block };
 }
 
-/** Sisipkan blok SEO ke template hasil `vite build`. */
+/** Sisipkan blok SEO ke template hasil build. */
 function renderHtml(template: string, page: PageHead): string {
   const { title, block } = buildSeoHead(page);
   return template
@@ -137,24 +134,19 @@ function renderHtml(template: string, page: PageHead): string {
     .replace(HEAD_PLACEHOLDER, block);
 }
 
-function writeFile(relativePath: string, content: string) {
-  const full = path.join(DIST_DIR, relativePath);
+function writeTargetFile(targetDir: string, relativePath: string, content: string) {
+  const full = path.join(targetDir, relativePath);
   fs.mkdirSync(path.dirname(full), { recursive: true });
   fs.writeFileSync(full, content, "utf-8");
 }
 
-/** "/" -> ["index.html"], "/katalog" -> ["katalog/index.html", "katalog.html"] */
 function outputFilesFor(routePath: string): string[] {
   if (routePath === "/") return ["index.html"];
   const clean = routePath.replace(/^\//, "");
   return [`${clean}/index.html`, `${clean}.html`];
 }
 
-/* ------------------------------------------------------------------ */
-/* Sitemap & robots                                                    */
-/* ------------------------------------------------------------------ */
-
-function generateSitemap(routes: RouteMeta[]) {
+function generateSitemap(targetDir: string, routes: RouteMeta[]) {
   const today = new Date().toISOString().split("T")[0];
   const urls = routes
     .filter((r) => r.indexable)
@@ -168,38 +160,51 @@ function generateSitemap(routes: RouteMeta[]) {
     )
     .join("\n");
 
-  writeFile(
+  writeTargetFile(
+    targetDir,
     "sitemap.xml",
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
   );
 }
 
-function generateRobotsTxt() {
-  writeFile("robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE.url}/sitemap.xml\n`);
+function generateRobotsTxt(targetDir: string) {
+  writeTargetFile(targetDir, "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE.url}/sitemap.xml\n`);
 }
 
 /* ------------------------------------------------------------------ */
-/* Main                                                                */
+/* Runner                                                             */
 /* ------------------------------------------------------------------ */
 
-export function runSSG() {
-  console.log("⚡ Generating static pages for Satu Cerita...");
+export function runLandingSSG(distDir?: string) {
+  const targetDir =
+    distDir ||
+    (fs.existsSync(path.resolve(process.cwd(), "dist/landing-page/index.html"))
+      ? path.resolve(process.cwd(), "dist/landing-page")
+      : path.resolve(process.cwd(), "dist"));
 
-  if (!fs.existsSync(TEMPLATE_PATH)) {
-    console.error("❌ dist/index.html tidak ditemukan. Jalankan `vite build` dulu (atau `npm run build`).");
+  const templatePath = path.join(targetDir, "index.html");
+
+  console.log(`⚡ Generating static pages for Satu Cerita landing-page at ${targetDir}...`);
+
+  if (!fs.existsSync(templatePath)) {
+    console.error(`❌ ${templatePath} tidak ditemukan.`);
     process.exit(1);
   }
 
-  const template = fs.readFileSync(TEMPLATE_PATH, "utf-8");
+  const template = fs.readFileSync(templatePath, "utf-8");
   if (!template.includes(HEAD_PLACEHOLDER)) {
-    console.error(
-      `❌ Placeholder ${HEAD_PLACEHOLDER} tidak ada di dist/index.html.\n` +
-        "   Kemungkinan SSG sudah pernah dijalankan pada folder dist ini. Jalankan `npm run build` ulang."
+    console.warn(
+      `⚠️  Placeholder ${HEAD_PLACEHOLDER} tidak ada di ${templatePath}. Mengabaikan penyisipan head baru.`
     );
-    process.exit(1);
+    return;
   }
 
-  for (const route of ROUTES) {
+  // Filter hanya route landing page (bukan route app atau dash)
+  const landingRoutes = ROUTES.filter(
+    (r) => !r.path.startsWith("/app") && !r.path.startsWith("/dash")
+  );
+
+  for (const route of landingRoutes) {
     const page: PageHead = {
       path: route.path,
       title: route.title,
@@ -209,14 +214,15 @@ export function runSSG() {
     };
     const html = renderHtml(template, page);
 
-    // Hanya route kanonik yang dibuat. Alias (mis. /carapesan, /app) tidak perlu
-    // file sendiri: router client akan mengarahkannya ke path kanonik.
-    for (const file of outputFilesFor(route.path)) writeFile(file, html);
+    for (const file of outputFilesFor(route.path)) {
+      writeTargetFile(targetDir, file, html);
+    }
     console.log(`  ✓ ${route.path}${route.indexable ? "" : "  (noindex)"}`);
   }
 
-  // 404.html — dipakai host statis untuk URL yang tidak dikenal.
-  writeFile(
+  // 404.html
+  writeTargetFile(
+    targetDir,
     "404.html",
     renderHtml(template, {
       path: "/404",
@@ -227,11 +233,14 @@ export function runSSG() {
   );
   console.log("  ✓ 404.html (noindex)");
 
-  generateSitemap(ROUTES);
-  generateRobotsTxt();
+  generateSitemap(targetDir, landingRoutes);
+  generateRobotsTxt(targetDir);
   console.log("  ✓ sitemap.xml, robots.txt");
 
-  console.log("\n🎉 SSG selesai.");
+  console.log("\n🎉 SSG Landing Page selesai.");
 }
 
-runSSG();
+// Jika dijalankan langsung lewat CLI
+if (process.argv[1]?.endsWith("generate-ssg.ts")) {
+  runLandingSSG();
+}
