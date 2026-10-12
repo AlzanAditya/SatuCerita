@@ -35,6 +35,21 @@ function setLink(rel: string, href: string) {
   el.setAttribute("href", href);
 }
 
+function setIconLink(rel: string, href: string, type?: string, sizes?: string) {
+  let selector = `link[rel="${rel}"]`;
+  if (sizes) selector += `[sizes="${sizes}"]`;
+  else if (type) selector += `[type="${type}"]`;
+  let el = document.head.querySelector<HTMLLinkElement>(selector);
+  if (!el) {
+    el = document.createElement("link");
+    el.setAttribute("rel", rel);
+    if (sizes) el.setAttribute("sizes", sizes);
+    if (type) el.setAttribute("type", type);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("href", href);
+}
+
 const absolute = (urlOrPath: string) =>
   /^https?:\/\//.test(urlOrPath)
     ? encodeURI(urlOrPath)
@@ -90,5 +105,28 @@ export function useSeo({
     setMeta("name", "twitter:description", description);
     setMeta("name", "twitter:image", imageUrl);
     setMeta("name", "twitter:image:alt", imageAlt);
+
+    // Sinkronkan favicon, PWA icons, dan web manifest berdasarkan path (public vs admin/dash)
+    const isDash = path.startsWith("/dash");
+    const prefix = isDash ? "/admin" : "/public";
+
+    setIconLink("icon", `${prefix}/favicon.ico`, "image/x-icon");
+    setIconLink("icon", `${prefix}/favicon-32x32.png`, "image/png", "32x32");
+    setIconLink("icon", `${prefix}/favicon-16x16.png`, "image/png", "16x16");
+    setIconLink("icon", `${prefix}/android-chrome-192x192.png`, "image/png", "192x192");
+    setIconLink("icon", `${prefix}/android-chrome-512x512.png`, "image/png", "512x512");
+    setIconLink("apple-touch-icon", `${prefix}/apple-touch-icon.png`);
+    setIconLink("apple-touch-icon", `${prefix}/apple-touch-icon.png`, undefined, "180x180");
+    setLink("manifest", isDash ? "/admin/manifest.webmanifest" : "/manifest.webmanifest");
+    setMeta(
+      "name",
+      "apple-mobile-web-app-title",
+      isDash ? "Satu Cerita Dash" : path.startsWith("/app") ? "Satu Cerita App" : "Satu Cerita"
+    );
+    setMeta(
+      "name",
+      "application-name",
+      isDash ? "Satu Cerita Dash" : path.startsWith("/app") ? "Satu Cerita App" : "Satu Cerita"
+    );
   }, [title, description, path, image, imageWidth, imageHeight, imageAlt, noindex]);
 }

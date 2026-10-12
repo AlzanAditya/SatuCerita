@@ -12,7 +12,7 @@ import {
   NotFoundPage,
 } from "@/pages/landing-page";
 import { UserApp } from "@/pages/app";
-import { AdminDash } from "@/pages/dash";
+import { AdminDash, DashLoginPage } from "@/pages/dash";
 
 function getInitialPath(): string {
   if (typeof window === "undefined") return "/";
@@ -108,8 +108,22 @@ function AppRouter() {
       return <UserApp activeTab="proses" currentPath={path} onNavigate={navigate} />;
     case "appProfile":
       return <UserApp activeTab="profile" currentPath={path} onNavigate={navigate} />;
+    case "dashLogin":
+      return <DashLoginPage currentPath={path} onNavigate={navigate} />;
+    case "dashCustomer":
+      return <AdminDash activeTab="users" currentPath={path} onNavigate={navigate} />;
+    case "dashAnalytics":
+      return <AdminDash activeTab="analytics" currentPath={path} onNavigate={navigate} />;
+    case "dashFinance":
+      return <AdminDash activeTab="finance" currentPath={path} onNavigate={navigate} />;
+    case "dashTemplates":
+      return <AdminDash activeTab="templates" currentPath={path} onNavigate={navigate} />;
+    case "dashInvitations":
+      return <AdminDash activeTab="invitations" currentPath={path} onNavigate={navigate} />;
+    case "dashSettings":
+      return <AdminDash activeTab="settings" currentPath={path} onNavigate={navigate} />;
     case "dash":
-      return <AdminDash currentPath={path} onNavigate={navigate} />;
+      return <AdminDash activeTab="overview" currentPath={path} onNavigate={navigate} />;
     default:
       return <NotFoundPage currentPath={path} onNavigate={navigate} />;
   }

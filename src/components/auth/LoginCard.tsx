@@ -13,6 +13,8 @@ export interface LoginCardProps {
   isSignUp?: boolean;
   onToggleSignUp?: () => void;
   onNavigateToKebijakan?: () => void;
+  onForgotPassword?: () => void;
+  hideTerms?: boolean;
 }
 
 export const LoginCard: React.FC<LoginCardProps> = ({
@@ -20,6 +22,8 @@ export const LoginCard: React.FC<LoginCardProps> = ({
   isSignUp: isSignUpProp,
   onToggleSignUp: onToggleSignUpProp,
   onNavigateToKebijakan,
+  onForgotPassword,
+  hideTerms = false,
 }) => {
   const [internalSignUp, setInternalSignUp] = useState(false);
   const isSignUp = isSignUpProp !== undefined ? isSignUpProp : internalSignUp;
@@ -152,7 +156,17 @@ export const LoginCard: React.FC<LoginCardProps> = ({
           <div className="flex justify-end pt-0.5 pb-0.5">
             <button
               type="button"
-              onClick={() => {}}
+              onClick={() => {
+                if (onForgotPassword) {
+                  onForgotPassword();
+                } else if (typeof window !== "undefined") {
+                  if (window.location.hostname.includes("satucerita.id")) {
+                    window.location.href = "https://dash.satucerita.id";
+                  } else {
+                    window.location.href = "/dash";
+                  }
+                }
+              }}
               className="text-[14px] text-[#7d6aee] hover:text-[#6954e5] font-bold hover:underline cursor-pointer transition-colors"
             >
               Lupa kata sandi?
@@ -173,16 +187,18 @@ export const LoginCard: React.FC<LoginCardProps> = ({
         </form>
 
         {/* Teks Kebijakan & Syarat Privasi */}
-        <div className="mt-4 text-center text-[14px] text-neutral-500 font-medium leading-relaxed select-none">
-          <p>Dengan masuk, Anda menyetujui</p>
-          <button
-            type="button"
-            onClick={onNavigateToKebijakan}
-            className="inline-block mt-0.5 underline underline-offset-2 text-neutral-800 hover:text-[#7d6aee] font-bold transition-colors cursor-pointer"
-          >
-            Syarat &amp; Kebijakan Privasi
-          </button>
-        </div>
+        {!hideTerms && (
+          <div className="mt-4 text-center text-[14px] text-neutral-500 font-medium leading-relaxed select-none">
+            <p>Dengan masuk, Anda menyetujui</p>
+            <button
+              type="button"
+              onClick={onNavigateToKebijakan}
+              className="inline-block mt-0.5 underline underline-offset-2 text-neutral-800 hover:text-[#7d6aee] font-bold transition-colors cursor-pointer"
+            >
+              Syarat &amp; Kebijakan Privasi
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -21,6 +21,13 @@ export const PATHS = {
   appProses: "/app/proses",
   appProfile: "/app/profile",
   dash: "/dash",
+  dashLogin: "/dash/login",
+  dashCustomer: "/dash/customer",
+  dashAnalytics: "/dash/analytics",
+  dashFinance: "/dash/finance",
+  dashTemplates: "/dash/templates",
+  dashInvitations: "/dash/invitations",
+  dashSettings: "/dash/settings",
 } as const;
 
 export type RouteId =
@@ -34,7 +41,14 @@ export type RouteId =
   | "appHome"
   | "appProses"
   | "appProfile"
-  | "dash";
+  | "dash"
+  | "dashLogin"
+  | "dashCustomer"
+  | "dashAnalytics"
+  | "dashFinance"
+  | "dashTemplates"
+  | "dashInvitations"
+  | "dashSettings";
 
 export interface RouteMeta {
   id: RouteId;
@@ -146,9 +160,65 @@ export const ROUTES: RouteMeta[] = [
   {
     id: "dash",
     path: PATHS.dash,
-    aliases: ["/admin", "/dash/overview"],
+    aliases: ["/admin", "/dash/overview", "/overview"],
     title: "Admin Dashboard | Satu Cerita",
-    description: "Portal admin dan manajemen sistem Satu Cerita.",
+    description: "Portal admin dan ringkasan sistem Satu Cerita.",
+    indexable: false,
+  },
+  {
+    id: "dashLogin",
+    path: PATHS.dashLogin,
+    aliases: ["/admin/login"],
+    title: "Login Admin | Satu Cerita",
+    description: "Masuk ke portal administrator Satu Cerita.",
+    indexable: false,
+  },
+  {
+    id: "dashCustomer",
+    path: PATHS.dashCustomer,
+    aliases: ["/customer", "/dash/users", "/admin/users", "/admin/customer", "/users"],
+    title: "Pengguna & Customer | Admin Satu Cerita",
+    description: "Kelola data pengguna terdaftar dan customer di Satu Cerita.",
+    indexable: false,
+  },
+  {
+    id: "dashAnalytics",
+    path: PATHS.dashAnalytics,
+    aliases: ["/analytics", "/admin/analytics"],
+    title: "Grafik & Penjualan | Admin Satu Cerita",
+    description: "Pantau analitik dan performa penjualan di Satu Cerita.",
+    indexable: false,
+  },
+  {
+    id: "dashFinance",
+    path: PATHS.dashFinance,
+    aliases: ["/finance", "/admin/finance"],
+    title: "Keuangan & Transaksi | Admin Satu Cerita",
+    description: "Verifikasi pembayaran dan pembukuan transaksi di Satu Cerita.",
+    indexable: false,
+  },
+  {
+    id: "dashTemplates",
+    path: PATHS.dashTemplates,
+    aliases: ["/templates", "/admin/templates"],
+    title: "Pantauan Template | Admin Satu Cerita",
+    description: "Kelola katalog tema dan paket template undangan di Satu Cerita.",
+    indexable: false,
+  },
+  {
+    id: "dashInvitations",
+    path: PATHS.dashInvitations,
+    aliases: ["/invitations", "/admin/invitations"],
+    title: "Undangan Tayang | Admin Satu Cerita",
+    description: "Pantau undangan aktif yang sedang online di Satu Cerita.",
+    indexable: false,
+  },
+  {
+    id: "dashSettings",
+    path: PATHS.dashSettings,
+    aliases: ["/settings", "/admin/settings"],
+    title: "Pengaturan Platform | Admin Satu Cerita",
+    description: "Konfigurasi rekening, gateway pesan, dan sistem Satu Cerita.",
     indexable: false,
   },
 ];

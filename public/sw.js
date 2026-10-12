@@ -3,10 +3,23 @@ const CACHE_NAME = 'satucerita-cache-v1';
 const CORE_ASSETS = [
   '/',
   '/manifest.webmanifest',
-  '/favicon.ico',
-  '/icons/pwa-192x192.png',
-  '/icons/pwa-512x512.png',
-  '/icons/apple-touch-icon.png'
+  '/public/favicon.ico',
+  '/public/favicon-16x16.png',
+  '/public/favicon-32x32.png',
+  '/public/apple-touch-icon.png',
+  '/public/android-chrome-192x192.png',
+  '/public/android-chrome-512x512.png',
+  '/admin/favicon.ico',
+  '/admin/favicon-16x16.png',
+  '/admin/favicon-32x32.png',
+  '/admin/apple-touch-icon.png',
+  '/admin/android-chrome-192x192.png',
+  '/admin/android-chrome-512x512.png',
+  '/logos/satucerita.png',
+  '/logos/whatsapp.webp',
+  '/logos/instagram.webp',
+  '/logos/tiktok.webp',
+  '/logos/gmail.webp'
 ];
 
 self.addEventListener('install', (event) => {

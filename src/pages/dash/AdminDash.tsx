@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
-  LayoutDashboard,
+  LayoutGrid,
   Users,
   BarChart3,
   DollarSign,
@@ -35,24 +35,139 @@ import {
   CreditCard,
   Receipt,
   Sparkles,
+  Upload,
+  Pencil,
+  Camera,
 } from "lucide-react";
+import { AppNavbar } from "@/components/app/AppNavbar";
 import { PATHS } from "@/routes";
+import {
+  getAdminProfileCache,
+  saveAdminProfileCache,
+  getAdminSettingsCache,
+  saveAdminSettingsCache,
+  getCache,
+  setCache,
+  CACHE_KEYS,
+  convertFileToDataUrl,
+  AdminProfileData,
+  AdminSettingsData,
+  setDashAuthenticated,
+} from "@/lib/cache";
+import { SITE } from "@/config/site";
+
+export type DashTabType =
+  | "overview"
+  | "users"
+  | "analytics"
+  | "finance"
+  | "templates"
+  | "invitations"
+  | "settings";
+
+export function pathToDashTab(pathname: string): DashTabType {
+  const p = pathname.toLowerCase();
+  if (p.includes("customer") || p.includes("users") || p.includes("pengguna")) {
+    return "users";
+  }
+  if (p.includes("analytics") || p.includes("grafik") || p.includes("penjualan")) {
+    return "analytics";
+  }
+  if (p.includes("finance") || p.includes("keuangan") || p.includes("transaksi")) {
+    return "finance";
+  }
+  if (p.includes("templates") || p.includes("template")) {
+    return "templates";
+  }
+  if (p.includes("invitations") || p.includes("undangan")) {
+    return "invitations";
+  }
+  if (p.includes("settings") || p.includes("pengaturan")) {
+    return "settings";
+  }
+  return "overview";
+}
+
+export function dashTabToPath(tab: DashTabType, isStandalone = false): string {
+  const prefix = isStandalone ? "" : "/dash";
+  switch (tab) {
+    case "users":
+      return `${prefix}/customer`;
+    case "analytics":
+      return `${prefix}/analytics`;
+    case "finance":
+      return `${prefix}/finance`;
+    case "templates":
+      return `${prefix}/templates`;
+    case "invitations":
+      return `${prefix}/invitations`;
+    case "settings":
+      return `${prefix}/settings`;
+    case "overview":
+    default:
+      return isStandalone ? "/overview" : "/dash";
+  }
+}
 
 export interface AdminDashProps {
   currentPath?: string;
+  activeTab?: DashTabType;
   onNavigate?: (path: string) => void;
 }
 
-export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
-  const [activeTab, setActiveTab] = useState<
-    | "overview"
-    | "users"
-    | "analytics"
-    | "finance"
-    | "templates"
-    | "invitations"
-    | "settings"
-  >("overview");
+export const AdminDash: React.FC<AdminDashProps> = ({
+  currentPath = "/dash",
+  activeTab: activeTabProp,
+  onNavigate,
+}) => {
+  const isStandalone = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      window.location.hostname.startsWith("dash.") ||
+      (!window.location.pathname.startsWith("/dash") &&
+        window.location.pathname !== "/")
+    );
+  }, []);
+
+  const [activeTab, setActiveTab] = useState<DashTabType>(() => {
+    if (activeTabProp) return activeTabProp;
+    if (currentPath) return pathToDashTab(currentPath);
+    if (typeof window !== "undefined") {
+      return pathToDashTab(window.location.pathname);
+    }
+    return "overview";
+  });
+
+  // Sinkronkan activeTab saat currentPath berubah dari router luar
+  useEffect(() => {
+    if (activeTabProp) {
+      setActiveTab(activeTabProp);
+    } else if (currentPath) {
+      setActiveTab(pathToDashTab(currentPath));
+    }
+  }, [activeTabProp, currentPath]);
+
+  // Handle popstate (tombol back/forward browser)
+  useEffect(() => {
+    const handlePopState = () => {
+      const p = window.location.pathname;
+      setActiveTab(pathToDashTab(p));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const handleSelectTab = (tab: DashTabType) => {
+    setActiveTab(tab);
+    setCache(CACHE_KEYS.DASH_ACTIVE_TAB, tab);
+    const targetPath = dashTabToPath(tab, isStandalone);
+    if (onNavigate) {
+      onNavigate(targetPath);
+    } else if (typeof window !== "undefined") {
+      window.history.pushState(null, "", targetPath);
+    }
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  };
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -62,13 +177,22 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
   const [isAddTemplateModalOpen, setIsAddTemplateModalOpen] = useState(false);
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "1y">("30d");
 
-  // Admin Profile Info
-  const adminProfile = {
-    name: "Alzan Bella (Super Admin)",
-    email: "admin@satucerita.id",
-    role: "Super Admin",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-  };
+  // Admin Profile Info dari Cache
+  const [adminProfile, setAdminProfile] = useState<AdminProfileData>(() =>
+    getAdminProfileCache()
+  );
+
+  // Modal Edit Profil Admin (Foto & WhatsApp)
+  const [isEditAdminProfileOpen, setIsEditAdminProfileOpen] = useState(false);
+  const [editAdminName, setEditAdminName] = useState(adminProfile.name);
+  const [editAdminEmail, setEditAdminEmail] = useState(adminProfile.email);
+  const [editAdminPhone, setEditAdminPhone] = useState(adminProfile.phone);
+  const [editAdminAvatar, setEditAdminAvatar] = useState(adminProfile.avatar);
+
+  // Settings Platform dari Cache
+  const [adminSettings, setAdminSettings] = useState<AdminSettingsData>(() =>
+    getAdminSettingsCache()
+  );
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -77,81 +201,87 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // 1. DATA PENGGUNA TERDAFTAR
-  const [usersList, setUsersList] = useState([
-    {
-      id: "USR-001",
-      name: "Alzan Bella",
-      email: "alzanaditya2@gmail.com",
-      phone: "+62 851-8797-8443",
-      role: "Admin",
-      invitationsCount: 3,
-      totalSpent: 447000,
-      joinedDate: "12 Jan 2026",
-      status: "Aktif",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      id: "USR-002",
-      name: "Rian Pratama",
-      email: "rian.pratama@gmail.com",
-      phone: "+62 812-3456-7890",
-      role: "Pengguna",
-      invitationsCount: 1,
-      totalSpent: 149000,
-      joinedDate: "28 Feb 2026",
-      status: "Aktif",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-    },
-    {
-      id: "USR-003",
-      name: "Dimas Anggara",
-      email: "dimas.ang@yahoo.com",
-      phone: "+62 857-1122-3344",
-      role: "Pengguna",
-      invitationsCount: 1,
-      totalSpent: 99000,
-      joinedDate: "05 Mar 2026",
-      status: "Aktif",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-    },
-    {
-      id: "USR-004",
-      name: "Salsabila Putri",
-      email: "salsaputri@gmail.com",
-      phone: "+62 878-9988-7766",
-      role: "Pengguna",
-      invitationsCount: 2,
-      totalSpent: 298000,
-      joinedDate: "15 Mar 2026",
-      status: "Aktif",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
-    },
-    {
-      id: "USR-005",
-      name: "Fajar Santoso",
-      email: "fajar.santo@outlook.com",
-      phone: "+62 821-4455-6677",
-      role: "Pengguna",
-      invitationsCount: 1,
-      totalSpent: 149000,
-      joinedDate: "22 Mar 2026",
-      status: "Aktif",
-      avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=200&q=80",
-    },
-    {
-      id: "USR-006",
-      name: "Nadia Rahmawati",
-      email: "nadiarahma@gmail.com",
-      phone: "+62 813-7766-5544",
-      role: "Pengguna",
-      invitationsCount: 0,
-      totalSpent: 0,
-      joinedDate: "01 Apr 2026",
-      status: "Pending",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-    },
-  ]);
+  // 1. DATA PENGGUNA TERDAFTAR (Dikelola dengan Cache)
+  const [usersList, setUsersList] = useState(() =>
+    getCache(CACHE_KEYS.ADMIN_USERS, [
+      {
+        id: "USR-001",
+        name: "Alzan Bella",
+        email: "alzanaditya2@gmail.com",
+        phone: "+62 851-8797-8443",
+        role: "Admin",
+        invitationsCount: 3,
+        totalSpent: 447000,
+        joinedDate: "12 Jan 2026",
+        status: "Aktif",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+      },
+      {
+        id: "USR-002",
+        name: "Rian Pratama",
+        email: "rian.pratama@gmail.com",
+        phone: "+62 812-3456-7890",
+        role: "Pengguna",
+        invitationsCount: 1,
+        totalSpent: 149000,
+        joinedDate: "28 Feb 2026",
+        status: "Aktif",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+      },
+      {
+        id: "USR-003",
+        name: "Dimas Anggara",
+        email: "dimas.ang@yahoo.com",
+        phone: "+62 857-1122-3344",
+        role: "Pengguna",
+        invitationsCount: 1,
+        totalSpent: 99000,
+        joinedDate: "05 Mar 2026",
+        status: "Aktif",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+      },
+      {
+        id: "USR-004",
+        name: "Salsabila Putri",
+        email: "salsaputri@gmail.com",
+        phone: "+62 878-9988-7766",
+        role: "Pengguna",
+        invitationsCount: 2,
+        totalSpent: 298000,
+        joinedDate: "15 Mar 2026",
+        status: "Aktif",
+        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+      },
+      {
+        id: "USR-005",
+        name: "Fajar Santoso",
+        email: "fajar.santo@outlook.com",
+        phone: "+62 821-4455-6677",
+        role: "Pengguna",
+        invitationsCount: 1,
+        totalSpent: 149000,
+        joinedDate: "22 Mar 2026",
+        status: "Aktif",
+        avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=200&q=80",
+      },
+      {
+        id: "USR-006",
+        name: "Nadia Rahmawati",
+        email: "nadiarahma@gmail.com",
+        phone: "+62 813-7766-5544",
+        role: "Pengguna",
+        invitationsCount: 0,
+        totalSpent: 0,
+        joinedDate: "01 Apr 2026",
+        status: "Pending",
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
+      },
+    ])
+  );
+
+  useEffect(() => {
+    setCache(CACHE_KEYS.ADMIN_USERS, usersList);
+  }, [usersList]);
 
   // 2. DATA KEUANGAN & TRANSAKSI
   const [ordersList, setOrdersList] = useState([
@@ -352,10 +482,12 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
 
   const handlePerformLogout = () => {
     setIsLogoutModalOpen(false);
+    setDashAuthenticated(false);
+    const target = isStandalone ? "/login" : PATHS.dashLogin;
     if (onNavigate) {
-      onNavigate(PATHS.login);
+      onNavigate(target);
     } else {
-      window.location.href = PATHS.login;
+      window.location.href = target;
     }
   };
 
@@ -368,17 +500,37 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
 
   // Nav item list
   const navItems: NavItem[] = [
-    { id: "overview", label: "Ringkasan", icon: LayoutDashboard },
-    { id: "users", label: "Pengguna Terdaftar", icon: Users, badge: usersList.length },
-    { id: "analytics", label: "Grafik & Penjualan", icon: BarChart3 },
-    { id: "finance", label: "Keuangan & Transaksi", icon: DollarSign, badge: ordersList.filter(o => o.status === "MENUNGGU_VERIFIKASI").length },
-    { id: "templates", label: "Pantauan Template", icon: Palette, badge: templatesList.length },
+    { id: "overview", label: "Dashboard", icon: LayoutGrid },
+    { id: "users", label: "Pengguna", icon: Users, badge: usersList.length },
+    { id: "analytics", label: "Keuangan", icon: BarChart3 },
+    { id: "finance", label: "Transaksi", icon: DollarSign, badge: ordersList.filter(o => o.status === "MENUNGGU_VERIFIKASI").length },
+    { id: "templates", label: "Template", icon: Palette, badge: templatesList.length },
     { id: "invitations", label: "Undangan Tayang", icon: FileHeart, badge: invitationsList.length },
-    { id: "settings", label: "Pengaturan Platform", icon: Settings },
+    { id: "settings", label: "Pengaturan", icon: Settings },
   ];
 
+  const getDashNavbarTitle = () => {
+    switch (activeTab) {
+      case "users":
+        return "Pengguna";
+      case "analytics":
+        return "Keuangan";
+      case "finance":
+        return "Transaksi";
+      case "templates":
+        return "Template";
+      case "invitations":
+        return "Undangan Tayang";
+      case "settings":
+        return "Pengaturan";
+      case "overview":
+      default:
+        return "Dashboard";
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col md:flex-row font-sans text-neutral-800 antialiased select-none">
+    <div className="min-h-screen bg-[#f8f9fc] flex flex-col md:flex-row font-sans text-neutral-800 antialiased pb-20 md:pb-0 select-none">
       {/* Toast Notice */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 bg-neutral-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs sm:text-sm font-bold flex items-center gap-2 border border-neutral-700 animate-fadeIn">
@@ -389,8 +541,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
 
       {/* ========================================================================= */}
       {/* DESKTOP SIDEBAR                                                           */}
-      {/* Di bagian bawah sidebarnya ada avatar, nama & email, dan di baris yang    */}
-      {/* sama di bagian kanan ada tombol logout                                    */}
       {/* ========================================================================= */}
       <aside className="hidden md:flex flex-col w-64 lg:w-72 bg-white border-r border-neutral-200/80 min-h-screen h-screen sticky top-0 shrink-0 z-30 justify-between p-4 lg:p-5">
         <div className="flex flex-col gap-5">
@@ -433,10 +583,10 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => handleSelectTab(item.id)}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? "bg-[#7d6aee] text-white shadow-xs font-bold"
+                      ? "bg-[#7d6aee] text-white shadow-2xs font-extrabold border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc]"
                       : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
                   }`}
                 >
@@ -464,20 +614,35 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
         </div>
 
         {/* SIDEBAR FOOTER: USER AVATAR + NAMA & EMAIL + TOMBOL LOGOUT DI BARIS YANG SAMA */}
-        <div className="pt-4 border-t border-neutral-200/80">
-          <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-neutral-50 border border-neutral-200/70">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <img
-                src={adminProfile.avatar}
-                alt={adminProfile.name}
-                className="size-9 rounded-full object-cover border border-[#7d6aee]/30 shrink-0 shadow-2xs"
-              />
+        <div className="pt-4 border-t border-purple-100">
+          <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-white border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
+            <div
+              onClick={() => {
+                setEditAdminName(adminProfile.name);
+                setEditAdminEmail(adminProfile.email);
+                setEditAdminPhone(adminProfile.phone);
+                setEditAdminAvatar(adminProfile.avatar);
+                setIsEditAdminProfileOpen(true);
+              }}
+              className="flex items-center gap-2.5 min-w-0 cursor-pointer group flex-1 hover:opacity-90"
+              title="Klik untuk Edit Profil Admin (Foto & WhatsApp)"
+            >
+              <div className="relative shrink-0">
+                <img
+                  src={adminProfile.avatar}
+                  alt={adminProfile.name}
+                  className="size-9 rounded-full object-cover border border-[#7d6aee]/30 shadow-2xs group-hover:ring-2 group-hover:ring-[#7d6aee] transition-all"
+                />
+                <span className="absolute -bottom-0.5 -right-0.5 size-3.5 bg-[#7d6aee] text-white rounded-full flex items-center justify-center p-0.5 shadow-2xs">
+                  <Pencil className="w-2 h-2" />
+                </span>
+              </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-neutral-900 truncate leading-tight">
+                <p className="text-xs font-bold text-neutral-900 truncate leading-tight group-hover:text-[#7d6aee] transition-colors">
                   {adminProfile.name}
                 </p>
                 <p className="text-[11px] text-neutral-500 truncate leading-tight">
-                  {adminProfile.email}
+                  {adminProfile.phone || adminProfile.email}
                 </p>
               </div>
             </div>
@@ -496,152 +661,74 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
         </div>
       </aside>
 
-      {/* ========================================================================= */}
-      {/* MOBILE HEADER (HANYA MUNCUL DI HP/TABLET KECIL)                           */}
-      {/* ========================================================================= */}
-      <header className="md:hidden bg-white border-b border-neutral-200 px-4 py-3 sticky top-0 z-30 flex items-center justify-between shadow-2xs">
-        <div className="flex items-center gap-2.5">
-          <div className="size-8 rounded-lg bg-gradient-to-tr from-[#7d6aee] to-[#a394ff] flex items-center justify-center text-white font-black text-xs">
-            SC
-          </div>
-          <div>
-            <h1 className="text-sm font-black text-neutral-900 leading-tight">
-              SatuCerita Admin
-            </h1>
-            <span className="text-[10px] text-neutral-500 font-semibold">
-              {navItems.find((n) => n.id === activeTab)?.label}
-            </span>
-          </div>
+      {/* Main Content Right Side */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between">
+        {/* Top Navbar Dash (Sama persis dengan app, menampilkan judul halaman di Navbar atas) */}
+        <div>
+          <AppNavbar
+            currentPath={currentPath}
+            onNavigate={(to) => {
+              if (onNavigate) {
+                onNavigate(to);
+              } else {
+                handleSelectTab(pathToDashTab(to));
+              }
+            }}
+            activeTab={activeTab}
+            hideAvatar={activeTab === "settings"}
+            title={getDashNavbarTitle()}
+            action={
+              activeTab === "overview" || activeTab === "templates" ? (
+                <button
+                  type="button"
+                  onClick={() => setIsAddTemplateModalOpen(true)}
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Template</span>
+                </button>
+              ) : null
+            }
+            userProfile={{
+              name: adminProfile.name,
+              email: adminProfile.email,
+              avatar: adminProfile.avatar,
+            }}
+            onEditProfile={() => setIsEditAdminProfileOpen(true)}
+            onLogout={() => setIsLogoutModalOpen(true)}
+          />
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
-            aria-label="Toggle Mobile Menu"
-          >
-            <Menu className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
-
-      {/* MOBILE DRAWER */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-xs flex flex-col justify-end">
-          <div className="bg-white rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto space-y-4 animate-slideUp">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-              <span className="text-sm font-extrabold text-neutral-900">Menu Admin</span>
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1.5 rounded-full hover:bg-neutral-100 text-neutral-400"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold ${
-                      isActive
-                        ? "bg-[#7d6aee] text-white font-bold"
-                        : "text-neutral-700 hover:bg-neutral-100"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge !== undefined && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-neutral-100 text-neutral-600">
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Mobile Footer with User & Logout */}
-            <div className="pt-3 border-t border-neutral-200 flex items-center justify-between gap-2 p-2 rounded-xl bg-neutral-50">
-              <div className="flex items-center gap-2 min-w-0">
-                <img
-                  src={adminProfile.avatar}
-                  alt={adminProfile.name}
-                  className="size-8 rounded-full object-cover shrink-0"
-                />
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-neutral-900 truncate">{adminProfile.name}</p>
-                  <p className="text-[10px] text-neutral-500 truncate">{adminProfile.email}</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setIsLogoutModalOpen(true);
-                }}
-                className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ========================================================================= */}
       {/* MAIN CONTENT AREA                                                         */}
       {/* ========================================================================= */}
-      <main className="flex-1 min-w-0 flex flex-col p-4 sm:p-6 lg:p-8 gap-6 max-w-7xl mx-auto w-full">
+      <main className="flex-1 min-w-0 flex flex-col p-4 sm:p-6 lg:p-8 gap-6 max-w-7xl mx-auto w-full pb-24 md:pb-8">
         {/* ----------------------------------------------------------------------- */}
         {/* TAB 1: RINGKASAN / OVERVIEW                                             */}
         {/* ----------------------------------------------------------------------- */}
         {activeTab === "overview" && (
           <div className="space-y-6 animate-fadeIn">
-            {/* Top Bar Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">
-                  Dashboard Ringkasan
-                </h1>
-                <p className="text-xs sm:text-sm text-neutral-500 font-medium mt-0.5">
-                  Pantauan performa platform, transaksi undangan, dan pendapatan secara real-time.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddTemplateModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs sm:text-sm font-bold shadow-xs transition-colors cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Tambah Template</span>
-                </button>
-              </div>
+            {/* Action Bar Mobile */}
+            <div className="flex items-center justify-end gap-2 sm:hidden">
+              <button
+                type="button"
+                onClick={() => setIsAddTemplateModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Template</span>
+              </button>
             </div>
 
             {/* Stat KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/80 shadow-xs flex flex-col justify-between">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-semibold text-neutral-500">Total Undangan</p>
                     <p className="text-xl sm:text-2xl font-black text-neutral-900 mt-1">1,248</p>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white shadow-xs">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white shadow-2xs">
                     <FileHeart className="w-5 h-5" />
                   </div>
                 </div>
@@ -652,7 +739,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/80 shadow-xs flex flex-col justify-between">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-semibold text-neutral-500">Perlu Verifikasi</p>
@@ -660,22 +747,22 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                       {ordersList.filter((o) => o.status === "MENUNGGU_VERIFIKASI").length} Pesanan
                     </p>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white shadow-xs">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white shadow-2xs">
                     <Clock className="w-5 h-5" />
                   </div>
                 </div>
-                <div className="mt-3 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md inline-block">
+                <div className="mt-3 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md inline-block border border-amber-200/60 border-b-[2px] border-b-amber-300/80">
                   Butuh aksi konfirmasi bukti
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/80 shadow-xs flex flex-col justify-between">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-semibold text-neutral-500">Omset Bulan Ini</p>
                     <p className="text-xl sm:text-2xl font-black text-neutral-900 mt-1">Rp 14.850.000</p>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow-xs">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow-2xs">
                     <DollarSign className="w-5 h-5" />
                   </div>
                 </div>
@@ -686,13 +773,13 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/80 shadow-xs flex flex-col justify-between">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-semibold text-neutral-500">Pengguna Terdaftar</p>
                     <p className="text-xl sm:text-2xl font-black text-neutral-900 mt-1">{usersList.length * 160}</p>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-purple-500 to-[#7d6aee] text-white shadow-xs">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-purple-500 to-[#7d6aee] text-white shadow-2xs">
                     <Users className="w-5 h-5" />
                   </div>
                 </div>
@@ -705,7 +792,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
 
             {/* Quick Chart Preview & Ringkasan Penjualan */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-neutral-200/80 shadow-xs">
+              <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
                   <div>
                     <h2 className="text-sm sm:text-base font-extrabold text-neutral-900">
@@ -716,7 +803,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                   <button
                     type="button"
                     onClick={() => setActiveTab("analytics")}
-                    className="text-xs font-bold text-[#7d6aee] hover:underline flex items-center gap-1"
+                    className="text-xs font-extrabold text-[#7d6aee] hover:underline flex items-center gap-1"
                   >
                     Lihat Analitik Lengkap <ChevronRight className="w-3.5 h-3.5" />
                   </button>
@@ -753,13 +840,13 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
               </div>
 
               {/* Template Terpopuler Box */}
-              <div className="bg-white rounded-2xl p-5 border border-neutral-200/80 shadow-xs flex flex-col justify-between">
+              <div className="bg-white rounded-2xl p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between">
                 <div>
                   <h2 className="text-sm sm:text-base font-extrabold text-neutral-900 pb-3 border-b border-neutral-100">
                     Template Terlaris
                   </h2>
                   <div className="mt-4 space-y-3">
-                    {templatesList.slice(0, 3).map((tpl, idx) => (
+                    {templatesList.slice(0, 3).map((tpl) => (
                       <div key={tpl.id} className="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-neutral-50 transition-colors">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <img
@@ -783,7 +870,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={() => setActiveTab("templates")}
-                  className="w-full mt-4 py-2 rounded-xl border border-purple-200 text-xs font-bold text-[#7d6aee] hover:bg-purple-50 transition-colors cursor-pointer"
+                  className="w-full mt-4 py-2.5 rounded-xl bg-white border border-purple-200 border-b-[3px] border-b-purple-300 text-xs font-extrabold text-[#7d6aee] hover:bg-purple-50 shadow-2xs active:scale-[0.99] active:border-b-[2px] transition-all cursor-pointer text-center"
                 >
                   Kelola Semua Template &rarr;
                 </button>
@@ -791,7 +878,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
             </div>
 
             {/* Pesanan Terbaru yang Butuh Perhatian */}
-            <div className="bg-white rounded-2xl border border-neutral-200/80 shadow-xs overflow-hidden">
+            <div className="bg-white rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs overflow-hidden">
               <div className="p-4 sm:p-5 border-b border-neutral-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h2 className="font-extrabold text-sm sm:text-base text-neutral-900">
@@ -804,7 +891,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={() => setActiveTab("finance")}
-                  className="text-xs font-bold text-[#7d6aee] hover:underline"
+                  className="text-xs font-extrabold text-[#7d6aee] hover:underline"
                 >
                   Buka Menu Keuangan &rarr;
                 </button>
@@ -852,7 +939,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                           <button
                             type="button"
                             onClick={() => setSelectedOrderModal(ord)}
-                            className="text-xs font-bold text-[#7d6aee] hover:underline cursor-pointer bg-purple-50 px-2.5 py-1 rounded-lg"
+                            className="text-xs font-extrabold text-[#7d6aee] hover:bg-purple-100 bg-purple-50 border border-purple-200/80 border-b-[2px] border-b-purple-300 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-[0.98] shadow-2xs"
                           >
                             Detail
                           </button>
@@ -871,25 +958,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
         {/* ----------------------------------------------------------------------- */}
         {activeTab === "users" && (
           <div className="space-y-6 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">
-                  Manajemen Pengguna Terdaftar
-                </h1>
-                <p className="text-xs sm:text-sm text-neutral-500 font-medium mt-0.5">
-                  Pantau seluruh data akun pengguna, riwayat belanja, dan status keaktifan.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-neutral-500 bg-white px-3 py-2 rounded-xl border border-neutral-200">
-                  Total: <strong className="text-neutral-900">{usersList.length} Akun</strong>
-                </span>
-              </div>
-            </div>
-
             {/* Filter & Search Bar */}
-            <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="relative flex-1 max-w-md">
                 <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -897,15 +967,18 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                   placeholder="Cari nama, email, atau nomor WhatsApp..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[#7d6aee]/30"
+                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
                 />
               </div>
 
               <div className="flex items-center gap-2">
+                <span className="text-xs font-extrabold text-purple-700 bg-purple-50 px-3 py-2 rounded-xl border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs">
+                  Total: <strong className="text-neutral-900">{usersList.length} Akun</strong>
+                </span>
                 <button
                   type="button"
                   onClick={() => showToast("Ekspor data pengguna berhasil!")}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-neutral-200 hover:bg-neutral-50 text-xs font-bold text-neutral-700"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 hover:bg-neutral-50 text-xs font-extrabold text-neutral-700 shadow-2xs active:scale-[0.99] active:border-b-[2px] transition-all cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Ekspor CSV</span>
@@ -914,7 +987,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
             </div>
 
             {/* Users Data Table */}
-            <div className="bg-white rounded-2xl border border-neutral-200/80 shadow-xs overflow-hidden">
+            <div className="bg-white rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="bg-neutral-50/70 text-neutral-500 font-semibold border-b border-neutral-200/80 text-[11px] uppercase tracking-wider">
@@ -997,7 +1070,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                             <button
                               type="button"
                               onClick={() => setSelectedUserModal(usr)}
-                              className="text-xs font-bold text-[#7d6aee] hover:underline cursor-pointer bg-purple-50 px-2.5 py-1 rounded-lg"
+                              className="text-xs font-extrabold text-[#7d6aee] hover:bg-purple-100 bg-purple-50 border border-purple-200/80 border-b-[2px] border-b-purple-300 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-[0.98] shadow-2xs"
                             >
                               Kelola
                             </button>
@@ -1016,22 +1089,14 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
         {/* ----------------------------------------------------------------------- */}
         {activeTab === "analytics" && (
           <div className="space-y-6 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">
-                  Grafik Pembelian &amp; Tren Transaksi
-                </h1>
-                <p className="text-xs sm:text-sm text-neutral-500 font-medium mt-0.5">
-                  Visualisasi performa penjualan paket undangan dan metode pembayaran favorit.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-neutral-200">
+            {/* Filter Waktu */}
+            <div className="flex items-center justify-end">
+              <div className="flex items-center gap-1.5 p-1 bg-white rounded-xl border border-purple-100 border-b-[2px] border-b-purple-200/70 shadow-2xs select-none">
                 <button
                   type="button"
                   onClick={() => setTimeRange("7d")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
-                    timeRange === "7d" ? "bg-[#7d6aee] text-white" : "text-neutral-600 hover:bg-neutral-100"
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    timeRange === "7d" ? "bg-[#7d6aee] text-white shadow-2xs" : "text-neutral-500 hover:text-neutral-800"
                   }`}
                 >
                   7 Hari
@@ -1039,8 +1104,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={() => setTimeRange("30d")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
-                    timeRange === "30d" ? "bg-[#7d6aee] text-white" : "text-neutral-600 hover:bg-neutral-100"
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    timeRange === "30d" ? "bg-[#7d6aee] text-white shadow-2xs" : "text-neutral-500 hover:text-neutral-800"
                   }`}
                 >
                   30 Hari
@@ -1048,8 +1113,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={() => setTimeRange("1y")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
-                    timeRange === "1y" ? "bg-[#7d6aee] text-white" : "text-neutral-600 hover:bg-neutral-100"
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    timeRange === "1y" ? "bg-[#7d6aee] text-white shadow-2xs" : "text-neutral-500 hover:text-neutral-800"
                   }`}
                 >
                   1 Tahun
@@ -1059,17 +1124,17 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
 
             {/* Metric KPI Row */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <p className="text-xs font-semibold text-neutral-400">Total Transaksi Selesai</p>
                 <p className="text-2xl font-black text-neutral-900 mt-1">142 Pesanan</p>
                 <span className="text-xs font-bold text-emerald-600 mt-2 block">+24% vs periode lalu</span>
               </div>
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <p className="text-xs font-semibold text-neutral-400">Rata-rata Nilai Transaksi (AOV)</p>
                 <p className="text-2xl font-black text-neutral-900 mt-1">Rp 148.500</p>
                 <span className="text-xs font-bold text-neutral-500 mt-2 block">Dominan paket Gold & Platinum</span>
               </div>
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <p className="text-xs font-semibold text-neutral-400">Tingkat Konversi Pembayaran</p>
                 <p className="text-2xl font-black text-emerald-600 mt-1">94.2%</p>
                 <span className="text-xs font-bold text-emerald-600 mt-2 block">QRIS terbukti paling cepat</span>
@@ -1077,7 +1142,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
             </div>
 
             {/* Big Chart Section */}
-            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-neutral-200/80 shadow-xs space-y-4">
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-extrabold text-neutral-900">
@@ -1131,7 +1196,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
 
             {/* Breakdown Metode Pembayaran */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <h3 className="text-sm font-extrabold text-neutral-900 mb-4">
                   Metode Pembayaran Paling Digunakan
                 </h3>
@@ -1178,7 +1243,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <h3 className="text-sm font-extrabold text-neutral-900 mb-4">
                   Kategori Undangan Paling Laris
                 </h3>
@@ -1206,36 +1271,25 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
         {/* ----------------------------------------------------------------------- */}
         {activeTab === "finance" && (
           <div className="space-y-6 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">
-                  Keuangan &amp; Verifikasi Transaksi
-                </h1>
-                <p className="text-xs sm:text-sm text-neutral-500 font-medium mt-0.5">
-                  Validasi transfer bank, konfirmasi bukti pembayaran, dan riwayat arus kas platform.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => showToast("Laporan keuangan berhasil diunduh!")}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#7d6aee] text-white text-xs font-bold shadow-xs hover:bg-[#6b58e0]"
-                >
-                  <Receipt className="w-3.5 h-3.5" />
-                  <span>Cetak Rekap Keuangan</span>
-                </button>
-              </div>
+            <div className="flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => showToast("Laporan keuangan berhasil diunduh!")}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
+              >
+                <Receipt className="w-3.5 h-3.5" />
+                <span>Cetak Rekap Keuangan</span>
+              </button>
             </div>
 
             {/* Financial Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <span className="text-xs font-semibold text-neutral-400">Total Pemasukan Bersih</span>
                 <p className="text-2xl font-black text-emerald-600 mt-1">Rp 14.850.000</p>
                 <span className="text-[11px] text-neutral-500 mt-1 block">Bulan Berjalan (Oktober 2026)</span>
               </div>
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <span className="text-xs font-semibold text-neutral-400">Pending Verifikasi Manual</span>
                 <p className="text-2xl font-black text-amber-600 mt-1">
                   Rp{" "}
@@ -1248,7 +1302,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                   {ordersList.filter((o) => o.status === "MENUNGGU_VERIFIKASI").length} pesanan menanti konfirmasi
                 </span>
               </div>
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <span className="text-xs font-semibold text-neutral-400">Biaya Payment Gateway (Est.)</span>
                 <p className="text-2xl font-black text-neutral-900 mt-1">Rp 124.500</p>
                 <span className="text-[11px] text-neutral-500 mt-1 block">0.7% QRIS MDR Rate</span>
@@ -1256,7 +1310,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
             </div>
 
             {/* Orders Data Table */}
-            <div className="bg-white rounded-2xl border border-neutral-200/80 shadow-xs overflow-hidden">
+            <div className="bg-white rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs overflow-hidden">
               <div className="p-4 sm:p-5 border-b border-neutral-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h2 className="font-extrabold text-sm sm:text-base text-neutral-900">
                   Daftar Seluruh Pesanan
@@ -1268,7 +1322,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                     placeholder="Cari no invoice / pemesan..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-3 py-1.5 text-xs rounded-xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[#7d6aee]/30 w-full sm:w-64"
+                    className="pl-9 pr-3 py-2 text-xs rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee] w-full sm:w-64"
                   />
                 </div>
               </div>
@@ -1333,7 +1387,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                             <button
                               type="button"
                               onClick={() => setSelectedOrderModal(ord)}
-                              className="text-xs font-bold text-[#7d6aee] hover:bg-purple-100 bg-purple-50 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                              className="text-xs font-extrabold text-[#7d6aee] hover:bg-purple-100 bg-purple-50 border border-purple-200/80 border-b-[2px] border-b-purple-300 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-[0.98] shadow-2xs"
                             >
                               Detail &amp; Verifikasi
                             </button>
@@ -1352,54 +1406,43 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
         {/* ----------------------------------------------------------------------- */}
         {activeTab === "templates" && (
           <div className="space-y-6 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">
-                  Pantauan Template &amp; Penggunanya
-                </h1>
-                <p className="text-xs sm:text-sm text-neutral-500 font-medium mt-0.5">
-                  Statistik popularitas setiap desain template, jumlah pemakai aktif, dan pendapatan yang dihasilkan.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddTemplateModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs sm:text-sm font-bold shadow-xs transition-colors cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Tambah Template Baru</span>
-                </button>
-              </div>
+            <div className="flex items-center justify-end sm:hidden">
+              <button
+                type="button"
+                onClick={() => setIsAddTemplateModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Template Baru</span>
+              </button>
             </div>
 
             {/* Template Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <span className="text-xs text-neutral-400 font-semibold">Total Template Aktif</span>
                 <p className="text-xl font-black text-neutral-900 mt-1">{templatesList.length} Desain</p>
               </div>
-              <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <span className="text-xs text-neutral-400 font-semibold">Total Undangan Dibuat</span>
                 <p className="text-xl font-black text-neutral-900 mt-1">
                   {templatesList.reduce((acc, t) => acc + t.totalUsers, 0)} Undangan
                 </p>
               </div>
-              <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <span className="text-xs text-neutral-400 font-semibold">Akumulasi Omset Template</span>
                 <p className="text-xl font-black text-emerald-600 mt-1">
                   Rp {(templatesList.reduce((acc, t) => acc + t.totalRevenue, 0) / 1000000).toFixed(1)} Juta
                 </p>
               </div>
-              <div className="bg-white p-4 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <div className="bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
                 <span className="text-xs text-neutral-400 font-semibold">Rating Kepuasan Tamu</span>
                 <p className="text-xl font-black text-amber-500 mt-1">4.9 / 5.0 ⭐</p>
               </div>
             </div>
 
             {/* Templates Data Table */}
-            <div className="bg-white rounded-2xl border border-neutral-200/80 shadow-xs overflow-hidden">
+            <div className="bg-white rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="bg-neutral-50/70 text-neutral-500 font-semibold border-b border-neutral-200/80 text-[11px] uppercase tracking-wider">
@@ -1458,11 +1501,11 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <div className="inline-flex items-center gap-1">
+                          <div className="inline-flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => showToast(`Membuka demo pratinjau ${tpl.name}`)}
-                              className="p-1.5 rounded-lg border border-neutral-200 text-neutral-600 hover:text-[#7d6aee] hover:bg-neutral-50"
+                              className="p-1.5 rounded-lg border border-purple-200/80 border-b-[2px] border-b-purple-300 bg-white text-neutral-600 hover:text-[#7d6aee] hover:bg-purple-50 active:scale-[0.98] shadow-2xs"
                               title="Lihat Pratinjau Template"
                             >
                               <Eye className="w-3.5 h-3.5" />
@@ -1470,7 +1513,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                             <button
                               type="button"
                               onClick={() => showToast(`Edit template ${tpl.name}`)}
-                              className="p-1.5 rounded-lg border border-neutral-200 text-neutral-600 hover:text-[#7d6aee] hover:bg-neutral-50"
+                              className="p-1.5 rounded-lg border border-purple-200/80 border-b-[2px] border-b-purple-300 bg-white text-neutral-600 hover:text-[#7d6aee] hover:bg-purple-50 active:scale-[0.98] shadow-2xs"
                               title="Edit Template"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
@@ -1491,25 +1534,14 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
         {/* ----------------------------------------------------------------------- */}
         {activeTab === "invitations" && (
           <div className="space-y-6 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">
-                  Undangan Tayang &amp; Publikasi Tamu
-                </h1>
-                <p className="text-xs sm:text-sm text-neutral-500 font-medium mt-0.5">
-                  Pantau tautan website undangan pernikahan yang sedang aktif diakses oleh para tamu.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
-                  {invitationsList.length} Undangan Online
-                </span>
-              </div>
+            <div className="flex items-center justify-end">
+              <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 border-b-[2px] border-b-emerald-300 shadow-2xs">
+                {invitationsList.length} Undangan Online
+              </span>
             </div>
 
             {/* Invitations Table */}
-            <div className="bg-white rounded-2xl border border-neutral-200/80 shadow-xs overflow-hidden">
+            <div className="bg-white rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="bg-neutral-50/70 text-neutral-500 font-semibold border-b border-neutral-200/80 text-[11px] uppercase tracking-wider">
@@ -1537,7 +1569,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                           <span className="text-neutral-400 text-xs"> / {inv.guestCount} Hadir</span>
                         </td>
                         <td className="py-3 px-4">
-                          <span className="font-mono text-xs text-[#7d6aee] bg-purple-50 px-2 py-0.5 rounded-md">
+                          <span className="font-mono text-xs text-[#7d6aee] bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/60">
                             satucerita.id/{inv.slug}
                           </span>
                         </td>
@@ -1546,7 +1578,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                             href={`/${inv.slug}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-bold text-[#7d6aee] hover:underline bg-purple-50 px-2.5 py-1 rounded-lg"
+                            className="inline-flex items-center gap-1 text-xs font-extrabold text-[#7d6aee] hover:bg-purple-100 bg-purple-50 border border-purple-200/80 border-b-[2px] border-b-purple-300 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-[0.98] shadow-2xs"
                           >
                             <span>Buka</span>
                             <ExternalLink className="w-3 h-3" />
@@ -1566,18 +1598,70 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
         {/* ----------------------------------------------------------------------- */}
         {activeTab === "settings" && (
           <div className="space-y-6 animate-fadeIn">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">
-                Pengaturan Sistem Platform
-              </h1>
-              <p className="text-xs sm:text-sm text-neutral-500 font-medium mt-0.5">
-                Konfigurasi akun rekening pembayaran, gateway WhatsApp, dan koneksi Supabase.
-              </p>
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Profil Administrator & Kontak WhatsApp */}
+              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-[#7d6aee]" />
+                    <h3 className="text-sm font-extrabold text-neutral-900">
+                      Profil Administrator (Tersimpan di Cache)
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditAdminName(adminProfile.name);
+                      setEditAdminEmail(adminProfile.email);
+                      setEditAdminPhone(adminProfile.phone);
+                      setEditAdminAvatar(adminProfile.avatar);
+                      setIsEditAdminProfileOpen(true);
+                    }}
+                    className="text-xs font-extrabold text-[#7d6aee] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Edit Profil</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-50/50 border border-purple-100">
+                  <img
+                    src={adminProfile.avatar}
+                    alt={adminProfile.name}
+                    className="size-14 rounded-full object-cover border-2 border-[#7d6aee] shadow-sm shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-neutral-900 truncate">{adminProfile.name}</h4>
+                    <p className="text-xs text-neutral-500 truncate">{adminProfile.email}</p>
+                    <p className="text-xs font-bold text-emerald-600 mt-0.5 flex items-center gap-1">
+                      <Phone className="w-3 h-3" />
+                      <span>{adminProfile.phone || "+62 851-8797-8443"}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-xs text-neutral-500">
+                  <p>
+                    Perubahan foto profil, nama, dan nomor WhatsApp admin langsung disimpan ke cache browser secara otomatis.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditAdminName(adminProfile.name);
+                      setEditAdminEmail(adminProfile.email);
+                      setEditAdminPhone(adminProfile.phone);
+                      setEditAdminAvatar(adminProfile.avatar);
+                      setIsEditAdminProfileOpen(true);
+                    }}
+                    className="w-full py-2.5 bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold rounded-xl border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
+                  >
+                    Ubah Foto Profil &amp; Nomor WhatsApp
+                  </button>
+                </div>
+              </div>
+
               {/* Payment Gateway Config */}
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs space-y-4">
+              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-[#7d6aee]" />
@@ -1585,7 +1669,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                       Rekening Pembayaran &amp; QRIS
                     </h3>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                     Aktif
                   </span>
                 </div>
@@ -1597,8 +1681,11 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                     </label>
                     <input
                       type="text"
-                      defaultValue="882-019-4821 a.n PT SATU CERITA DIGITAL"
-                      className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 bg-neutral-50 font-mono"
+                      value={adminSettings.bankBca}
+                      onChange={(e) =>
+                        setAdminSettings({ ...adminSettings, bankBca: e.target.value })
+                      }
+                      className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 bg-neutral-50 font-mono focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
                     />
                   </div>
 
@@ -1608,45 +1695,24 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                     </label>
                     <input
                       type="text"
-                      defaultValue="NMID: ID1020304958291"
-                      className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 bg-neutral-50 font-mono"
+                      value={adminSettings.qrisNmid}
+                      onChange={(e) =>
+                        setAdminSettings({ ...adminSettings, qrisNmid: e.target.value })
+                      }
+                      className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 bg-neutral-50 font-mono focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
                     />
                   </div>
 
                   <button
                     type="button"
-                    onClick={() => showToast("Pengaturan pembayaran berhasil disimpan!")}
-                    className="w-full py-2 bg-[#7d6aee] text-white text-xs font-bold rounded-xl hover:bg-[#6b58e0] cursor-pointer"
+                    onClick={() => {
+                      saveAdminSettingsCache(adminSettings);
+                      showToast("Pengaturan rekening pembayaran berhasil disimpan ke cache!");
+                    }}
+                    className="w-full py-2.5 bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold rounded-xl border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
                   >
-                    Simpan Perubahan
+                    Simpan Pengaturan ke Cache
                   </button>
-                </div>
-              </div>
-
-              {/* Database & Supabase Status */}
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    <h3 className="text-sm font-extrabold text-neutral-900">
-                      Koneksi Backend Supabase
-                    </h3>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                    Terkonfigurasi
-                  </span>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <p className="text-neutral-500">
-                    File migrasi database dan skema PostgreSQL telah diatur di direktori:
-                  </p>
-                  <div className="p-3 rounded-xl bg-neutral-900 text-neutral-200 font-mono text-[11px] leading-relaxed">
-                    supabase/migrations/20260101000000_initial_schema.sql
-                  </div>
-                  <p className="text-neutral-500">
-                    Tabel: <code className="font-bold text-neutral-800">users, orders, templates, invitations, rsvps, guestbook</code>
-                  </p>
                 </div>
               </div>
             </div>
@@ -1654,12 +1720,164 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
         )}
       </main>
 
+      {/* Floating Bottom Nav for Satu Cerita Dash (Hanya di Mobile, sama persis dengan app) */}
+      {/* Paksakan menampilkan 6 icon menu TANPA judul (hilangkan menu Undangan Tayang) */}
+      <nav
+        id="satucerita-dash-bottom-navbar"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
+        aria-label="Satu Cerita Dash Navigation"
+      >
+        <div className="max-w-md mx-auto grid grid-cols-6 h-16 px-1">
+          {/* 1. Ringkasan */}
+          <button
+            type="button"
+            onClick={() => handleSelectTab("overview")}
+            className={`flex items-center justify-center transition-all cursor-pointer relative ${
+              activeTab === "overview"
+                ? "text-[#7d6aee]"
+                : "text-neutral-500 hover:text-neutral-900"
+            }`}
+            title="Ringkasan"
+            aria-label="Ringkasan"
+          >
+            <div
+              className={`p-2 rounded-xl transition-all ${
+                activeTab === "overview"
+                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                  : "hover:bg-neutral-100"
+              }`}
+            >
+              <LayoutDashboard className="w-5 h-5" />
+            </div>
+          </button>
+
+          {/* 2. Pengguna Terdaftar */}
+          <button
+            type="button"
+            onClick={() => handleSelectTab("users")}
+            className={`flex items-center justify-center transition-all cursor-pointer relative ${
+              activeTab === "users"
+                ? "text-[#7d6aee]"
+                : "text-neutral-500 hover:text-neutral-900"
+            }`}
+            title="Pengguna Terdaftar"
+            aria-label="Pengguna Terdaftar"
+          >
+            <div
+              className={`p-2 rounded-xl transition-all ${
+                activeTab === "users"
+                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                  : "hover:bg-neutral-100"
+              }`}
+            >
+              <Users className="w-5 h-5" />
+            </div>
+          </button>
+
+          {/* 3. Grafik & Penjualan */}
+          <button
+            type="button"
+            onClick={() => handleSelectTab("analytics")}
+            className={`flex items-center justify-center transition-all cursor-pointer relative ${
+              activeTab === "analytics"
+                ? "text-[#7d6aee]"
+                : "text-neutral-500 hover:text-neutral-900"
+            }`}
+            title="Grafik & Penjualan"
+            aria-label="Grafik & Penjualan"
+          >
+            <div
+              className={`p-2 rounded-xl transition-all ${
+                activeTab === "analytics"
+                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                  : "hover:bg-neutral-100"
+              }`}
+            >
+              <BarChart3 className="w-5 h-5" />
+            </div>
+          </button>
+
+          {/* 4. Keuangan & Transaksi */}
+          <button
+            type="button"
+            onClick={() => handleSelectTab("finance")}
+            className={`flex items-center justify-center transition-all cursor-pointer relative ${
+              activeTab === "finance"
+                ? "text-[#7d6aee]"
+                : "text-neutral-500 hover:text-neutral-900"
+            }`}
+            title="Keuangan & Transaksi"
+            aria-label="Keuangan & Transaksi"
+          >
+            <div
+              className={`p-2 rounded-xl transition-all relative ${
+                activeTab === "finance"
+                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                  : "hover:bg-neutral-100"
+              }`}
+            >
+              <DollarSign className="w-5 h-5" />
+              {ordersList.filter((o) => o.status === "MENUNGGU_VERIFIKASI").length > 0 && (
+                <span className="absolute -top-1 -right-1 size-2.5 bg-amber-500 rounded-full ring-2 ring-white" />
+              )}
+            </div>
+          </button>
+
+          {/* 5. Pantauan Template */}
+          <button
+            type="button"
+            onClick={() => handleSelectTab("templates")}
+            className={`flex items-center justify-center transition-all cursor-pointer relative ${
+              activeTab === "templates"
+                ? "text-[#7d6aee]"
+                : "text-neutral-500 hover:text-neutral-900"
+            }`}
+            title="Pantauan Template"
+            aria-label="Pantauan Template"
+          >
+            <div
+              className={`p-2 rounded-xl transition-all ${
+                activeTab === "templates"
+                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                  : "hover:bg-neutral-100"
+              }`}
+            >
+              <Palette className="w-5 h-5" />
+            </div>
+          </button>
+
+          {/* 6. Pengaturan Platform */}
+          <button
+            type="button"
+            onClick={() => handleSelectTab("settings")}
+            className={`flex items-center justify-center transition-all cursor-pointer relative ${
+              activeTab === "settings"
+                ? "text-[#7d6aee]"
+                : "text-neutral-500 hover:text-neutral-900"
+            }`}
+            title="Pengaturan Platform"
+            aria-label="Pengaturan Platform"
+          >
+            <div
+              className={`p-2 rounded-xl transition-all ${
+                activeTab === "settings"
+                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                  : "hover:bg-neutral-100"
+              }`}
+            >
+              <Settings className="w-5 h-5" />
+            </div>
+          </button>
+        </div>
+      </nav>
+    </div>
+
       {/* ========================================================================= */}
       {/* MODAL: DETAIL USER & EDIT                                                 */}
       {/* ========================================================================= */}
       {selectedUserModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-neutral-100 space-y-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <h3 className="text-base font-bold text-neutral-900">Detail Pengguna</h3>
               <button
@@ -1711,7 +1929,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={() => setSelectedUserModal(null)}
-                className="px-4 py-2 rounded-xl border border-neutral-200 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+                className="px-4 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-xs font-bold text-neutral-600 hover:bg-neutral-50 active:scale-[0.99] active:border-b-[2px] cursor-pointer transition-all"
               >
                 Tutup
               </button>
@@ -1721,7 +1939,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                   showToast(`Pesan WhatsApp dikirimkan ke ${selectedUserModal.name}`);
                   setSelectedUserModal(null);
                 }}
-                className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold border border-emerald-500 border-b-[3px] border-b-emerald-800 shadow-2xs active:scale-[0.99] active:border-b-[2px] flex items-center gap-1.5 cursor-pointer transition-all"
               >
                 <Phone className="w-3.5 h-3.5" />
                 <span>Hubungi WA</span>
@@ -1736,7 +1954,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
       {/* ========================================================================= */}
       {selectedOrderModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-100 space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <div>
                 <h3 className="text-base font-bold text-neutral-900">
@@ -1804,7 +2022,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={() => setSelectedOrderModal(null)}
-                className="px-4 py-2 rounded-xl border border-neutral-200 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+                className="px-4 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-xs font-bold text-neutral-600 hover:bg-neutral-50 active:scale-[0.99] active:border-b-[2px] cursor-pointer transition-all"
               >
                 Tutup
               </button>
@@ -1812,7 +2030,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={() => handleApproveOrder(selectedOrderModal.id)}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-extrabold hover:bg-emerald-700 shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-extrabold hover:bg-emerald-700 border border-emerald-500 border-b-[3px] border-b-emerald-800 shadow-2xs active:scale-[0.99] active:border-b-[2px] flex items-center gap-1.5 cursor-pointer transition-all"
                 >
                   <Check className="w-4 h-4" />
                   <span>Setujui &amp; Tandai Lunas</span>
@@ -1828,7 +2046,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
       {/* ========================================================================= */}
       {isAddTemplateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-neutral-100 space-y-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <h3 className="text-base font-bold text-neutral-900">Tambah Template Baru</h3>
               <button
@@ -1848,7 +2066,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 <input
                   type="text"
                   placeholder="Contoh: Golden Serenade Royal"
-                  className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 focus:outline-none focus:border-[#7d6aee]"
+                  className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
                 />
               </div>
 
@@ -1857,7 +2075,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                   <label className="text-xs font-semibold text-neutral-700 block mb-1">
                     Kategori
                   </label>
-                  <select className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 bg-white">
+                  <select className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 bg-white">
                     <option>Floral &amp; Elegant</option>
                     <option>Luxury &amp; Modern</option>
                     <option>Tradisional Adat</option>
@@ -1868,7 +2086,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                   <label className="text-xs font-semibold text-neutral-700 block mb-1">
                     Tier Paket
                   </label>
-                  <select className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 bg-white">
+                  <select className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 bg-white">
                     <option>Gold Tier</option>
                     <option>Silver Tier</option>
                     <option>Platinum Tier</option>
@@ -1883,7 +2101,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                 <input
                   type="number"
                   defaultValue={149000}
-                  className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 focus:outline-none focus:border-[#7d6aee]"
+                  className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
                 />
               </div>
             </div>
@@ -1892,7 +2110,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={() => setIsAddTemplateModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-neutral-200 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+                className="px-4 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-xs font-bold text-neutral-600 hover:bg-neutral-50 active:scale-[0.99] active:border-b-[2px] cursor-pointer transition-all"
               >
                 Batal
               </button>
@@ -1902,9 +2120,149 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
                   showToast("Template baru berhasil ditambahkan ke katalog!");
                   setIsAddTemplateModalOpen(false);
                 }}
-                className="px-5 py-2 rounded-xl bg-[#7d6aee] text-white text-xs font-bold hover:bg-[#6b58e0] shadow-xs cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] cursor-pointer transition-all"
               >
                 Simpan Template
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: EDIT PROFIL ADMINISTRATOR (FOTO & WHATSAPP)                        */}
+      {/* ========================================================================= */}
+      {isEditAdminProfileOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-neutral-100">
+              <div className="flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-[#7d6aee]" />
+                <h3 className="text-base font-bold text-neutral-900">
+                  Edit Profil Administrator
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditAdminProfileOpen(false)}
+                className="size-8 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-400 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Upload Foto Profil */}
+              <div className="flex flex-col items-center">
+                <div className="relative group">
+                  <img
+                    src={editAdminAvatar}
+                    alt="Preview Avatar Admin"
+                    className="size-20 rounded-full object-cover border-2 border-[#7d6aee] shadow-sm mb-3"
+                  />
+                  <label className="absolute bottom-3 right-0 size-7 bg-[#7d6aee] hover:bg-[#6b58e0] text-white rounded-full flex items-center justify-center cursor-pointer shadow-md transition-transform active:scale-95">
+                    <Camera className="w-3.5 h-3.5" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const dataUrl = await convertFileToDataUrl(file);
+                            setEditAdminAvatar(dataUrl);
+                          } catch (_err) {}
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-xs font-bold text-neutral-700 hover:bg-neutral-50 cursor-pointer shadow-2xs active:scale-[0.99] active:border-b-[2px] transition-all">
+                  <Upload className="w-3.5 h-3.5 text-[#7d6aee]" />
+                  <span>Ganti Foto Profil</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        try {
+                          const dataUrl = await convertFileToDataUrl(file);
+                          setEditAdminAvatar(dataUrl);
+                        } catch (_err) {}
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-neutral-800 block mb-1">
+                  Nama Administrator
+                </label>
+                <input
+                  type="text"
+                  value={editAdminName}
+                  onChange={(e) => setEditAdminName(e.target.value)}
+                  className="w-full bg-white border border-neutral-200 border-b-[2px] border-b-neutral-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-neutral-800 block mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={editAdminEmail}
+                  onChange={(e) => setEditAdminEmail(e.target.value)}
+                  className="w-full bg-white border border-neutral-200 border-b-[2px] border-b-neutral-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-neutral-800 block mb-1">
+                  Nomor WhatsApp Administrator
+                </label>
+                <input
+                  type="text"
+                  value={editAdminPhone}
+                  onChange={(e) => setEditAdminPhone(e.target.value)}
+                  placeholder="+62 851-xxxx-xxxx"
+                  className="w-full bg-white border border-neutral-200 border-b-[2px] border-b-neutral-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
+                />
+                <p className="text-[11px] text-neutral-400 mt-1">
+                  Nomor WhatsApp ini disimpan di cache browser dan digunakan untuk notifikasi sistem.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 px-6 py-4 bg-neutral-50 border-t border-neutral-100">
+              <button
+                type="button"
+                onClick={() => setIsEditAdminProfileOpen(false)}
+                className="px-4 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-xs font-bold text-neutral-600 hover:bg-neutral-50 active:scale-[0.99] active:border-b-[2px] cursor-pointer transition-all"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const updated = saveAdminProfileCache({
+                    name: editAdminName,
+                    email: editAdminEmail,
+                    phone: editAdminPhone,
+                    avatar: editAdminAvatar,
+                  });
+                  setAdminProfile(updated);
+                  setIsEditAdminProfileOpen(false);
+                  showToast("Profil admin & nomor WhatsApp berhasil disimpan ke cache!");
+                }}
+                className="px-5 py-2.5 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] cursor-pointer transition-all"
+              >
+                Simpan ke Cache
               </button>
             </div>
           </div>
@@ -1916,7 +2274,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
       {/* ========================================================================= */}
       {isLogoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
-          <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden p-6 text-center">
+          <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 overflow-hidden p-6 text-center">
             <div className="size-14 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto mb-3">
               <LogOut className="w-6 h-6" />
             </div>
@@ -1931,14 +2289,14 @@ export const AdminDash: React.FC<AdminDashProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={() => setIsLogoutModalOpen(false)}
-                className="py-2.5 px-4 rounded-xl border border-neutral-200 text-neutral-700 text-xs font-bold hover:bg-neutral-50 cursor-pointer"
+                className="py-2.5 px-4 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-neutral-700 text-xs font-bold hover:bg-neutral-50 active:scale-[0.99] active:border-b-[2px] cursor-pointer transition-all"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handlePerformLogout}
-                className="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold shadow-sm cursor-pointer"
+                className="py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold border border-red-500 border-b-[3px] border-b-red-900 shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] cursor-pointer transition-all"
               >
                 Ya, Keluar
               </button>

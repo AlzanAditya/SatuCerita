@@ -72,6 +72,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             isSignUp={isSignUp}
             onToggleSignUp={() => setIsSignUp(!isSignUp)}
             onNavigateToKebijakan={() => onNavigate(kebijakanPath)}
+            onForgotPassword={() => {
+              if (
+                typeof window !== "undefined" &&
+                window.location.hostname.includes("satucerita.id")
+              ) {
+                window.location.href = "https://dash.satucerita.id";
+              } else {
+                onNavigate(PATHS.dash);
+              }
+            }}
           />
         </div>
       </div>

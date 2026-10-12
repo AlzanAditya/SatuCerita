@@ -44,6 +44,14 @@ import {
 import { AppNavbar } from "@/components/app/AppNavbar";
 import { InputBase } from "@/components/ui/input";
 import { InputGroup } from "@/components/ui/input-group";
+import {
+  getUserProfileCache,
+  saveUserProfileCache,
+  convertFileToDataUrl,
+  setCache,
+  CACHE_KEYS,
+  DEFAULT_USER_PROFILE,
+} from "@/lib/cache";
 
 export interface UserAppProps {
   activeTab?: "home" | "task" | "proses" | "chat" | "app" | "joki" | "katalog" | "profile" | "bayar";
@@ -131,30 +139,12 @@ export const UserApp: React.FC<UserAppProps> = ({
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   // User Profile
-  const DEFAULT_PROFILE = {
-    name: "Alzan Bella",
-    email: "alzanaditya2@gmail.com",
-    phone: "0851-8797-8443",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-    memberSince: "Oktober 2026",
-  };
+  const DEFAULT_PROFILE = DEFAULT_USER_PROFILE;
 
-  const [userProfile, setUserProfile] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("satucerita_user_profile");
-        if (saved) return JSON.parse(saved);
-      } catch (_e) {}
-    }
-    return DEFAULT_PROFILE;
-  });
+  const [userProfile, setUserProfile] = useState(() => getUserProfileCache());
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("satucerita_user_profile", JSON.stringify(userProfile));
-      } catch (_e) {}
-    }
+    saveUserProfileCache(userProfile);
   }, [userProfile]);
 
   // Format initial phone for WA input (strip leading 0 or 62)
@@ -339,14 +329,9 @@ export const UserApp: React.FC<UserAppProps> = ({
       avatar: editAvatarUrl,
     };
     setUserProfile(updated);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("satucerita_user_profile", JSON.stringify(updated));
-        window.dispatchEvent(new Event("satucerita_profile_updated"));
-      } catch (_e) {}
-    }
+    saveUserProfileCache(updated);
     setIsEditProfileOpen(false);
-    showToast("Profil berhasil diperbarui!");
+    showToast("Profil berhasil diperbarui dan disimpan ke cache!");
   };
 
   // Perform logout
@@ -358,14 +343,15 @@ export const UserApp: React.FC<UserAppProps> = ({
   };
 
   // Avatar upload handler
-  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditAvatarUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const dataUrl = await convertFileToDataUrl(file);
+        setEditAvatarUrl(dataUrl);
+      } catch (_err) {
+        showToast("Gagal membaca file gambar.");
+      }
     }
   };
 

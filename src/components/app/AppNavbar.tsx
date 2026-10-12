@@ -8,7 +8,10 @@ export interface AppNavbarProps {
   onNavigate: (path: string) => void;
   activeTab?: string;
   title?: string;
+  action?: React.ReactNode;
+  hideAvatar?: boolean;
   onEditProfile?: () => void;
+  onLogout?: () => void;
   userProfile?: {
     name: string;
     email: string;
@@ -23,7 +26,10 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
   onNavigate,
   activeTab = "home",
   title,
+  action,
+  hideAvatar = false,
   onEditProfile,
+  onLogout,
   userProfile: propUserProfile,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -111,7 +117,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-foreground/80 bg-background/90 backdrop-blur-md px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between transition-all select-none">
+    <header className="sticky top-0 z-40 w-full border-b border-purple-100 border-b-[2px] border-b-purple-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between transition-all select-none shadow-2xs">
       {/* SISI KIRI: Judul halaman saat ini */}
       <div className="flex items-center gap-2">
         <h1 className="text-lg md:text-xl font-extrabold tracking-tight leading-tight text-text-primary">
@@ -119,8 +125,9 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
         </h1>
       </div>
 
-      {/* SISI KANAN: Lonceng Notifikasi & Avatar Profil */}
+      {/* SISI KANAN: Action Opsional + Lonceng Notifikasi & Avatar Profil */}
       <div className="flex items-center gap-2 sm:gap-2.5">
+        {action}
         <button
           type="button"
           onClick={() => setHasUnreadNotification(false)}
@@ -134,7 +141,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
           )}
         </button>
 
-        {activeTab !== "profile" && activeTab !== "profil" && (
+        {!hideAvatar && activeTab !== "profile" && activeTab !== "profil" && activeTab !== "settings" && activeTab !== "pengaturan" && (
           <div className="relative" ref={menuRef}>
             <button
               type="button"
@@ -170,13 +177,33 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
                   </p>
                 </div>
 
-                <div>
+                <div className="space-y-1.5">
+                  {onEditProfile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onEditProfile();
+                      }}
+                      className="w-full flex items-center justify-center gap-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold text-xs sm:text-sm py-2 rounded-lg sm:rounded-xl transition-all cursor-pointer text-center select-none"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-[#7d6aee]" />
+                      <span>Edit Profil</span>
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={() => handleNav(PATHS.home)}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      if (onLogout) {
+                        onLogout();
+                      } else {
+                        handleNav(PATHS.home);
+                      }
+                    }}
                     className="w-full bg-gradient-to-r from-[#7d6aee] to-[#ad9fff] hover:opacity-95 text-white font-bold text-xs sm:text-sm py-2 sm:py-2.5 rounded-lg sm:rounded-xl transition-all cursor-pointer shadow-xs active:scale-[0.99] text-center select-none"
                   >
-                    Log Out (Ke Landing Page)
+                    Log Out
                   </button>
                 </div>
               </div>

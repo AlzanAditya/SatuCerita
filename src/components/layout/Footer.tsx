@@ -64,10 +64,10 @@ export const Footer: React.FC<FooterProps> = ({
 
             {/* Slogan Utama & Secondary: Jarak atas dan bawah diperlebar */}
             <div className="mt-7 sm:mt-9 mb-2 sm:mb-4">
-              <p className="text-lg sm:text-xl md:text-2xl font-extrabold text-white leading-snug">
+              <p className="text-lg sm:text-xl md:text-[18px] font-extrabold text-white leading-snug">
                 bagikan satu cerita istimewa ini
               </p>
-              <p className="text-base sm:text-lg font-semibold text-neutral-300 mt-2 sm:mt-2.5 leading-relaxed">
+              <p className="text-base sm:text-lg md:text-[14px] font-semibold text-neutral-300 mt-2 sm:mt-2.5 leading-relaxed">
                 Buat Momen spesial lebih berkesan
               </p>
             </div>
@@ -75,7 +75,7 @@ export const Footer: React.FC<FooterProps> = ({
 
           {/* List Lintasan -> Judul 'PINTASAN' dengan jarak antar section lebih renggang */}
           <div className="w-full md:col-span-3 lg:col-span-3 flex flex-col text-left items-start mb-10 sm:mb-12 md:mb-0">
-            <h3 className="text-sm sm:text-base font-extrabold uppercase tracking-wider text-[#ad9fff] mb-3.5 sm:mb-4">
+            <h3 className="text-sm sm:text-base md:text-[16px] font-extrabold uppercase tracking-wider text-[#ad9fff] mb-3.5 sm:mb-4">
               PINTASAN
             </h3>
             <ul className="flex flex-col gap-2.5 sm:gap-3 w-full">
@@ -87,7 +87,7 @@ export const Footer: React.FC<FooterProps> = ({
                     <a
                       href={link.href}
                       onClick={(e) => handleLinkClick(e, link.href)}
-                      className={`inline-block text-base sm:text-lg transition-colors duration-200 cursor-pointer ${
+                      className={`inline-block text-base sm:text-lg md:text-[16px] transition-colors duration-200 cursor-pointer ${
                         isActive
                           ? "font-medium text-white underline underline-offset-4 decoration-white/40"
                           : "font-medium text-neutral-300 hover:text-white"
@@ -103,10 +103,10 @@ export const Footer: React.FC<FooterProps> = ({
 
           {/* List Kontak -> Judul 'KONTAK' dengan jarak antar section lebih renggang */}
           <div className="w-full md:col-span-4 lg:col-span-4 flex flex-col text-left items-start mb-2 md:mb-0">
-            <h3 className="text-sm sm:text-base font-extrabold uppercase tracking-wider text-[#ad9fff] mb-3.5 sm:mb-4">
+            <h3 className="text-sm sm:text-base md:text-[16px] font-extrabold uppercase tracking-wider text-[#ad9fff] mb-3.5 sm:mb-4">
               KONTAK
             </h3>
-            <ul className="flex flex-col gap-2.5 sm:gap-3 w-full text-base sm:text-lg">
+            <ul className="flex flex-col gap-2.5 sm:gap-3 w-full text-base sm:text-lg md:text-[16px]">
               {/* WhatsApp */}
               <li>
                 <a
@@ -116,7 +116,7 @@ export const Footer: React.FC<FooterProps> = ({
                   className="inline-flex items-center gap-2.5 text-neutral-300 hover:text-white transition-colors group cursor-pointer"
                 >
                   <MessageCircleMore className="w-[18px] h-[18px] text-neutral-300 shrink-0 group-hover:text-white transition-colors" />
-                  <span className="font-medium text-base sm:text-lg">
+                  <span className="font-medium text-base sm:text-lg md:text-[16px]">
                     +62 851 8797 8443
                   </span>
                 </a>
@@ -129,7 +129,7 @@ export const Footer: React.FC<FooterProps> = ({
                   className="inline-flex items-center gap-2.5 text-neutral-300 hover:text-white transition-colors group cursor-pointer"
                 >
                   <Mail className="w-[18px] h-[18px] text-neutral-300 shrink-0 group-hover:text-white transition-colors" />
-                  <span className="font-medium text-base sm:text-lg">
+                  <span className="font-medium text-base sm:text-lg md:text-[16px]">
                     satuceritadotid@gmail.com
                   </span>
                 </a>
@@ -144,7 +144,7 @@ export const Footer: React.FC<FooterProps> = ({
                   className="inline-flex items-center gap-2.5 text-neutral-300 hover:text-white transition-colors group cursor-pointer"
                 >
                   <Instagram className="w-[18px] h-[18px] text-neutral-300 shrink-0 group-hover:text-white transition-colors" />
-                  <span className="font-medium text-base sm:text-lg">
+                  <span className="font-medium text-base sm:text-lg md:text-[16px]">
                     @satuceritaid
                   </span>
                 </a>
@@ -153,7 +153,7 @@ export const Footer: React.FC<FooterProps> = ({
               {/* Jam Operasional */}
               <li className="inline-flex items-center gap-2.5 text-neutral-300">
                 <Clock className="w-[18px] h-[18px] text-neutral-300 shrink-0" />
-                <span className="font-medium text-base sm:text-lg">
+                <span className="font-medium text-base sm:text-lg md:text-[16px]">
                   Setiap Hari: 08.00 - 22.00 WIB
                 </span>
               </li>
@@ -161,7 +161,7 @@ export const Footer: React.FC<FooterProps> = ({
               {/* Area Layanan */}
               <li className="inline-flex items-center gap-2.5 text-neutral-300">
                 <MapPin className="w-[18px] h-[18px] text-neutral-300 shrink-0" />
-                <span className="font-medium text-base sm:text-lg">
+                <span className="font-medium text-base sm:text-lg md:text-[16px]">
                   Seluruh Indonesia (Online)
                 </span>
               </li>
