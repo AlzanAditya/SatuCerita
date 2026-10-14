@@ -21,6 +21,8 @@ import {
   Smartphone,
   ExternalLink,
 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Accordion } from "@/components/ui/Accordion";
 
 interface HomePageProps {
   currentPath?: string;
@@ -186,21 +188,21 @@ export const HomePage: React.FC<HomePageProps> = ({
 
               {/* Tombol CTA */}
               <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  size="md"
                   onClick={() => onNavigate(katalogPath)}
-                  className="inline-flex items-center gap-2 bg-[#7d6aee] hover:bg-[#6c59dc] text-white font-bold px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc] shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer text-sm sm:text-base active:scale-95"
                 >
                   <span>Lihat Katalog</span>
                   <ArrowRight className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="outline"
+                  size="md"
                   onClick={() => onNavigate(appPath)}
-                  className="inline-flex items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-900 border border-purple-200 border-b-[3px] border-b-purple-300 font-bold px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer text-sm sm:text-base active:scale-95"
                 >
                   <span>Buat Gratis</span>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -304,65 +306,67 @@ export const HomePage: React.FC<HomePageProps> = ({
               Fitur undangan digital lengkap untuk pasangan yang ingin undangan nikah online tampil memukau sekaligus mudah dikelola dari satu dashboard.
             </p>
 
-            {/* Feature Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
-              {/* Card 1 */}
-              <div className="bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
-                <div>
-                  <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-amber-50 text-amber-600 flex items-center justify-center shadow-2xs mb-4">
-                    <FileEdit className="w-6 h-6 stroke-[2.2]" />
+            {/* Feature Cards Carousel on Mobile, Grid on Tablet/Desktop */}
+            <div className="relative -mx-4 sm:mx-0">
+              <div className="flex sm:grid sm:grid-cols-2 gap-4 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 px-4 sm:px-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {/* Card 1 */}
+                <div className="snap-start shrink-0 w-[78vw] max-w-[310px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-amber-50 text-amber-600 flex items-center justify-center shadow-2xs mb-4">
+                      <FileEdit className="w-6 h-6 stroke-[2.2]" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
+                      Edit setiap section sendiri
+                    </h3>
+                    <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
+                      Ubah teks, urutan, dan isi setiap bagian — dari pembuka, profil mempelai, kisah cinta, hingga penutup.
+                    </p>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
-                    Edit setiap section sendiri
-                  </h3>
-                  <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
-                    Ubah teks, urutan, dan isi setiap bagian — dari pembuka, profil mempelai, kisah cinta, hingga penutup.
-                  </p>
                 </div>
-              </div>
 
-              {/* Card 2 */}
-              <div className="bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
-                <div>
-                  <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-rose-50 text-rose-600 flex items-center justify-center shadow-2xs mb-4">
-                    <ImagePlus className="w-6 h-6 stroke-[2.2]" />
+                {/* Card 2 */}
+                <div className="snap-start shrink-0 w-[78vw] max-w-[310px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-rose-50 text-rose-600 flex items-center justify-center shadow-2xs mb-4">
+                      <ImagePlus className="w-6 h-6 stroke-[2.2]" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
+                      Drag & drop foto & musik
+                    </h3>
+                    <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
+                      Unggah foto galeri tanpa kompresi manual dan pilih musik latar favorit. Cukup drag & drop langsung tersimpan.
+                    </p>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
-                    Drag & drop foto & musik
-                  </h3>
-                  <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
-                    Unggah foto galeri tanpa kompresi manual dan pilih musik latar favorit. Cukup drag & drop langsung tersimpan.
-                  </p>
                 </div>
-              </div>
 
-              {/* Card 3 */}
-              <div className="bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
-                <div>
-                  <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-purple-50 text-[#7D6AEE] flex items-center justify-center shadow-2xs mb-4">
-                    <Users className="w-6 h-6 stroke-[2.2]" />
+                {/* Card 3 */}
+                <div className="snap-start shrink-0 w-[78vw] max-w-[310px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-purple-50 text-[#7D6AEE] flex items-center justify-center shadow-2xs mb-4">
+                      <Users className="w-6 h-6 stroke-[2.2]" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
+                      Daftar tamu & RSVP otomatis
+                    </h3>
+                    <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
+                      Kirim nama tamu khusus satu per satu lewat WhatsApp. Tamu dapat konfirmasi kehadiran dan mengirim ucapan doa secara instan.
+                    </p>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
-                    Daftar tamu & RSVP otomatis
-                  </h3>
-                  <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
-                    Kirim nama tamu khusus satu per satu lewat WhatsApp. Tamu dapat konfirmasi kehadiran dan mengirim ucapan doa secara instan.
-                  </p>
                 </div>
-              </div>
 
-              {/* Card 4 */}
-              <div className="bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
-                <div>
-                  <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-2xs mb-4">
-                    <QrCode className="w-6 h-6 stroke-[2.2]" />
+                {/* Card 4 */}
+                <div className="snap-start shrink-0 w-[78vw] max-w-[310px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-2xs mb-4">
+                      <QrCode className="w-6 h-6 stroke-[2.2]" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
+                      QR check-in & kado digital
+                    </h3>
+                    <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
+                      Permudah absensi resepsi dengan scan QR code di meja penerima tamu serta integrasi rekening bank & e-Wallet untuk amplop digital.
+                    </p>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
-                    QR check-in & kado digital
-                  </h3>
-                  <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
-                    Permudah absensi resepsi dengan scan QR code di meja penerima tamu serta integrasi rekening bank & e-Wallet untuk amplop digital.
-                  </p>
                 </div>
               </div>
             </div>
@@ -444,9 +448,9 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Cards Carousel on Mobile, Grid on Tablet/Desktop */}
-            <div className="relative -mx-4 sm:mx-0 px-4 sm:px-0">
+            <div className="relative -mx-4 sm:mx-0">
               <div
-                className="flex sm:grid sm:grid-cols-2 gap-5 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="flex sm:grid sm:grid-cols-2 gap-5 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 px-4 sm:px-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               >
                 {filteredTemplates.map((item) => (
                   <div
@@ -504,22 +508,24 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                     {/* Tombol Aksi */}
                     <div className="flex flex-col gap-2 pt-1">
-                      <button
-                        type="button"
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setSelectedDemo(item)}
-                        className="w-full py-2 px-3.5 rounded-xl border border-purple-200 font-bold text-xs sm:text-sm text-neutral-800 bg-white hover:bg-neutral-50 shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        className="w-full"
                       >
                         <Eye className="w-4 h-4 stroke-[2.2]" />
                         <span>Lihat Demo</span>
-                      </button>
-                      <button
-                        type="button"
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
                         onClick={() => handleOrderTemplate(item.title)}
-                        className="w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#7d6aee] hover:bg-[#6b58e0] shadow-[0_2px_8px_rgba(125,106,238,0.25)] hover:shadow-[0_4px_12px_rgba(125,106,238,0.35)] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full"
                       >
                         <span>Pilih Template</span>
                         <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -545,16 +551,17 @@ export const HomePage: React.FC<HomePageProps> = ({
               Cara membuat undangan digital dalam empat langkah.
             </h2>
 
-            {/* Button: Lihat detail cara pesan (font diperbesar 2px menjadi text-[16px]) */}
+            {/* Button: Lihat detail cara pesan */}
             <div className="mb-8">
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="md"
                 onClick={() => onNavigate(caraPesanPath)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl border border-purple-200 font-bold text-[16px] text-neutral-800 bg-white hover:bg-neutral-50 shadow-2xs transition-all cursor-pointer"
+                className="w-full sm:w-auto text-[16px]"
               >
                 <span>Lihat detail cara pesan</span>
                 <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
-              </button>
+              </Button>
             </div>
 
             {/* 4 Steps Showcase */}
@@ -656,49 +663,16 @@ export const HomePage: React.FC<HomePageProps> = ({
             </h2>
 
             {/* Accordion List */}
-            <div className="flex flex-col gap-4">
-              {FAQ_LIST.map((faq, index) => {
-                const isOpen = openFaqIndex === index;
-                return (
-                  <div key={index} className="w-full text-left">
-                    {isOpen ? (
-                      /* Open State Card: Purple Header + White Body */
-                      <div className="rounded-2xl border border-purple-200 border-b-[3px] border-b-purple-300 bg-white shadow-2xs overflow-hidden transition-all">
-                        <button
-                          type="button"
-                          onClick={() => setOpenFaqIndex(null)}
-                          className="w-full bg-purple-50/80 p-4 sm:p-5 flex items-center justify-between gap-4 border-b border-purple-100 cursor-pointer text-left"
-                        >
-                          <span className="font-bold text-base sm:text-lg text-neutral-900 leading-snug">
-                            {faq.question}
-                          </span>
-                          <div className="w-8 h-8 rounded-full border border-purple-200 bg-white text-[#7d6aee] flex items-center justify-center shrink-0">
-                            <X className="w-4 h-4 stroke-[2.5]" />
-                          </div>
-                        </button>
-                        <div className="bg-white p-5 text-sm sm:text-base text-neutral-700 leading-relaxed">
-                          {faq.answer}
-                        </div>
-                      </div>
-                    ) : (
-                      /* Closed State Card: White with Plus Icon */
-                      <button
-                        type="button"
-                        onClick={() => setOpenFaqIndex(index)}
-                        className="w-full bg-white rounded-2xl border border-purple-200 border-b-[3px] border-b-purple-300 p-4 sm:p-5 flex items-center justify-between gap-4 shadow-2xs hover:border-purple-300 transition-all cursor-pointer text-left"
-                      >
-                        <span className="font-bold text-base sm:text-lg text-neutral-900 leading-snug">
-                          {faq.question}
-                        </span>
-                        <div className="w-8 h-8 rounded-full border border-purple-100 bg-purple-50 text-[#7d6aee] flex items-center justify-center shrink-0">
-                          <Plus className="w-4 h-4 stroke-[2.5]" />
-                        </div>
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <Accordion
+              items={FAQ_LIST.map((faq, index) => ({
+                id: index,
+                title: faq.question,
+                content: faq.answer,
+              }))}
+              openIndex={openFaqIndex}
+              onToggleIndex={setOpenFaqIndex}
+              iconVariant="plus-x"
+            />
           </div>
         </section>
       </main>
@@ -757,24 +731,26 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                size="md"
                 onClick={() => {
                   handleOrderTemplate(selectedDemo.title);
                   setSelectedDemo(null);
                 }}
-                className="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-[#7d6aee] hover:bg-[#6b58e0] shadow-[0_2px_8px_rgba(125,106,238,0.25)] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full"
               >
                 <span>Pilih Template Ini</span>
                 <ExternalLink className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setSelectedDemo(null)}
-                className="w-full py-2.5 px-4 rounded-xl border border-neutral-200 font-bold text-xs text-neutral-700 bg-neutral-50 hover:bg-neutral-100 transition-colors text-center cursor-pointer"
+                className="w-full text-xs"
               >
                 Tutup Preview
-              </button>
+              </Button>
             </div>
           </div>
         </div>

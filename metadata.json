@@ -1,0 +1,6 @@
+{
+  "name": "Satu Cerita",
+  "description": "Platform undangan digital dan manajemen perayaan modern.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -6,6 +6,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { SocialButton } from "@/components/ui/social-button";
+import { Button } from "@/components/ui/Button";
 
 export interface LoginCardProps {
   onLogin: () => void;
@@ -173,27 +174,24 @@ export const LoginCard: React.FC<LoginCardProps> = ({
             </button>
           </div>
 
-          {/* 
-            Main Submit Button: Login
-            - Menggunakan gradasi ungu selaras Satu Cerita
-            - Border-b tebal [3px] sesuai style card
-          */}
-          <button
+          {/* Main Submit Button: Login */}
+          <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#7d6aee] to-[#ad9fff] hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-xl border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc] shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#7d6aee]/20 transition-all duration-150 active:scale-[0.99] active:border-b-[2px] cursor-pointer text-[16px] tracking-wide flex items-center justify-center gap-2 mt-1 select-none"
+            size="lg"
+            className="w-full bg-gradient-to-r from-[#7d6aee] to-[#ad9fff] hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-xl border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc] shadow-sm hover:shadow-md text-[16px] tracking-wide mt-1"
           >
-            <span>{isSignUp ? "Daftar Akun" : "Login"}</span>
-          </button>
+            {isSignUp ? "Daftar Akun" : "Login"}
+          </Button>
         </form>
 
         {/* Teks Kebijakan & Syarat Privasi */}
         {!hideTerms && (
-          <div className="mt-4 text-center text-[14px] text-neutral-500 font-medium leading-relaxed select-none">
-            <p>Dengan masuk, Anda menyetujui</p>
+          <div className="mt-3 text-center text-[10px] text-neutral-500 font-medium leading-tight select-none">
+            <p className="text-[10px]">Dengan masuk, Anda menyetujui</p>
             <button
               type="button"
               onClick={onNavigateToKebijakan}
-              className="inline-block mt-0.5 underline underline-offset-2 text-neutral-800 hover:text-[#7d6aee] font-bold transition-colors cursor-pointer"
+              className="inline-block mt-0.5 underline underline-offset-2 text-neutral-800 hover:text-[#7d6aee] font-bold transition-colors cursor-pointer text-[10px]"
             >
               Syarat &amp; Kebijakan Privasi
             </button>

@@ -11,6 +11,7 @@ import {
   Smartphone,
   ExternalLink,
 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface KatalogPageProps {
   currentPath?: string;
@@ -225,24 +226,26 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                   {/* Tombol Aksi */}
                   <div className="flex flex-col gap-2 pt-1">
                     {/* Tombol Lihat Demo */}
-                    <button
-                      type="button"
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => setSelectedDemo(item)}
-                      className="w-full py-2 px-3.5 rounded-xl border border-purple-200 font-bold text-xs sm:text-sm text-neutral-800 bg-white hover:bg-neutral-50 shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full"
                     >
                       <Eye className="w-4 h-4 stroke-[2.2]" />
                       <span>Lihat Demo</span>
-                    </button>
+                    </Button>
 
                     {/* Tombol Pilih Template */}
-                    <button
-                      type="button"
+                    <Button
+                      variant="primary"
+                      size="sm"
                       onClick={() => handleOrderTemplate(item.title)}
-                      className="w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white bg-[#7d6aee] hover:bg-[#6b58e0] shadow-[0_2px_8px_rgba(125,106,238,0.25)] hover:shadow-[0_4px_12px_rgba(125,106,238,0.35)] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full"
                     >
                       <span>Pilih Template</span>
                       <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -309,24 +312,26 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
 
             {/* Action Buttons Modal */}
             <div className="flex flex-col gap-2">
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                size="md"
                 onClick={() => {
                   handleOrderTemplate(selectedDemo.title);
                   setSelectedDemo(null);
                 }}
-                className="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-[#7d6aee] hover:bg-[#6b58e0] shadow-[0_2px_8px_rgba(125,106,238,0.25)] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full"
               >
                 <span>Pilih Template Ini</span>
                 <ExternalLink className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setSelectedDemo(null)}
-                className="w-full py-2.5 px-4 rounded-xl border border-neutral-200 font-bold text-xs text-neutral-700 bg-neutral-50 hover:bg-neutral-100 transition-colors text-center cursor-pointer"
+                className="w-full text-xs"
               >
                 Tutup Preview
-              </button>
+              </Button>
             </div>
           </div>
         </div>
