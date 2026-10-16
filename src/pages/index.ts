@@ -1,3 +1,3 @@
-export * from "./landing-page";
+export * from "./landing";
 export * from "./app";
 export * from "./dash";

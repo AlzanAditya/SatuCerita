@@ -127,10 +127,10 @@ export interface AdminProfileData {
 }
 
 export const DEFAULT_ADMIN_PROFILE: AdminProfileData = {
-  name: "Alzan Bella (Super Admin)",
-  email: "admin@satucerita.id",
+  name: "Admin",
+  email: "zanxastudio@gmail.com",
   phone: "+62 851-8797-8443",
-  role: "Super Admin",
+  role: "Admin",
   avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
 };
 
@@ -178,7 +178,14 @@ export function saveUserProfileCache(data: Partial<UserProfileData>): UserProfil
 }
 
 export function getAdminProfileCache(): AdminProfileData {
-  return getCache<AdminProfileData>(CACHE_KEYS.ADMIN_PROFILE, DEFAULT_ADMIN_PROFILE);
+  const profile = getCache<AdminProfileData>(CACHE_KEYS.ADMIN_PROFILE, DEFAULT_ADMIN_PROFILE);
+  if (profile.name === "Alzan Bella (Super Admin)" || profile.name === "Alzan Bella") {
+    profile.name = "Admin";
+  }
+  if (!profile.email || profile.email === "admin@satucerita.id") {
+    profile.email = "zanxastudio@gmail.com";
+  }
+  return profile;
 }
 
 export function saveAdminProfileCache(data: Partial<AdminProfileData>): AdminProfileData {

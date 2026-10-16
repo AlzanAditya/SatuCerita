@@ -12,11 +12,7 @@ export interface DashLoginPageProps {
 
 export const DashLoginPage: React.FC<DashLoginPageProps> = ({
   onNavigate,
-  currentPath,
 }) => {
-  const [isSignUp, setIsSignUp] = useState(
-    currentPath?.includes("signup") || false
-  );
 
   const handleSuccessfulLogin = () => {
     // Simpan status autentikasi admin ke cache
@@ -98,8 +94,7 @@ export const DashLoginPage: React.FC<DashLoginPageProps> = ({
           <LoginCard
             onLogin={handleSuccessfulLogin}
             onBackToLanding={handleBackToLanding}
-            isSignUp={isSignUp}
-            onToggleSignUp={() => setIsSignUp(!isSignUp)}
+            googleOnly={true}
             hideTerms={true}
           />
         </div>

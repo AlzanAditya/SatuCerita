@@ -20,6 +20,10 @@ import {
   MessageCircle,
   Smartphone,
   ExternalLink,
+  Music,
+  Heart,
+  Globe,
+  Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Accordion } from "@/components/ui/Accordion";
@@ -289,8 +293,8 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* ========================================================= */}
         {/* SECTION 2: KENAPA SATUCERITA (UNGU PUDAR LANDING PAGE)    */}
         {/* ========================================================= */}
-        <section className="w-full bg-[#faf9ff] py-14 sm:py-20 px-4 sm:px-6 text-left border-t border-purple-100/60">
-          <div className="max-w-4xl mx-auto w-full text-left">
+        <section className="w-full bg-[#faf9ff] py-14 sm:py-20 px-4 sm:px-6 md:px-8 text-left border-t border-purple-100/60">
+          <div className="max-w-6xl mx-auto w-full text-left">
             {/* Section Badge */}
             <div className="inline-block mb-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-xs font-bold tracking-wide uppercase shadow-2xs">
@@ -298,73 +302,133 @@ export const HomePage: React.FC<HomePageProps> = ({
               </span>
             </div>
 
-            {/* Section Title & Desc */}
-            <h2 className="text-2xl sm:text-4xl font-black text-neutral-900 tracking-tight leading-snug mb-3">
+            {/* Section Title & Desc (lebar dipersempit) */}
+            <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-black text-neutral-900 tracking-tight leading-[1.12] mb-3 max-w-[360px] sm:max-w-[420px]">
               Semua yang kalian butuhkan, tanpa ribet.
             </h2>
-            <p className="text-neutral-600 text-sm sm:text-base leading-relaxed mb-8 max-w-2xl font-normal">
+            <p className="text-neutral-600 text-sm sm:text-base leading-relaxed mb-8 sm:mb-10 max-w-[360px] sm:max-w-[440px] font-normal">
               Fitur undangan digital lengkap untuk pasangan yang ingin undangan nikah online tampil memukau sekaligus mudah dikelola dari satu dashboard.
             </p>
 
-            {/* Feature Cards Carousel on Mobile, Grid on Tablet/Desktop */}
-            <div className="relative -mx-4 sm:mx-0">
-              <div className="flex sm:grid sm:grid-cols-2 gap-4 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 px-4 sm:px-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {/* 8 Feature Cards Grid (4 columns on desktop, 2 on tablet, swipe carousel on mobile with generous left space) */}
+            <div className="relative">
+              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 pl-5 sm:pl-0 pr-4 sm:pr-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {/* Card 1 */}
-                <div className="snap-start shrink-0 w-[78vw] max-w-[310px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start shrink-0 w-[72vw] max-w-[260px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
-                    <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-amber-50 text-amber-600 flex items-center justify-center shadow-2xs mb-4">
-                      <FileEdit className="w-6 h-6 stroke-[2.2]" />
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-amber-50 text-amber-600 flex items-center justify-center shadow-2xs mb-3">
+                      <SlidersHorizontal className="w-5 h-5 stroke-[2.2]" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
+                    <h3 className="text-[15px] sm:text-base font-black text-neutral-900 tracking-tight leading-snug mb-1.5">
                       Edit setiap section sendiri
                     </h3>
-                    <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
+                    <p className="text-xs sm:text-[12.5px] text-neutral-600 leading-relaxed font-normal">
                       Ubah teks, urutan, dan isi setiap bagian — dari pembuka, profil mempelai, kisah cinta, hingga penutup.
                     </p>
                   </div>
                 </div>
 
                 {/* Card 2 */}
-                <div className="snap-start shrink-0 w-[78vw] max-w-[310px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start shrink-0 w-[72vw] max-w-[260px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
-                    <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-rose-50 text-rose-600 flex items-center justify-center shadow-2xs mb-4">
-                      <ImagePlus className="w-6 h-6 stroke-[2.2]" />
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-rose-50 text-rose-600 flex items-center justify-center shadow-2xs mb-3">
+                      <ImagePlus className="w-5 h-5 stroke-[2.2]" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
-                      Drag & drop foto & musik
+                    <h3 className="text-[15px] sm:text-base font-black text-neutral-900 tracking-tight leading-snug mb-1.5">
+                      Drag &amp; drop foto
                     </h3>
-                    <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
-                      Unggah foto galeri tanpa kompresi manual dan pilih musik latar favorit. Cukup drag & drop langsung tersimpan.
+                    <p className="text-xs sm:text-[12.5px] text-neutral-600 leading-relaxed font-normal">
+                      Unggah dan susun foto galeri cukup dengan seret dan lepas. Otomatis dioptimalkan agar cepat dibuka.
                     </p>
                   </div>
                 </div>
 
                 {/* Card 3 */}
-                <div className="snap-start shrink-0 w-[78vw] max-w-[310px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start shrink-0 w-[72vw] max-w-[260px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
-                    <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-purple-50 text-[#7D6AEE] flex items-center justify-center shadow-2xs mb-4">
-                      <Users className="w-6 h-6 stroke-[2.2]" />
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-purple-50 text-[#7D6AEE] flex items-center justify-center shadow-2xs mb-3">
+                      <Music className="w-5 h-5 stroke-[2.2]" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
-                      Daftar tamu & RSVP otomatis
+                    <h3 className="text-[15px] sm:text-base font-black text-neutral-900 tracking-tight leading-snug mb-1.5">
+                      Musik, YouTube &amp; live streaming
                     </h3>
-                    <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
-                      Kirim nama tamu khusus satu per satu lewat WhatsApp. Tamu dapat konfirmasi kehadiran dan mengirim ucapan doa secara instan.
+                    <p className="text-xs sm:text-[12.5px] text-neutral-600 leading-relaxed font-normal">
+                      Tambahkan lagu latar, video prewedding dari YouTube, dan tautan siaran langsung untuk tamu yang jauh.
                     </p>
                   </div>
                 </div>
 
                 {/* Card 4 */}
-                <div className="snap-start shrink-0 w-[78vw] max-w-[310px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start shrink-0 w-[72vw] max-w-[260px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
-                    <div className="w-12 h-12 rounded-2xl border border-purple-100 bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-2xs mb-4">
-                      <QrCode className="w-6 h-6 stroke-[2.2]" />
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-pink-50 text-pink-600 flex items-center justify-center shadow-2xs mb-3">
+                      <Heart className="w-5 h-5 stroke-[2.2]" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-black text-neutral-900 mb-2">
-                      QR check-in & kado digital
+                    <h3 className="text-[15px] sm:text-base font-black text-neutral-900 tracking-tight leading-snug mb-1.5">
+                      RSVP &amp; buku tamu digital
                     </h3>
-                    <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
-                      Permudah absensi resepsi dengan scan QR code di meja penerima tamu serta integrasi rekening bank & e-Wallet untuk amplop digital.
+                    <p className="text-xs sm:text-[12.5px] text-neutral-600 leading-relaxed font-normal">
+                      Tamu konfirmasi kehadiran dan menulis ucapan langsung dari undangan. Semua rekap tersimpan rapi.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card 5 */}
+                <div className="snap-start shrink-0 w-[72vw] max-w-[260px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-2xs mb-3">
+                      <QrCode className="w-5 h-5 stroke-[2.2]" />
+                    </div>
+                    <h3 className="text-[15px] sm:text-base font-black text-neutral-900 tracking-tight leading-snug mb-1.5">
+                      QR code check-in tamu
+                    </h3>
+                    <p className="text-xs sm:text-[12.5px] text-neutral-600 leading-relaxed font-normal">
+                      Setiap tamu mendapat QR unik dengan label dinamis seperti VIP atau Reguler untuk check-in di lokasi acara.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card 6 */}
+                <div className="snap-start shrink-0 w-[72vw] max-w-[260px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-rose-50 text-rose-600 flex items-center justify-center shadow-2xs mb-3">
+                      <MessageCircle className="w-5 h-5 stroke-[2.2]" />
+                    </div>
+                    <h3 className="text-[15px] sm:text-base font-black text-neutral-900 tracking-tight leading-snug mb-1.5">
+                      Kirim undangan via WhatsApp
+                    </h3>
+                    <p className="text-xs sm:text-[12.5px] text-neutral-600 leading-relaxed font-normal">
+                      Kirim undangan personal dengan nama tamu di setiap pesan, cukup satu klik dari daftar tamu.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card 7 */}
+                <div className="snap-start shrink-0 w-[72vw] max-w-[260px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-sky-50 text-sky-600 flex items-center justify-center shadow-2xs mb-3">
+                      <Globe className="w-5 h-5 stroke-[2.2]" />
+                    </div>
+                    <h3 className="text-[15px] sm:text-base font-black text-neutral-900 tracking-tight leading-snug mb-1.5">
+                      Multi bahasa
+                    </h3>
+                    <p className="text-xs sm:text-[12.5px] text-neutral-600 leading-relaxed font-normal">
+                      Tampilkan undangan dalam Bahasa Indonesia atau Inggris untuk keluarga dan sahabat dari mana saja.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card 8 */}
+                <div className="snap-start shrink-0 w-[72vw] max-w-[260px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-purple-50 text-[#7D6AEE] flex items-center justify-center shadow-2xs mb-3">
+                      <Link2 className="w-5 h-5 stroke-[2.2]" />
+                    </div>
+                    <h3 className="text-[15px] sm:text-base font-black text-neutral-900 tracking-tight leading-snug mb-1.5">
+                      Link custom
+                    </h3>
+                    <p className="text-xs sm:text-[12.5px] text-neutral-600 leading-relaxed font-normal">
+                      Tautan pendek dan mudah diingat: satucerita.id/nama-kalian. Bisa diganti kapan saja dari dashboard.
                     </p>
                   </div>
                 </div>
@@ -376,8 +440,8 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* ========================================================= */}
         {/* SECTION 3: TEMPLATE PILIHAN (UNGU AKSEN & TEKS PUTIH)     */}
         {/* ========================================================= */}
-        <section className="w-full bg-[#7d6aee] py-14 sm:py-20 px-4 sm:px-6 text-white text-left">
-          <div className="max-w-4xl mx-auto w-full text-left">
+        <section className="w-full bg-[#7d6aee] py-14 sm:py-20 px-4 sm:px-6 md:px-8 text-white text-left">
+          <div className="max-w-6xl mx-auto w-full text-left">
             {/* Section Badge */}
             <div className="inline-block mb-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold tracking-wide uppercase shadow-2xs">
@@ -447,37 +511,37 @@ export const HomePage: React.FC<HomePageProps> = ({
               </button>
             </div>
 
-            {/* Cards Carousel on Mobile, Grid on Tablet/Desktop */}
-            <div className="relative -mx-4 sm:mx-0">
+            {/* Cards Carousel on Mobile, Grid on Tablet/Desktop (Lebih sempit dan diperpendek dengan space di sisi kiri) */}
+            <div className="relative">
               <div
-                className="flex sm:grid sm:grid-cols-2 gap-5 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 px-4 sm:px-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 pl-5 sm:pl-0 pr-4 sm:pr-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               >
                 {filteredTemplates.map((item) => (
                   <div
                     key={item.id}
-                    className="snap-start shrink-0 w-[74vw] max-w-[275px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-200 border-b-[3px] border-b-purple-300 p-3.5 sm:p-4 shadow-2xs hover:border-purple-300 transition-all flex flex-col justify-between text-left group"
+                    className="snap-start shrink-0 w-[50vw] max-w-[175px] sm:w-auto sm:max-w-none bg-white rounded-2xl border border-purple-200 border-b-[3px] border-b-purple-300 p-2 sm:p-2.5 shadow-2xs hover:border-purple-300 transition-all flex flex-col justify-between text-left group"
                   >
                     <div>
-                      {/* Top Frame dengan Smartphone Mockup */}
+                      {/* Top Frame dengan Smartphone Mockup (Diperpendek & lebih ramping) */}
                       <div
-                        className="relative w-full rounded-xl sm:rounded-2xl border border-purple-100/80 p-2.5 sm:p-3 mb-3 flex items-center justify-center overflow-hidden"
+                        className="relative w-full rounded-xl border border-purple-100/80 p-1.5 mb-1.5 flex items-center justify-center overflow-hidden"
                         style={{ backgroundColor: item.frameBg }}
                       >
-                        {/* Smartphone Mockup (Ukuran lebih ramping & pendek) */}
-                        <div className="relative w-[78%] max-w-[165px] aspect-[9/13] bg-neutral-950 rounded-[22px] p-1.5 shadow-xl border border-neutral-800 overflow-hidden flex flex-col my-0.5">
-                          <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-10 h-2.5 bg-neutral-900 rounded-full z-20 border border-neutral-800" />
-                          <div className="w-full h-full rounded-[16px] overflow-hidden relative bg-neutral-100 flex flex-col justify-end">
+                        {/* Smartphone Mockup */}
+                        <div className="relative w-[65%] max-w-[105px] aspect-[9/10] bg-neutral-950 rounded-[14px] p-0.5 shadow-md border border-neutral-800 overflow-hidden flex flex-col my-0.5">
+                          <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-6 h-1.5 bg-neutral-900 rounded-full z-20 border border-neutral-800" />
+                          <div className="w-full h-full rounded-[11px] overflow-hidden relative bg-neutral-100 flex flex-col justify-end">
                             <img
                               src={item.image}
                               alt={item.title}
                               loading="lazy"
                               className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
-                            <div className="relative z-10 p-2 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white text-center">
-                              <p className="text-[8px] uppercase tracking-widest font-serif opacity-80">Pawiwahan</p>
-                              <p className="text-[11px] font-serif font-bold tracking-wide leading-tight">{item.coupleName}</p>
-                              <p className="text-[7px] opacity-75 mt-0.5">{item.date}</p>
-                              <div className="mt-1 inline-block px-1.5 py-0.5 bg-white/20 backdrop-blur-xs rounded-full text-[7px] font-semibold">
+                            <div className="relative z-10 p-1 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white text-center">
+                              <p className="text-[6.5px] uppercase tracking-widest font-serif opacity-80">Pawiwahan</p>
+                              <p className="text-[9px] font-serif font-bold tracking-wide leading-tight truncate">{item.coupleName}</p>
+                              <p className="text-[6px] opacity-75 mt-0.5">{item.date}</p>
+                              <div className="mt-0.5 inline-block px-1.5 py-0.2 bg-white/20 backdrop-blur-xs rounded-full text-[6px] font-semibold">
                                 Buka Undangan
                               </div>
                             </div>
@@ -486,45 +550,45 @@ export const HomePage: React.FC<HomePageProps> = ({
                       </div>
 
                       {/* Judul & Kategori */}
-                      <div className="flex items-center justify-between gap-2 mt-1.5">
-                        <h3 className="text-lg sm:text-xl font-black text-neutral-900 tracking-tight">
+                      <div className="flex items-center justify-between gap-1 mt-0.5">
+                        <h3 className="text-xs sm:text-[13px] font-black text-neutral-900 tracking-tight truncate">
                           {item.title}
                         </h3>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg border border-purple-200 font-bold text-[11px] uppercase tracking-wider bg-purple-50 text-[#7d6aee]">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md border border-purple-200 font-bold text-[8.5px] uppercase tracking-wider bg-purple-50 text-[#7d6aee] shrink-0">
                           {item.category}
                         </span>
                       </div>
 
                       {/* Harga */}
-                      <div className="mt-2 mb-4">
-                        <div className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight leading-none">
+                      <div className="mt-0.5 mb-2">
+                        <div className="text-sm sm:text-[15px] font-black text-neutral-900 tracking-tight leading-none">
                           {formatRupiah(item.discountPrice)}
                         </div>
-                        <div className="text-xs font-extrabold text-[#EE5B4F] line-through decoration-[#EE5B4F] decoration-2 mt-1">
+                        <div className="text-[9px] font-extrabold text-[#EE5B4F] line-through decoration-[#EE5B4F] decoration-1 mt-0.5">
                           {formatRupiah(item.originalPrice)}
                         </div>
                       </div>
                     </div>
 
                     {/* Tombol Aksi */}
-                    <div className="flex flex-col gap-2 pt-1">
+                    <div className="flex flex-col gap-1 pt-0.5">
                       <Button
                         variant="outline"
-                        size="sm"
+                        size="xs"
                         onClick={() => setSelectedDemo(item)}
-                        className="w-full"
+                        className="w-full text-[11px] py-1 h-7"
                       >
-                        <Eye className="w-4 h-4 stroke-[2.2]" />
+                        <Eye className="w-3 h-3 stroke-[2.2]" />
                         <span>Lihat Demo</span>
                       </Button>
                       <Button
                         variant="primary"
-                        size="sm"
+                        size="xs"
                         onClick={() => handleOrderTemplate(item.title)}
-                        className="w-full"
+                        className="w-full text-[11px] py-1 h-7"
                       >
                         <span>Pilih Template</span>
-                        <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                        <ArrowRight className="w-3 h-3 stroke-[2.5]" />
                       </Button>
                     </div>
                   </div>

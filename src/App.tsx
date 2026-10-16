@@ -10,7 +10,7 @@ import {
   KontakPage,
   KebijakanPage,
   NotFoundPage,
-} from "@/pages/landing-page";
+} from "@/pages/landing";
 import { UserApp } from "@/pages/app";
 import { AdminDash, DashLoginPage } from "@/pages/dash";
 

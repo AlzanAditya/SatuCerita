@@ -10,7 +10,7 @@ import {
   KontakPage,
   KebijakanPage,
   NotFoundPage,
-} from "@/pages/landing-page";
+} from "@/pages/landing";
 
 function getInitialPath(): string {
   if (typeof window === "undefined") return "/";

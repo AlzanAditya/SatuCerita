@@ -153,9 +153,9 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
           )}
         </button>
 
-        {/* Khusus navbar mobile di dashboard overview: Hapus avatar dan ganti dengan dropdown periode */}
+        {/* Dropdown periode di navbar atas dashboard */}
         {activeTab === "overview" && onPeriodChange && (
-          <div className="md:hidden flex items-center">
+          <div className="flex items-center">
             <div className="relative">
               <select
                 value={period}
@@ -175,84 +175,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
           </div>
         )}
 
-        {!hideAvatar &&
-          activeTab !== "profile" &&
-          activeTab !== "profil" &&
-          activeTab !== "settings" &&
-          activeTab !== "pengaturan" && (
-            <div
-              className={`relative ${
-                activeTab === "overview" && onPeriodChange ? "hidden md:block" : ""
-              }`}
-              ref={menuRef}
-            >
-              <button
-                type="button"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                aria-expanded={isMenuOpen}
-                aria-label="User Account Menu"
-                className="rounded-full cursor-pointer hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-4 focus-visible:ring-purple-100 flex items-center justify-center"
-              >
-              <Avatar
-                key={avatarDisplaySrc}
-                border
-                size="md"
-                alt={userProfile.name}
-                src={avatarDisplaySrc}
-              />
-            </button>
 
-            {/* Pop-Up Modal Menu saat Avatar diklik */}
-            <div
-              className={`absolute right-0 top-full mt-2 w-56 sm:w-64 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] z-50 ${
-                isMenuOpen
-                  ? "translate-y-0 opacity-100 pointer-events-auto scale-100"
-                  : "-translate-y-3 opacity-0 pointer-events-none scale-95"
-              }`}
-            >
-              <div className="bg-white border border-neutral-200/90 shadow-[0px_14px_35px_rgba(0,0,0,0.12)] rounded-2xl p-3 sm:p-3.5 text-neutral-900">
-                <div className="pb-2.5 mb-2.5 border-b border-neutral-100">
-                  <p className="text-xs sm:text-sm font-bold text-neutral-900 tracking-tight leading-tight truncate">
-                    {userProfile.name}
-                  </p>
-                  <p className="text-[11px] text-neutral-500 font-medium mt-0.5 truncate">
-                    {userProfile.email}
-                  </p>
-                </div>
-
-                <div className="space-y-1.5">
-                  {onEditProfile && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        onEditProfile();
-                      }}
-                      className="w-full flex items-center justify-center gap-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold text-xs sm:text-sm py-2 rounded-lg sm:rounded-xl transition-all cursor-pointer text-center select-none"
-                    >
-                      <Pencil className="w-3.5 h-3.5 text-[#7d6aee]" />
-                      <span>Edit Profil</span>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      if (onLogout) {
-                        onLogout();
-                      } else {
-                        handleNav(PATHS.home);
-                      }
-                    }}
-                    className="w-full bg-gradient-to-r from-[#7d6aee] to-[#ad9fff] hover:opacity-95 text-white font-bold text-xs sm:text-sm py-2 sm:py-2.5 rounded-lg sm:rounded-xl transition-all cursor-pointer shadow-xs active:scale-[0.99] text-center select-none"
-                  >
-                    Log Out
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );

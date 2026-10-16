@@ -2,49 +2,34 @@ import React, { useState, useMemo, useEffect } from "react";
 import {
   LayoutGrid,
   Users,
-  BarChart3,
-  DollarSign,
   Palette,
-  FileHeart,
   Settings,
   LogOut,
-  Search,
-  Filter,
   CheckCircle2,
   Clock,
   ExternalLink,
   Plus,
-  ShieldCheck,
-  TrendingUp,
-  ArrowLeft,
   SquareArrowOutUpRight,
-  ChevronRight,
-  Download,
-  RefreshCw,
-  AlertCircle,
   Eye,
   X,
   Check,
   Edit3,
-  Copy,
-  ArrowUpRight,
-  Menu,
   Phone,
-  Mail,
-  UserCheck,
   CreditCard,
-  Receipt,
-  Sparkles,
-  Upload,
   Pencil,
   Camera,
+  Upload,
   ChartPie,
   Wallet,
   Radio,
+  HeartHandshake,
+  ChevronRight,
+  PanelLeft,
+  PanelLeftOpen,
 } from "lucide-react";
 import { AppNavbar, DashPeriodType } from "@/components/app/AppNavbar";
 import { Button } from "@/components/ui/Button";
-import { DataTable, DataTableColumn } from "@/components/ui/DataTable";
+import { DataTableColumn } from "@/components/ui/DataTable";
 import { PATHS } from "@/routes";
 import {
   getAdminProfileCache,
@@ -59,137 +44,28 @@ import {
   AdminSettingsData,
   setDashAuthenticated,
 } from "@/lib/cache";
-import { SITE } from "@/config/site";
+import {
+  DashTabType,
+  AdminDashProps,
+  AdminUserData,
+  AdminOrderItem,
+  AdminTemplateItem,
+  AdminInvitationItem,
+  PeriodDataResult,
+  formatIndonesianDateShort,
+  parseOrderTimestamp,
+  pathToDashTab,
+  dashTabToPath,
+} from "./types";
+import { OverviewPage } from "./OverviewPage";
+import { UsersPage } from "./UsersPage";
+import { AnalyticsPage } from "./AnalyticsPage";
+import { FinancePage } from "./FinancePage";
+import { TemplatesPage } from "./TemplatesPage";
+import { InvitationsPage } from "./InvitationsPage";
+import { SettingsPage } from "./SettingsPage";
 
-export function formatIndonesianDateShort(dateStr: string): string {
-  if (!dateStr) return "";
-  const monthMap: Record<string, string> = {
-    "01": "Jan", "1": "Jan", "jan": "Jan", "januari": "Jan",
-    "02": "Feb", "2": "Feb", "feb": "Feb", "februari": "Feb",
-    "03": "Mar", "3": "Mar", "mar": "Mar", "maret": "Mar",
-    "04": "Apr", "4": "Apr", "apr": "Apr", "april": "Apr",
-    "05": "Mei", "5": "Mei", "mei": "Mei",
-    "06": "Jun", "6": "Jun", "jun": "Jun", "juni": "Jun",
-    "07": "Jul", "7": "Jul", "jul": "Jul", "juli": "Jul",
-    "08": "Agu", "8": "Agu", "agu": "Agu", "agustus": "Agu",
-    "09": "Sep", "9": "Sep", "sep": "Sep", "september": "Sep",
-    "10": "Okt", "okt": "Okt", "oktober": "Okt",
-    "11": "Nov", "nov": "Nov", "november": "Nov",
-    "12": "Des", "des": "Des", "desember": "Des",
-  };
-
-  const clean = dateStr.replace(/,/g, " ").trim();
-  const tokens = clean.split(/\s+/);
-  const yearToken = tokens.find((t) => /^\d{4}$/.test(t));
-  const dayToken = tokens.find((t) => t !== yearToken && /^\d{1,2}$/.test(t));
-  const monthToken = tokens.find((t) => monthMap[t.toLowerCase()] !== undefined);
-
-  if (dayToken && monthToken && yearToken) {
-    const day = parseInt(dayToken, 10);
-    const month = monthMap[monthToken.toLowerCase()];
-    return `${day} ${month} ${yearToken}`;
-  }
-  return dateStr;
-}
-
-export function parseOrderTimestamp(dateStr: string): number {
-  if (!dateStr) return 0;
-  const clean = dateStr.toLowerCase().replace(/[,]/g, " ").trim();
-  const tokens = clean.split(/\s+/);
-  const monthMap: Record<string, number> = {
-    jan: 0, januari: 0,
-    feb: 1, februari: 1,
-    mar: 2, maret: 2,
-    apr: 3, april: 3,
-    mei: 4,
-    jun: 5, juni: 5,
-    jul: 6, juli: 6,
-    agu: 7, agustus: 7,
-    sep: 8, september: 8,
-    okt: 9, oktober: 9,
-    nov: 10, november: 10,
-    des: 11, desember: 11,
-  };
-  const yearToken = tokens.find((t) => /^\d{4}$/.test(t));
-  const dayToken = tokens.find((t) => t !== yearToken && /^\d{1,2}$/.test(t));
-  const monthToken = tokens.find((t) => monthMap[t] !== undefined);
-  const timeToken = tokens.find((t) => /^\d{1,2}:\d{2}/.test(t));
-
-  if (yearToken && monthToken && dayToken) {
-    const year = parseInt(yearToken, 10);
-    const month = monthMap[monthToken];
-    const day = parseInt(dayToken, 10);
-    let hour = 12;
-    let min = 0;
-    if (timeToken) {
-      const [h, m] = timeToken.split(":");
-      hour = parseInt(h, 10);
-      min = parseInt(m, 10);
-    }
-    return new Date(year, month, day, hour, min).getTime();
-  }
-  const parsed = Date.parse(dateStr);
-  return isNaN(parsed) ? 0 : parsed;
-}
-
-export type DashTabType =
-  | "overview"
-  | "users"
-  | "analytics"
-  | "finance"
-  | "templates"
-  | "invitations"
-  | "settings";
-
-export function pathToDashTab(pathname: string): DashTabType {
-  const p = pathname.toLowerCase();
-  if (p.includes("customer") || p.includes("users") || p.includes("pengguna")) {
-    return "users";
-  }
-  if (p.includes("analytics") || p.includes("transaksi") || p.includes("grafik") || p.includes("penjualan")) {
-    return "analytics";
-  }
-  if (p.includes("finance") || p.includes("keuangan")) {
-    return "finance";
-  }
-  if (p.includes("templates") || p.includes("template")) {
-    return "templates";
-  }
-  if (p.includes("invitations") || p.includes("berlangsung") || p.includes("undangan")) {
-    return "invitations";
-  }
-  if (p.includes("settings") || p.includes("pengaturan")) {
-    return "settings";
-  }
-  return "overview";
-}
-
-export function dashTabToPath(tab: DashTabType, isStandalone = false): string {
-  const prefix = isStandalone ? "" : "/dash";
-  switch (tab) {
-    case "users":
-      return `${prefix}/customer`;
-    case "analytics":
-      return `${prefix}/analytics`;
-    case "finance":
-      return `${prefix}/finance`;
-    case "templates":
-      return `${prefix}/templates`;
-    case "invitations":
-      return `${prefix}/invitations`;
-    case "settings":
-      return `${prefix}/settings`;
-    case "overview":
-    default:
-      return isStandalone ? "/overview" : "/dash";
-  }
-}
-
-export interface AdminDashProps {
-  currentPath?: string;
-  activeTab?: DashTabType;
-  onNavigate?: (path: string) => void;
-}
+export * from "./types";
 
 export const AdminDash: React.FC<AdminDashProps> = ({
   currentPath = "/dash",
@@ -245,13 +121,13 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   };
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [invitationSearchQuery, setInvitationSearchQuery] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState<DashPeriodType>("Bulanan");
-  const [selectedUserModal, setSelectedUserModal] = useState<any | null>(null);
-  const [selectedOrderModal, setSelectedOrderModal] = useState<any | null>(null);
+  const [selectedUserModal, setSelectedUserModal] = useState<AdminUserData | null>(null);
+  const [selectedOrderModal, setSelectedOrderModal] = useState<AdminOrderItem | null>(null);
   const [isAddTemplateModalOpen, setIsAddTemplateModalOpen] = useState(false);
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "1y">("30d");
 
@@ -279,8 +155,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // 1. DATA PENGGUNA TERDAFTAR (Dikelola dengan Cache)
-  const [usersList, setUsersList] = useState(() =>
+  // 1. DATA PENGGUNA TERDAFTAR
+  const [usersList] = useState<AdminUserData[]>(() =>
     getCache(CACHE_KEYS.ADMIN_USERS, [
       {
         id: "USR-001",
@@ -385,8 +261,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     setCache(CACHE_KEYS.ADMIN_USERS, usersList);
   }, [usersList]);
 
-  // 2. DATA KEUANGAN & TRANSAKSI AKTUAL
-  const [ordersList, setOrdersList] = useState([
+  // 2. DATA KEUANGAN & TRANSAKSI
+  const [ordersList, setOrdersList] = useState<AdminOrderItem[]>([
     {
       id: "SC-ORD-8821",
       customer: "Rian Pratama & Salsabila",
@@ -477,220 +353,10 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       date: "08 Okt 2026, 16:30",
       proofUrl: null,
     },
-    {
-      id: "SC-ORD-8815",
-      customer: "Hendra Gunawan & Rini",
-      customerEmail: "hendra.rini@gmail.com",
-      customerPhone: "+62 817-5566-7788",
-      template: "Adat Jawa Klasik Keraton",
-      tier: "Gold Tier",
-      amount: 149000,
-      uniqueCode: 19,
-      total: 149019,
-      paymentMethod: "BCA Virtual Account",
-      status: "LUNAS",
-      date: "06 Okt 2026, 10:15",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8814",
-      customer: "Reza Rahardian & Putri",
-      customerEmail: "reza.putri@gmail.com",
-      customerPhone: "+62 822-9988-1122",
-      template: "Elysian Luxe Emerald",
-      tier: "Platinum Tier",
-      amount: 199000,
-      uniqueCode: 55,
-      total: 199055,
-      paymentMethod: "QRIS",
-      status: "LUNAS",
-      date: "03 Okt 2026, 19:45",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8813",
-      customer: "Gilang Pratama & Vina",
-      customerEmail: "gilang.vina@yahoo.com",
-      customerPhone: "+62 856-4433-2211",
-      template: "Deluxe Royal Navy",
-      tier: "Silver Tier",
-      amount: 99000,
-      uniqueCode: 38,
-      total: 99038,
-      paymentMethod: "Mandiri VA",
-      status: "LUNAS",
-      date: "01 Okt 2026, 15:10",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8812",
-      customer: "Eko Prasetyo & Dewi",
-      customerEmail: "eko.dewi@gmail.com",
-      customerPhone: "+62 877-6655-4433",
-      template: "Minimalist Modern Flora",
-      tier: "Gold Tier",
-      amount: 149000,
-      uniqueCode: 84,
-      total: 149084,
-      paymentMethod: "QRIS",
-      status: "LUNAS",
-      date: "28 Sep 2026, 12:20",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8811",
-      customer: "Bayu Segara & Citra",
-      customerEmail: "bayu.citra@gmail.com",
-      customerPhone: "+62 819-1122-8899",
-      template: "Elysian Bloom (Gold)",
-      tier: "Gold Tier",
-      amount: 149000,
-      uniqueCode: 61,
-      total: 149061,
-      paymentMethod: "BCA Virtual Account",
-      status: "LUNAS",
-      date: "25 Sep 2026, 09:40",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8810",
-      customer: "Taufik Hidayat & Lina",
-      customerEmail: "taufik.lina@gmail.com",
-      customerPhone: "+62 811-3344-5566",
-      template: "Elysian Luxe Emerald",
-      tier: "Platinum Tier",
-      amount: 199000,
-      uniqueCode: 93,
-      total: 199093,
-      paymentMethod: "GoPay",
-      status: "LUNAS",
-      date: "20 Sep 2026, 17:15",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8809",
-      customer: "Doni Kusuma & Ayu",
-      customerEmail: "doni.ayu@gmail.com",
-      customerPhone: "+62 859-7788-9900",
-      template: "Deluxe Royal Navy",
-      tier: "Silver Tier",
-      amount: 99000,
-      uniqueCode: 27,
-      total: 99027,
-      paymentMethod: "QRIS",
-      status: "LUNAS",
-      date: "15 Sep 2026, 14:05",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8808",
-      customer: "Satria Perkasa & Anita",
-      customerEmail: "satria.anita@gmail.com",
-      customerPhone: "+62 818-4455-6677",
-      template: "Elysian Bloom (Gold)",
-      tier: "Gold Tier",
-      amount: 149000,
-      uniqueCode: 48,
-      total: 149048,
-      paymentMethod: "QRIS",
-      status: "LUNAS",
-      date: "22 Agu 2026, 11:30",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8807",
-      customer: "Wahyu Tri & Lestari",
-      customerEmail: "wahyu.lestari@gmail.com",
-      customerPhone: "+62 823-1122-3344",
-      template: "Adat Jawa Klasik Keraton",
-      tier: "Gold Tier",
-      amount: 149000,
-      uniqueCode: 31,
-      total: 149031,
-      paymentMethod: "Mandiri VA",
-      status: "LUNAS",
-      date: "14 Jul 2026, 16:50",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8806",
-      customer: "Irfan Hakim & Bella",
-      customerEmail: "irfan.bella@gmail.com",
-      customerPhone: "+62 858-6677-8899",
-      template: "Minimalist Modern Flora",
-      tier: "Gold Tier",
-      amount: 149000,
-      uniqueCode: 12,
-      total: 149012,
-      paymentMethod: "BCA Virtual Account",
-      status: "LUNAS",
-      date: "18 Mei 2026, 13:20",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8805",
-      customer: "Ferry Irawan & Dian",
-      customerEmail: "ferry.dian@gmail.com",
-      customerPhone: "+62 812-9900-1122",
-      template: "Deluxe Royal Navy",
-      tier: "Silver Tier",
-      amount: 99000,
-      uniqueCode: 77,
-      total: 99077,
-      paymentMethod: "QRIS",
-      status: "LUNAS",
-      date: "10 Mar 2026, 10:00",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8804",
-      customer: "Bambang Pamungkas & Ratna",
-      customerEmail: "bambang.ratna@gmail.com",
-      customerPhone: "+62 815-4433-2211",
-      template: "Elysian Luxe Emerald",
-      tier: "Platinum Tier",
-      amount: 199000,
-      uniqueCode: 85,
-      total: 199085,
-      paymentMethod: "GoPay",
-      status: "LUNAS",
-      date: "12 Jan 2026, 15:45",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8799",
-      customer: "Rizky Billar & Lesti",
-      customerEmail: "rizky.lesti@gmail.com",
-      customerPhone: "+62 812-7788-9900",
-      template: "Elysian Bloom (Gold)",
-      tier: "Gold Tier",
-      amount: 149000,
-      uniqueCode: 36,
-      total: 149036,
-      paymentMethod: "QRIS",
-      status: "LUNAS",
-      date: "24 Des 2025, 14:15",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8798",
-      customer: "Atta Halilintar & Aurel",
-      customerEmail: "atta.aurel@gmail.com",
-      customerPhone: "+62 813-8899-0011",
-      template: "Elysian Luxe Emerald",
-      tier: "Platinum Tier",
-      amount: 199000,
-      uniqueCode: 64,
-      total: 199064,
-      paymentMethod: "BCA Virtual Account",
-      status: "LUNAS",
-      date: "15 Nov 2025, 11:20",
-      proofUrl: null,
-    },
   ]);
 
   // 3. DATA PANTAUAN TEMPLATE
-  const [templatesList, setTemplatesList] = useState([
+  const [templatesList] = useState<AdminTemplateItem[]>([
     {
       id: "tpl-1",
       name: "Elysian Bloom (Gold Edition)",
@@ -759,7 +425,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   ]);
 
   // 4. DATA UNDANGAN AKTIF / BERLANGSUNG
-  const [invitationsList, setInvitationsList] = useState([
+  const [invitationsList] = useState<AdminInvitationItem[]>([
     {
       id: "INV-101",
       title: "The Wedding of Dimas & Sarah",
@@ -834,11 +500,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
   ]);
 
-  // ---------------------------------------------------------------------------
-  // FILTER PERIODE DASHBOARD (Harian, Mingguan, Bulanan, Kuartalan, Tahunan, Semua)
-  // Menghitung data aktual dan perbandingan periode sebelumnya yang setara
-  // ---------------------------------------------------------------------------
-  const periodData = useMemo(() => {
+  // PERIOD DATA CALCULATION
+  const periodData: PeriodDataResult = useMemo(() => {
     let startCurrent = 0;
     let endCurrent = new Date(2026, 9, 11, 23, 59, 59).getTime();
     let startPrev = 0;
@@ -849,10 +512,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     let chartCategories: { label: string; filter: (t: number) => boolean }[] = [];
 
     if (selectedPeriod === "Harian") {
-      // Hari ini: 11 Okt 2026 00:00 - 23:59
       const d1 = new Date(2026, 9, 11, 0, 0, 0).getTime();
       const d2 = new Date(2026, 9, 11, 23, 59, 59).getTime();
-      // Kemarin: 10 Okt 2026 00:00 - 23:59
       const p1 = new Date(2026, 9, 10, 0, 0, 0).getTime();
       const p2 = new Date(2026, 9, 10, 23, 59, 59).getTime();
       startCurrent = d1;
@@ -871,10 +532,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         { label: "23:00", filter: (t) => t >= new Date(2026, 9, 11, 22, 0).getTime() && t <= new Date(2026, 9, 11, 23, 59).getTime() },
       ];
     } else if (selectedPeriod === "Mingguan") {
-      // 7 hari terakhir: 5 Okt - 11 Okt 2026
       const d1 = new Date(2026, 9, 5, 0, 0, 0).getTime();
       const d2 = new Date(2026, 9, 11, 23, 59, 59).getTime();
-      // 7 hari sebelumnya: 28 Sep - 4 Okt 2026
       const p1 = new Date(2026, 8, 28, 0, 0, 0).getTime();
       const p2 = new Date(2026, 9, 4, 23, 59, 59).getTime();
       startCurrent = d1;
@@ -894,10 +553,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         { label: "Min (11)", filter: (t) => t >= new Date(2026, 9, 11, 0).getTime() && t <= new Date(2026, 9, 11, 23, 59, 59).getTime() },
       ];
     } else if (selectedPeriod === "Bulanan") {
-      // Bulan ini: 1 Okt - 31 Okt 2026
       const d1 = new Date(2026, 9, 1, 0, 0, 0).getTime();
       const d2 = new Date(2026, 9, 31, 23, 59, 59).getTime();
-      // Bulan lalu: 1 Sep - 30 Sep 2026
       const p1 = new Date(2026, 8, 1, 0, 0, 0).getTime();
       const p2 = new Date(2026, 8, 30, 23, 59, 59).getTime();
       startCurrent = d1;
@@ -915,47 +572,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         { label: "Tgl 21-25", filter: (t) => t >= new Date(2026, 9, 21, 0).getTime() && t < new Date(2026, 9, 26, 0).getTime() },
         { label: "Tgl 26-31", filter: (t) => t >= new Date(2026, 9, 26, 0).getTime() && t <= new Date(2026, 9, 31, 23, 59, 59).getTime() },
       ];
-    } else if (selectedPeriod === "Kuartalan") {
-      // Kuartal 4: 1 Okt - 31 Des 2026
-      const d1 = new Date(2026, 9, 1, 0, 0, 0).getTime();
-      const d2 = new Date(2026, 11, 31, 23, 59, 59).getTime();
-      // Kuartal 3: 1 Jul - 30 Sep 2026
-      const p1 = new Date(2026, 6, 1, 0, 0, 0).getTime();
-      const p2 = new Date(2026, 8, 30, 23, 59, 59).getTime();
-      startCurrent = d1;
-      endCurrent = d2;
-      startPrev = p1;
-      endPrev = p2;
-      comparisonLabel = "vs kuartal lalu";
-      periodTitle = "Kuartal 4 (Okt - Des 2026)";
-      chartTitle = "Tren Pendapatan Kuartal Q4 (Okt, Nov, Des)";
-      chartCategories = [
-        { label: "Oktober", filter: (t) => t >= new Date(2026, 9, 1, 0).getTime() && t < new Date(2026, 10, 1, 0).getTime() },
-        { label: "November", filter: (t) => t >= new Date(2026, 10, 1, 0).getTime() && t < new Date(2026, 11, 1, 0).getTime() },
-        { label: "Desember", filter: (t) => t >= new Date(2026, 11, 1, 0).getTime() && t <= new Date(2026, 11, 31, 23, 59, 59).getTime() },
-      ];
-    } else if (selectedPeriod === "Tahunan") {
-      // Tahun 2026: 1 Jan - 31 Des 2026
-      const d1 = new Date(2026, 0, 1, 0, 0, 0).getTime();
-      const d2 = new Date(2026, 11, 31, 23, 59, 59).getTime();
-      // Tahun 2025: 1 Jan - 31 Des 2025
-      const p1 = new Date(2025, 0, 1, 0, 0, 0).getTime();
-      const p2 = new Date(2025, 11, 31, 23, 59, 59).getTime();
-      startCurrent = d1;
-      endCurrent = d2;
-      startPrev = p1;
-      endPrev = p2;
-      comparisonLabel = "vs tahun lalu";
-      periodTitle = "Tahun 2026";
-      chartTitle = "Tren Pendapatan Tahunan (2026)";
-      chartCategories = [
-        { label: "Q1", filter: (t) => t >= new Date(2026, 0, 1).getTime() && t < new Date(2026, 3, 1).getTime() },
-        { label: "Q2", filter: (t) => t >= new Date(2026, 3, 1).getTime() && t < new Date(2026, 6, 1).getTime() },
-        { label: "Q3", filter: (t) => t >= new Date(2026, 6, 1).getTime() && t < new Date(2026, 9, 1).getTime() },
-        { label: "Q4", filter: (t) => t >= new Date(2026, 9, 1).getTime() && t <= new Date(2026, 11, 31).getTime() },
-      ];
     } else {
-      // "Semua": Seluruh data yang tersedia
       startCurrent = 0;
       endCurrent = new Date(2030, 11, 31).getTime();
       startPrev = 0;
@@ -972,7 +589,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       ];
     }
 
-    // Filter order aktual
     const currentOrders = ordersList.filter((ord) => {
       if (selectedPeriod === "Semua") return true;
       const t = parseOrderTimestamp(ord.date);
@@ -985,7 +601,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       return t >= startPrev && t <= endPrev;
     });
 
-    // 1. Omset Pendapatan Aktual
     const currentRevenue = currentOrders
       .filter((o) => o.status === "LUNAS")
       .reduce((acc, curr) => acc + curr.total, 0);
@@ -1008,10 +623,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       isRevenueUp = true;
     }
 
-    // 2. Perlu Verifikasi
     const pendingOrders = currentOrders.filter((o) => o.status === "MENUNGGU_VERIFIKASI");
 
-    // 3. Total Undangan
     const totalInvitationsCount = invitationsList.filter((inv) => {
       if (selectedPeriod === "Semua") return true;
       const t = parseOrderTimestamp(inv.eventDate);
@@ -1036,7 +649,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       invitationGrowth = `+${totalInvitationsCount}`;
     }
 
-    // 4. Pengguna Terdaftar
     const currentUsers = usersList.filter((u) => {
       if (selectedPeriod === "Semua") return true;
       const t = parseOrderTimestamp(u.joinedDate);
@@ -1058,7 +670,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       userGrowthText = `${diff >= 0 ? "+" : ""}${diff.toFixed(0)}% vs periode lalu`;
     }
 
-    // 5. Data Chart Bars Dinamis dari data transaksi aktual
     const chartBars = chartCategories.map((cat) => {
       const ordersInCat = currentOrders.filter(
         (o) => o.status === "LUNAS" && cat.filter(parseOrderTimestamp(o.date))
@@ -1073,7 +684,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({
 
     const maxChartRev = Math.max(...chartBars.map((b) => b.revenue), 1);
 
-    // 6. Template Terlaris di Periode Ini
     const tplCounter: Record<string, { count: number; revenue: number; tpl: any }> = {};
     currentOrders.forEach((ord) => {
       const key = ord.template;
@@ -1115,12 +725,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     };
   }, [selectedPeriod, ordersList, usersList, invitationsList, templatesList]);
 
-  // ---------------------------------------------------------------------------
-  // DEFINISI KOLOM DATA TABLE BERSAMA (DataTable.tsx)
-  // ---------------------------------------------------------------------------
-
-  // Kolom Tabel Dashboard Pesanan Terkini
-  const dashboardOrderColumns: DataTableColumn<any>[] = [
+  // COLUMNS
+  const dashboardOrderColumns: DataTableColumn<AdminOrderItem>[] = [
     {
       key: "id",
       header: "INVOICE",
@@ -1189,8 +795,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
   ];
 
-  // Kolom Tabel Pengguna (Role TELAH DIHAPUS sesuai permintaan)
-  const userColumns: DataTableColumn<any>[] = [
+  const userColumns: DataTableColumn<AdminUserData>[] = [
     {
       key: "name",
       header: "PENGGUNA",
@@ -1286,8 +891,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
   ];
 
-  // Kolom Tabel Undangan Berlangsung (ACARA, PASANGAN, TANGGAL, TAMU, AKSI)
-  const invitationColumns: DataTableColumn<any>[] = [
+  const invitationColumns: DataTableColumn<AdminInvitationItem>[] = [
     {
       key: "title",
       header: "ACARA",
@@ -1345,8 +949,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
   ];
 
-  // Kolom Tabel Keuangan
-  const financeOrderColumns: DataTableColumn<any>[] = [
+  const financeOrderColumns: DataTableColumn<AdminOrderItem>[] = [
     {
       key: "id",
       header: "NO. INVOICE",
@@ -1433,8 +1036,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
   ];
 
-  // Kolom Tabel Template
-  const templateColumns: DataTableColumn<any>[] = [
+  const templateColumns: DataTableColumn<AdminTemplateItem>[] = [
     {
       key: "thumbnail",
       header: "PREVIEW",
@@ -1452,25 +1054,15 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       header: "TEMPLATE",
       sortable: true,
       render: (tpl) => (
-        <div>
-          <p className="font-bold text-neutral-900">{tpl.name}</p>
-          <span className="text-[11px] text-amber-600 font-medium">
-            ⭐ {tpl.rating} (Review Positif)
-          </span>
-        </div>
+        <span className="font-bold text-neutral-900">{tpl.name}</span>
       ),
     },
     {
       key: "category",
-      header: "KATEGORI & TIER",
+      header: "KATEGORI",
       sortable: true,
       render: (tpl) => (
-        <div>
-          <p className="text-neutral-700 font-semibold">{tpl.category}</p>
-          <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-1.5 py-0.2 rounded">
-            {tpl.tier}
-          </span>
-        </div>
+        <span className="text-neutral-700 font-semibold">{tpl.category}</span>
       ),
     },
     {
@@ -1480,31 +1072,31 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       render: (tpl) => (
         <div>
           <span className="font-bold text-neutral-900 block">
-            Rp {tpl.price.toLocaleString("id-ID")}
+            {tpl.price.toLocaleString("id-ID")}
           </span>
           <span className="text-[10px] text-neutral-400 line-through">
-            Rp {tpl.originalPrice.toLocaleString("id-ID")}
+            {tpl.originalPrice.toLocaleString("id-ID")}
           </span>
         </div>
       ),
     },
     {
       key: "totalUsers",
-      header: "TOTAL PENGGUNA",
+      header: "PENGGUNA",
       sortable: true,
       render: (tpl) => (
         <span className="font-black text-[#7d6aee]">
-          {tpl.totalUsers} Pasangan
+          {tpl.totalUsers.toLocaleString("id-ID")}
         </span>
       ),
     },
     {
       key: "totalRevenue",
-      header: "TOTAL OMSET",
+      header: "OMSET",
       sortable: true,
       render: (tpl) => (
         <span className="font-bold text-emerald-700">
-          Rp {tpl.totalRevenue.toLocaleString("id-ID")}
+          {tpl.totalRevenue.toLocaleString("id-ID")}
         </span>
       ),
     },
@@ -1545,7 +1137,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
   ];
 
-  // Quick action: Verifikasi Order
   const handleApproveOrder = (orderId: string) => {
     setOrdersList((prev) =>
       prev.map((ord) => (ord.id === orderId ? { ...ord, status: "LUNAS" } : ord))
@@ -1565,21 +1156,13 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     }
   };
 
-  interface NavItem {
-    id: "overview" | "users" | "analytics" | "finance" | "templates" | "invitations" | "settings";
-    label: string;
-    icon: React.ComponentType<{ className?: string }>;
-    badge?: number;
-  }
-
-  // Nav item list
-  const navItems: NavItem[] = [
-    { id: "overview", label: "Dashboard", icon: LayoutGrid },
-    { id: "users", label: "Pengguna", icon: Users, badge: usersList.length },
-    { id: "analytics", label: "Transaksi", icon: ChartPie },
-    { id: "finance", label: "Keuangan", icon: Wallet, badge: ordersList.filter(o => o.status === "MENUNGGU_VERIFIKASI").length },
-    { id: "templates", label: "Template", icon: Palette, badge: templatesList.length },
-    { id: "invitations", label: "Berlangsung", icon: Radio, badge: invitationsList.length },
+  const navItems = [
+    { id: "overview" as const, label: "Dashboard", icon: LayoutGrid },
+    { id: "users" as const, label: "Pengguna", icon: Users, badge: usersList.length },
+    { id: "analytics" as const, label: "Transaksi", icon: HeartHandshake },
+    { id: "finance" as const, label: "Keuangan", icon: Wallet, badge: ordersList.filter(o => o.status === "MENUNGGU_VERIFIKASI").length },
+    { id: "templates" as const, label: "Template", icon: Palette, badge: templatesList.length },
+    { id: "invitations" as const, label: "Berlangsung", icon: Radio, badge: invitationsList.length },
   ];
 
   const getDashNavbarTitle = () => {
@@ -1612,43 +1195,65 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* DESKTOP SIDEBAR                                                           */}
-      {/* ========================================================================= */}
-      <aside className="hidden md:flex flex-col w-64 lg:w-72 bg-white border-r border-neutral-200/80 min-h-screen h-screen sticky top-0 shrink-0 z-30 justify-between p-4 lg:p-5">
-        <div className="flex flex-col gap-5">
-          {/* Logo Brand SatuCerita Admin */}
-          <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
-            <div className="flex items-center gap-2.5">
-              <div className="size-9 rounded-xl bg-gradient-to-tr from-[#7d6aee] to-[#a394ff] flex items-center justify-center text-white font-black shadow-xs text-sm">
-                SC
-              </div>
-              <div>
-                <span className="text-base font-black tracking-tight text-neutral-900 block leading-tight">
-                  Satu<span className="text-[#7d6aee]">Cerita</span>
-                </span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded-sm uppercase tracking-wider">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Admin Panel
-                </span>
-              </div>
+      {/* DESKTOP SIDEBAR */}
+      <aside
+        className={`hidden md:flex flex-col ${
+          isSidebarCollapsed ? "w-16 p-2" : "w-48 p-2.5"
+        } bg-white border-r border-neutral-200/80 min-h-screen h-screen sticky top-0 shrink-0 z-30 justify-between transition-all duration-200 ease-in-out`}
+      >
+        <div className="flex flex-col gap-4">
+          {/* Header Sidebar */}
+          {isSidebarCollapsed ? (
+            <div className="flex items-center justify-center pb-3 border-b border-neutral-100">
+              <button
+                type="button"
+                onClick={() => setIsSidebarCollapsed(false)}
+                title="Buka Sidebar (Expand)"
+                className="relative size-10 rounded-xl overflow-hidden shrink-0 border border-purple-100 shadow-2xs group cursor-pointer focus:outline-none"
+              >
+                <img
+                  src="/logos/satucerita.png"
+                  alt="Satu Cerita"
+                  width="40"
+                  height="40"
+                  className="w-full h-full object-cover transition-opacity duration-150 group-hover:opacity-0"
+                />
+                <div className="absolute inset-0 bg-[#7d6aee] text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                  <PanelLeftOpen className="w-5 h-5 stroke-[2.2]" />
+                </div>
+              </button>
             </div>
+          ) : (
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="size-8 rounded-xl overflow-hidden shrink-0 border border-purple-100 shadow-2xs">
+                  <img
+                    src="/logos/satucerita.png"
+                    alt="Satu Cerita"
+                    width="32"
+                    height="32"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-base font-black tracking-tight text-neutral-900 block leading-tight truncate">
+                    Satu<span className="text-[#7d6aee]">Cerita</span>
+                  </span>
+                </div>
+              </div>
 
-            <button
-              type="button"
-              onClick={() => onNavigate ? onNavigate(PATHS.home) : (window.location.href = PATHS.home)}
-              title="Ke Halaman Web Utama"
-              className="p-1.5 text-neutral-400 hover:text-[#7d6aee] hover:bg-purple-50 rounded-lg transition-colors cursor-pointer"
-            >
-              <SquareArrowOutUpRight className="w-4 h-4" />
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setIsSidebarCollapsed(true)}
+                title="Tutup Sidebar (Collapse)"
+                className="p-1.5 text-neutral-400 hover:text-[#7d6aee] hover:bg-purple-50 rounded-lg transition-colors cursor-pointer shrink-0"
+              >
+                <PanelLeft className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
-          {/* Nav Items */}
           <nav className="space-y-1">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 px-3 pb-1 block">
-              Menu Pengawasan
-            </span>
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -1657,19 +1262,22 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                   key={item.id}
                   type="button"
                   onClick={() => handleSelectTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold transition-all md:transition-none cursor-pointer ${
+                  title={item.label}
+                  className={`w-full flex items-center ${
+                    isSidebarCollapsed ? "justify-center p-2.5" : "justify-between px-3 py-2"
+                  } rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     isActive
                       ? "bg-[#7d6aee] text-white shadow-2xs font-extrabold border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc]"
                       : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-neutral-500"}`} />
-                    <span>{item.label}</span>
+                  <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5 min-w-0"}`}>
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-neutral-500"}`} />
+                    {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
                   </div>
-                  {item.badge !== undefined && (
+                  {!isSidebarCollapsed && item.badge !== undefined && (
                     <span
-                      className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                      className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold shrink-0 ${
                         isActive
                           ? "bg-white/20 text-white"
                           : item.id === "finance" && item.badge > 0
@@ -1686,74 +1294,70 @@ export const AdminDash: React.FC<AdminDashProps> = ({
           </nav>
         </div>
 
-        {/* SIDEBAR FOOTER: MENU PENGATURAN + USER AVATAR & LOGOUT (TANPA SEPARATOR) */}
+        {/* SIDEBAR FOOTER */}
         <div className="flex flex-col gap-2">
-          {/* Menu Pengaturan di atas component profile group */}
           <button
             type="button"
             onClick={() => handleSelectTab("settings")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold transition-all md:transition-none cursor-pointer ${
+            title="Pengaturan"
+            className={`w-full flex items-center ${
+              isSidebarCollapsed ? "justify-center p-2.5" : "justify-between px-3 py-2"
+            } rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "settings"
                 ? "bg-[#7d6aee] text-white shadow-2xs font-extrabold border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc]"
                 : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
             }`}
           >
-            <div className="flex items-center gap-2.5">
-              <Settings className={`w-4 h-4 ${activeTab === "settings" ? "text-white" : "text-neutral-500"}`} />
-              <span>Pengaturan</span>
+            <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5"}`}>
+              <Settings className={`w-4 h-4 shrink-0 ${activeTab === "settings" ? "text-white" : "text-neutral-500"}`} />
+              {!isSidebarCollapsed && <span>Pengaturan</span>}
             </div>
           </button>
 
-          {/* Component Profile Group */}
-          <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-white border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-            <div
-              onClick={() => {
-                setEditAdminName(adminProfile.name);
-                setEditAdminEmail(adminProfile.email);
-                setEditAdminPhone(adminProfile.phone);
-                setEditAdminAvatar(adminProfile.avatar);
-                setIsEditAdminProfileOpen(true);
-              }}
-              className="flex items-center gap-2.5 min-w-0 cursor-pointer group flex-1 hover:opacity-90"
-              title="Klik untuk Edit Profil Admin (Foto & WhatsApp)"
-            >
-              <div className="relative shrink-0">
+          <div
+            onClick={() => {
+              setEditAdminName("Admin");
+              setEditAdminEmail(adminProfile.email || "zanxastudio@gmail.com");
+              setEditAdminPhone(adminProfile.phone);
+              setEditAdminAvatar(adminProfile.avatar);
+              setIsEditAdminProfileOpen(true);
+            }}
+            className={`flex items-center ${
+              isSidebarCollapsed ? "justify-center p-1.5" : "justify-between gap-2 p-2"
+            } rounded-2xl bg-white border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs cursor-pointer group hover:border-purple-200 transition-all`}
+            title={`Admin (${adminProfile.email || "zanxastudio@gmail.com"})`}
+          >
+            <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2 min-w-0 flex-1"}`}>
+              <div className="shrink-0">
                 <img
                   src={adminProfile.avatar}
-                  alt={adminProfile.name}
-                  className="size-9 rounded-full object-cover border border-[#7d6aee]/30 shadow-2xs group-hover:ring-2 group-hover:ring-[#7d6aee] transition-all md:transition-none"
+                  alt="Admin"
+                  className="size-8 rounded-full object-cover border border-[#7d6aee]/30 shadow-2xs group-hover:ring-2 group-hover:ring-[#7d6aee] transition-all md:transition-none"
                 />
-                <span className="absolute -bottom-0.5 -right-0.5 size-3.5 bg-[#7d6aee] text-white rounded-full flex items-center justify-center p-0.5 shadow-2xs">
-                  <Pencil className="w-2 h-2" />
-                </span>
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-neutral-900 truncate leading-tight group-hover:text-[#7d6aee] transition-colors md:transition-none">
-                  {adminProfile.name}
-                </p>
-                <p className="text-[11px] text-neutral-500 truncate leading-tight">
-                  {adminProfile.phone || adminProfile.email}
-                </p>
-              </div>
+              {!isSidebarCollapsed && (
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-neutral-900 truncate leading-tight group-hover:text-[#7d6aee] transition-colors md:transition-none">
+                    Admin
+                  </p>
+                  <p className="text-[11px] text-neutral-500 truncate leading-tight">
+                    {adminProfile.email || "zanxastudio@gmail.com"}
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Tombol Logout di baris yang sama, di bagian kanan */}
-            <button
-              type="button"
-              onClick={() => setIsLogoutModalOpen(true)}
-              title="Logout / Keluar"
-              className="p-2 rounded-xl text-neutral-400 hover:text-rose-600 hover:bg-rose-50 transition-colors md:transition-none shrink-0 cursor-pointer"
-              aria-label="Tombol Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            {!isSidebarCollapsed && (
+              <div className="p-1 rounded-lg text-neutral-400 group-hover:text-[#7d6aee] transition-colors shrink-0">
+                <ChevronRight className="w-4 h-4" />
+              </div>
+            )}
           </div>
         </div>
       </aside>
 
       {/* Main Content Right Side */}
       <div className="flex-1 min-w-0 flex flex-col justify-between">
-        {/* Top Navbar Dash Sticky di Desktop */}
         <div className="sticky top-0 z-40 bg-white">
           <AppNavbar
             currentPath={currentPath}
@@ -1765,7 +1369,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               }
             }}
             activeTab={activeTab}
-            hideAvatar={activeTab === "settings"}
+            hideAvatar={true}
             title={getDashNavbarTitle()}
             period={selectedPeriod}
             onPeriodChange={setSelectedPeriod}
@@ -1791,972 +1395,235 @@ export const AdminDash: React.FC<AdminDashProps> = ({
           />
         </div>
 
-      {/* ========================================================================= */}
-      {/* MAIN CONTENT AREA                                                         */}
-      {/* ========================================================================= */}
-      <main className="flex-1 min-w-0 flex flex-col p-4 sm:p-6 lg:p-8 gap-6 max-w-7xl mx-auto w-full pb-24 md:pb-8">
-        {/* ----------------------------------------------------------------------- */}
-        {/* TAB 1: RINGKASAN / OVERVIEW                                             */}
-        {/* ----------------------------------------------------------------------- */}
-        {activeTab === "overview" && (
-          <div className="space-y-6 animate-fadeIn md:animate-none">
-            {/* Header Tab 1 Ringkasan & Filter Periode Desktop */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-              <div>
-                <h1 className="text-base sm:text-lg font-black text-neutral-900 tracking-tight">
-                  Ringkasan Kinerja Platform
-                </h1>
-                <p className="text-xs text-neutral-500 font-medium mt-0.5">
-                  Menampilkan data aktual periode: <span className="font-bold text-[#7d6aee]">{periodData.periodTitle}</span>
-                </p>
-              </div>
-
-              {/* Filter Periode Desktop */}
-              <div className="hidden md:flex items-center gap-1.5 p-1 bg-purple-50/70 border border-purple-200 rounded-xl">
-                {(["Harian", "Mingguan", "Bulanan", "Kuartalan", "Tahunan", "Semua"] as DashPeriodType[]).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setSelectedPeriod(p)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
-                      selectedPeriod === p
-                        ? "bg-[#7d6aee] text-white shadow-xs"
-                        : "text-neutral-600 hover:text-neutral-900 hover:bg-white/80"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Stat KPI Cards (Data Aktual Terhubung ke Filter Periode) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-neutral-500">Total Undangan</p>
-                    <p className="text-xl sm:text-2xl font-black text-neutral-900 mt-1">
-                      {periodData.totalInvitationsCount.toLocaleString("id-ID")}
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white shadow-2xs">
-                    <FileHeart className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  <span>{periodData.invitationGrowth}</span>
-                  <span className="text-neutral-400 font-normal">{periodData.comparisonLabel}</span>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-neutral-500">Perlu Verifikasi</p>
-                    <p className="text-xl sm:text-2xl font-black text-amber-600 mt-1">
-                      {periodData.pendingOrders.length} Pesanan
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white shadow-2xs">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="mt-3 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md inline-block border border-amber-200/60 border-b-[2px] border-b-amber-300/80">
-                  {periodData.pendingOrders.length > 0 ? "Butuh aksi konfirmasi bukti" : "Semua pesanan terverifikasi"}
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-neutral-500">Omset {periodData.periodTitle}</p>
-                    <p className="text-xl sm:text-2xl font-black text-neutral-900 mt-1">
-                      Rp {periodData.currentRevenue.toLocaleString("id-ID")}
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow-2xs">
-                    <DollarSign className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  <span>{periodData.revenueGrowth}</span>
-                  <span className="text-neutral-400 font-normal">{periodData.comparisonLabel}</span>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-neutral-500">Pengguna Terdaftar</p>
-                    <p className="text-xl sm:text-2xl font-black text-neutral-900 mt-1">
-                      {periodData.newUsersCount} Pengguna
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-gradient-to-tr from-purple-500 to-[#7d6aee] text-white shadow-2xs">
-                    <Users className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-                  <span>{periodData.userGrowthText}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Chart Preview & Ringkasan Penjualan */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
-                  <div>
-                    <h2 className="text-sm sm:text-base font-extrabold text-neutral-900">
-                      {periodData.chartTitle}
-                    </h2>
-                    <p className="text-xs text-neutral-400">
-                      Total {periodData.currentOrders.length} transaksi pada periode ini
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("analytics")}
-                    className="text-xs font-extrabold text-[#7d6aee] hover:underline flex items-center gap-1"
-                  >
-                    Lihat Transaksi <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* SVG Mini Chart Bars (Dinamis dari Data Aktual Periode) */}
-                <div className="mt-6 flex items-end gap-2 sm:gap-4 h-44 sm:h-52 pt-6 pb-2 px-2 border-b border-neutral-100">
-                  {periodData.chartBars.map((bar, idx) => {
-                    const heightPercent =
-                      periodData.maxChartRev > 0
-                        ? Math.max(12, Math.round((bar.revenue / periodData.maxChartRev) * 100))
-                        : 12;
-                    return (
-                      <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                        <div className="relative w-full flex justify-center">
-                          <span className="absolute -top-7 hidden group-hover:block bg-neutral-900 text-white text-[10px] font-bold py-0.5 px-1.5 rounded shadow z-10 whitespace-nowrap">
-                            Rp {bar.revenue.toLocaleString("id-ID")} ({bar.count} order)
-                          </span>
-                          <div
-                            style={{ height: `${heightPercent}%` }}
-                            className={`w-full max-w-[28px] rounded-t-md transition-all ${
-                              bar.revenue > 0
-                                ? "bg-[#7d6aee] hover:bg-[#6b58e0]"
-                                : "bg-purple-100 hover:bg-purple-200"
-                            }`}
-                          />
-                        </div>
-                        <span className="text-[10px] sm:text-xs text-neutral-500 font-bold truncate max-w-full">
-                          {bar.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-neutral-400 mt-2 px-2">
-                  <span>Periode: {periodData.periodTitle}</span>
-                  <span className="font-bold text-[#7d6aee]">
-                    Total Omset: Rp {periodData.currentRevenue.toLocaleString("id-ID")}
-                  </span>
-                </div>
-              </div>
-
-              {/* Template Terpopuler Box */}
-              <div className="bg-white rounded-2xl p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between">
-                <div>
-                  <h2 className="text-sm sm:text-base font-extrabold text-neutral-900 pb-3 border-b border-neutral-100">
-                    Template Terlaris ({periodData.periodTitle})
-                  </h2>
-                  <div className="mt-4 space-y-3">
-                    {periodData.popularTemplates.slice(0, 3).map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-neutral-50 transition-colors">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <img
-                            src={item.tpl.thumbnail}
-                            alt={item.name}
-                            className="size-10 rounded-lg object-cover border border-purple-100 shrink-0"
-                          />
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-neutral-900 truncate">{item.name}</p>
-                            <p className="text-[11px] text-neutral-400">{item.tpl.category}</p>
-                          </div>
-                        </div>
-                        <span className="text-xs font-black text-[#7d6aee] shrink-0">
-                          {item.count} x
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setActiveTab("templates")}
-                  className="w-full mt-4 justify-center"
-                >
-                  Kelola Semua Template &rarr;
-                </Button>
-              </div>
-            </div>
-
-            {/* Pesanan Terbaru yang Butuh Perhatian (Menggunakan Shared DataTable) */}
-            <div className="bg-white rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs overflow-hidden">
-              <div className="p-4 sm:p-5 border-b border-neutral-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <h2 className="font-extrabold text-sm sm:text-base text-neutral-900">
-                    Pesanan &amp; Verifikasi Terkini ({periodData.periodTitle})
-                  </h2>
-                  <p className="text-xs text-neutral-400">
-                    Daftar pembayaran masuk yang menunggu verifikasi atau transaksi pada periode ini.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("finance")}
-                  className="text-xs font-extrabold text-[#7d6aee] hover:underline"
-                >
-                  Buka Menu Keuangan &rarr;
-                </button>
-              </div>
-
-              <DataTable
-                columns={dashboardOrderColumns}
-                data={periodData.currentOrders.length > 0 ? periodData.currentOrders.slice(0, 5) : ordersList.slice(0, 5)}
-                emptyMessage="Tidak ada pesanan pada periode ini."
-              />
-            </div>
-          </div>
-        )}
-
-        {/* ----------------------------------------------------------------------- */}
-        {/* TAB 2: DATA PENGGUNA TERDAFTAR (USERS TABLE)                            */}
-        {/* ----------------------------------------------------------------------- */}
-        {activeTab === "users" && (
-          <div className="space-y-6 animate-fadeIn md:animate-none">
-            {/* Filter & Search Bar */}
-            <div className="bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="relative flex-1 max-w-md">
-                <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Cari nama, email, atau nomor WhatsApp..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold text-purple-700 bg-purple-50 px-3 py-2 rounded-xl border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs">
-                  Total: <strong className="text-neutral-900">{usersList.length} Akun</strong>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => showToast("Ekspor data pengguna berhasil!")}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 hover:bg-neutral-50 text-xs font-extrabold text-neutral-700 shadow-2xs active:scale-[0.99] active:border-b-[2px] transition-all cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Ekspor CSV</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Users Data Table (Role TELAH DIHAPUS, Menggunakan Shared DataTable) */}
-            <DataTable
-              columns={userColumns}
-              data={usersList.filter(
-                (u) =>
-                  u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  u.phone.includes(searchQuery)
-              )}
-              emptyMessage="Pengguna tidak ditemukan."
+        {/* MAIN CONTENT AREA */}
+        <main className="flex-1 min-w-0 flex flex-col p-4 sm:p-6 lg:p-8 gap-6 max-w-7xl mx-auto w-full pb-24 md:pb-8">
+          {activeTab === "overview" && (
+            <OverviewPage
+              periodData={periodData}
+              selectedPeriod={selectedPeriod}
+              onPeriodChange={setSelectedPeriod}
+              dashboardOrderColumns={dashboardOrderColumns}
+              ordersList={ordersList}
+              onSelectTab={handleSelectTab}
             />
-          </div>
-        )}
+          )}
 
-        {/* ----------------------------------------------------------------------- */}
-        {/* TAB 3: GRAFIK PEMBELIAN & ANALISIS (CHARTS & ANALYTICS)                  */}
-        {/* ----------------------------------------------------------------------- */}
-        {activeTab === "analytics" && (
-          <div className="space-y-6 animate-fadeIn md:animate-none">
-            {/* Filter Waktu */}
-            <div className="flex items-center justify-end">
-              <div className="flex items-center gap-1.5 p-1 bg-white rounded-xl border border-purple-100 border-b-[2px] border-b-purple-200/70 shadow-2xs select-none">
-                <button
-                  type="button"
-                  onClick={() => setTimeRange("7d")}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    timeRange === "7d" ? "bg-[#7d6aee] text-white shadow-2xs" : "text-neutral-500 hover:text-neutral-800"
-                  }`}
-                >
-                  7 Hari
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTimeRange("30d")}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    timeRange === "30d" ? "bg-[#7d6aee] text-white shadow-2xs" : "text-neutral-500 hover:text-neutral-800"
-                  }`}
-                >
-                  30 Hari
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTimeRange("1y")}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    timeRange === "1y" ? "bg-[#7d6aee] text-white shadow-2xs" : "text-neutral-500 hover:text-neutral-800"
-                  }`}
-                >
-                  1 Tahun
-                </button>
-              </div>
-            </div>
+          {activeTab === "users" && (
+            <UsersPage
+              usersList={usersList}
+              userColumns={userColumns}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              showToast={showToast}
+            />
+          )}
 
-            {/* Metric KPI Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <p className="text-xs font-semibold text-neutral-400">Total Transaksi Selesai</p>
-                <p className="text-2xl font-black text-neutral-900 mt-1">142 Pesanan</p>
-                <span className="text-xs font-bold text-emerald-600 mt-2 block">+24% vs periode lalu</span>
-              </div>
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <p className="text-xs font-semibold text-neutral-400">Rata-rata Nilai Transaksi (AOV)</p>
-                <p className="text-2xl font-black text-neutral-900 mt-1">Rp 148.500</p>
-                <span className="text-xs font-bold text-neutral-500 mt-2 block">Dominan paket Gold & Platinum</span>
-              </div>
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <p className="text-xs font-semibold text-neutral-400">Tingkat Konversi Pembayaran</p>
-                <p className="text-2xl font-black text-emerald-600 mt-1">94.2%</p>
-                <span className="text-xs font-bold text-emerald-600 mt-2 block">QRIS terbukti paling cepat</span>
-              </div>
-            </div>
+          {activeTab === "analytics" && (
+            <AnalyticsPage
+              timeRange={timeRange}
+              setTimeRange={setTimeRange}
+            />
+          )}
 
-            {/* Big Chart Section */}
-            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-base font-extrabold text-neutral-900">
-                    Grafik Volume Pembelian Harian
-                  </h2>
-                  <p className="text-xs text-neutral-400">Jumlah pemesanan dan checkout per tanggal</p>
-                </div>
-                <div className="flex items-center gap-3 text-xs font-semibold text-neutral-500">
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-3 rounded-sm bg-[#7d6aee]" /> Lunas
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-3 rounded-sm bg-purple-200" /> Pending
-                  </span>
-                </div>
-              </div>
+          {activeTab === "finance" && (
+            <FinancePage
+              ordersList={ordersList}
+              financeOrderColumns={financeOrderColumns}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              showToast={showToast}
+            />
+          )}
 
-              {/* Chart Visual */}
-              <div className="h-64 flex items-end gap-2 sm:gap-4 pt-8 pb-2 px-2 border-b border-neutral-100">
-                {[
-                  { day: "Sen", paid: 12, pending: 2 },
-                  { day: "Sel", paid: 18, pending: 3 },
-                  { day: "Rab", paid: 15, pending: 1 },
-                  { day: "Kam", paid: 24, pending: 4 },
-                  { day: "Jum", paid: 30, pending: 2 },
-                  { day: "Sab", paid: 42, pending: 5 },
-                  { day: "Min", paid: 38, pending: 3 },
-                ].map((item, idx) => {
-                  const maxH = 50;
-                  return (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                      <div className="relative w-full flex flex-col items-center justify-end h-full">
-                        <span className="absolute -top-7 hidden group-hover:block bg-neutral-900 text-white text-[10px] font-bold py-0.5 px-2 rounded shadow whitespace-nowrap">
-                          {item.paid} Lunas / {item.pending} Pending
-                        </span>
-                        <div
-                          style={{ height: `${(item.pending / maxH) * 100}%` }}
-                          className="w-full max-w-[32px] bg-purple-200 rounded-t-sm"
-                        />
-                        <div
-                          style={{ height: `${(item.paid / maxH) * 100}%` }}
-                          className="w-full max-w-[32px] bg-[#7d6aee] rounded-t-sm"
-                        />
-                      </div>
-                      <span className="text-xs font-bold text-neutral-600">{item.day}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+          {activeTab === "templates" && (
+            <TemplatesPage
+              templatesList={templatesList}
+              templateColumns={templateColumns}
+              onOpenAddModal={() => setIsAddTemplateModalOpen(true)}
+            />
+          )}
 
-            {/* Breakdown Metode Pembayaran */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <h3 className="text-sm font-extrabold text-neutral-900 mb-4">
-                  Metode Pembayaran Paling Digunakan
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-neutral-700 mb-1">
-                      <span>QRIS Instant (GoPay/ShopeePay/BCA)</span>
-                      <span>58% (82 Transaksi)</span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-neutral-100 overflow-hidden">
-                      <div className="bg-[#7d6aee] h-full rounded-full" style={{ width: "58%" }} />
-                    </div>
-                  </div>
+          {activeTab === "invitations" && (
+            <InvitationsPage
+              invitationsList={invitationsList}
+              invitationColumns={invitationColumns}
+              searchQuery={invitationSearchQuery}
+              setSearchQuery={setInvitationSearchQuery}
+            />
+          )}
 
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-neutral-700 mb-1">
-                      <span>BCA Virtual Account</span>
-                      <span>24% (34 Transaksi)</span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-neutral-100 overflow-hidden">
-                      <div className="bg-indigo-500 h-full rounded-full" style={{ width: "24%" }} />
-                    </div>
-                  </div>
+          {activeTab === "settings" && (
+            <SettingsPage
+              adminProfile={adminProfile}
+              adminSettings={adminSettings}
+              setAdminSettings={setAdminSettings}
+              onOpenEditProfile={() => setIsEditAdminProfileOpen(true)}
+              onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
+              onSaveSettings={() => {
+                saveAdminSettingsCache(adminSettings);
+                showToast("Pengaturan rekening pembayaran berhasil disimpan ke cache!");
+              }}
+            />
+          )}
+        </main>
 
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-neutral-700 mb-1">
-                      <span>Mandiri Virtual Account</span>
-                      <span>12% (17 Transaksi)</span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-neutral-100 overflow-hidden">
-                      <div className="bg-blue-400 h-full rounded-full" style={{ width: "12%" }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-neutral-700 mb-1">
-                      <span>E-Wallet GoPay Direct</span>
-                      <span>6% (9 Transaksi)</span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-neutral-100 overflow-hidden">
-                      <div className="bg-emerald-500 h-full rounded-full" style={{ width: "6%" }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <h3 className="text-sm font-extrabold text-neutral-900 mb-4">
-                  Kategori Undangan Paling Laris
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-purple-50/50 border border-purple-100">
-                    <span className="text-xs font-bold text-neutral-800">Pernikahan (Wedding)</span>
-                    <span className="text-xs font-black text-[#7d6aee]">78% dari total pesanan</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-neutral-50 border border-neutral-100">
-                    <span className="text-xs font-bold text-neutral-800">Lamaran &amp; Tunangan</span>
-                    <span className="text-xs font-black text-neutral-700">14% dari total pesanan</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-neutral-50 border border-neutral-100">
-                    <span className="text-xs font-bold text-neutral-800">Khitanan &amp; Ulang Tahun</span>
-                    <span className="text-xs font-black text-neutral-700">8% dari total pesanan</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ----------------------------------------------------------------------- */}
-        {/* TAB 4: KEUANGAN & TRANSAKSI (FINANCE DATA TABLE)                         */}
-        {/* ----------------------------------------------------------------------- */}
-        {activeTab === "finance" && (
-          <div className="space-y-6 animate-fadeIn md:animate-none">
-            <div className="flex items-center justify-end">
-              <button
-                type="button"
-                onClick={() => showToast("Laporan keuangan berhasil diunduh!")}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
+        {/* Floating Bottom Nav for Satu Cerita Dash (Mobile) */}
+        <nav
+          id="satucerita-dash-bottom-navbar"
+          className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
+          aria-label="Satu Cerita Dash Navigation"
+        >
+          <div className="max-w-md mx-auto grid grid-cols-7 h-16 px-1">
+            <button
+              type="button"
+              onClick={() => handleSelectTab("overview")}
+              className={`flex items-center justify-center transition-all cursor-pointer relative ${
+                activeTab === "overview" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
+              }`}
+              title="Dashboard"
+              aria-label="Dashboard"
+            >
+              <div
+                className={`p-1.5 sm:p-2 rounded-xl transition-all ${
+                  activeTab === "overview"
+                    ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                    : "hover:bg-neutral-100"
+                }`}
               >
-                <Receipt className="w-3.5 h-3.5" />
-                <span>Cetak Rekap Keuangan</span>
-              </button>
-            </div>
+                <LayoutGrid className="w-5 h-5" />
+              </div>
+            </button>
 
-            {/* Financial Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <span className="text-xs font-semibold text-neutral-400">Total Pemasukan Bersih</span>
-                <p className="text-2xl font-black text-emerald-600 mt-1">Rp 14.850.000</p>
-                <span className="text-[11px] text-neutral-500 mt-1 block">Bulan Berjalan (Oktober 2026)</span>
+            <button
+              type="button"
+              onClick={() => handleSelectTab("users")}
+              className={`flex items-center justify-center transition-all cursor-pointer relative ${
+                activeTab === "users" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
+              }`}
+              title="Pengguna"
+              aria-label="Pengguna"
+            >
+              <div
+                className={`p-1.5 sm:p-2 rounded-xl transition-all ${
+                  activeTab === "users"
+                    ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                    : "hover:bg-neutral-100"
+                }`}
+              >
+                <Users className="w-5 h-5" />
               </div>
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <span className="text-xs font-semibold text-neutral-400">Pending Verifikasi Manual</span>
-                <p className="text-2xl font-black text-amber-600 mt-1">
-                  Rp{" "}
-                  {ordersList
-                    .filter((o) => o.status === "MENUNGGU_VERIFIKASI")
-                    .reduce((acc, curr) => acc + curr.total, 0)
-                    .toLocaleString("id-ID")}
-                </p>
-                <span className="text-[11px] text-amber-700 font-semibold mt-1 block">
-                  {ordersList.filter((o) => o.status === "MENUNGGU_VERIFIKASI").length} pesanan menanti konfirmasi
-                </span>
-              </div>
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <span className="text-xs font-semibold text-neutral-400">Biaya Payment Gateway (Est.)</span>
-                <p className="text-2xl font-black text-neutral-900 mt-1">Rp 124.500</p>
-                <span className="text-[11px] text-neutral-500 mt-1 block">0.7% QRIS MDR Rate</span>
-              </div>
-            </div>
+            </button>
 
-            {/* Orders Data Table */}
-            <div className="bg-white rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs overflow-hidden">
-              <div className="p-4 sm:p-5 border-b border-neutral-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h2 className="font-extrabold text-sm sm:text-base text-neutral-900">
-                  Daftar Seluruh Pesanan
-                </h2>
-                <div className="relative">
-                  <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Cari no invoice / pemesan..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-3 py-2 text-xs rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee] w-full sm:w-64"
-                  />
-                </div>
+            <button
+              type="button"
+              onClick={() => handleSelectTab("analytics")}
+              className={`flex items-center justify-center transition-all cursor-pointer relative ${
+                activeTab === "analytics" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
+              }`}
+              title="Transaksi"
+              aria-label="Transaksi"
+            >
+              <div
+                className={`p-1.5 sm:p-2 rounded-xl transition-all ${
+                  activeTab === "analytics"
+                    ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                    : "hover:bg-neutral-100"
+                }`}
+              >
+                <ChartPie className="w-5 h-5" />
               </div>
+            </button>
 
-              <DataTable
-                columns={financeOrderColumns}
-                data={ordersList.filter(
-                  (ord) =>
-                    ord.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    ord.customer.toLowerCase().includes(searchQuery.toLowerCase())
+            <button
+              type="button"
+              onClick={() => handleSelectTab("finance")}
+              className={`flex items-center justify-center transition-all cursor-pointer relative ${
+                activeTab === "finance" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
+              }`}
+              title="Keuangan"
+              aria-label="Keuangan"
+            >
+              <div
+                className={`p-1.5 sm:p-2 rounded-xl transition-all relative ${
+                  activeTab === "finance"
+                    ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                    : "hover:bg-neutral-100"
+                }`}
+              >
+                <Wallet className="w-5 h-5" />
+                {ordersList.filter((o) => o.status === "MENUNGGU_VERIFIKASI").length > 0 && (
+                  <span className="absolute -top-1 -right-1 size-2.5 bg-amber-500 rounded-full ring-2 ring-white" />
                 )}
-                emptyMessage="Pesanan tidak ditemukan."
-              />
-            </div>
-          </div>
-        )}
+              </div>
+            </button>
 
-        {/* ----------------------------------------------------------------------- */}
-        {/* TAB 5: PANTAUAN TEMPLATE (TEMPLATES & USAGE MONITOR)                     */}
-        {/* ----------------------------------------------------------------------- */}
-        {activeTab === "templates" && (
-          <div className="space-y-6 animate-fadeIn md:animate-none">
-            <div className="flex items-center justify-end sm:hidden">
-              <button
-                type="button"
-                onClick={() => setIsAddTemplateModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
+            <button
+              type="button"
+              onClick={() => handleSelectTab("templates")}
+              className={`flex items-center justify-center transition-all cursor-pointer relative ${
+                activeTab === "templates" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
+              }`}
+              title="Template"
+              aria-label="Template"
+            >
+              <div
+                className={`p-1.5 sm:p-2 rounded-xl transition-all ${
+                  activeTab === "templates"
+                    ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                    : "hover:bg-neutral-100"
+                }`}
               >
-                <Plus className="w-4 h-4" />
-                <span>Tambah Template Baru</span>
-              </button>
-            </div>
+                <Palette className="w-5 h-5" />
+              </div>
+            </button>
 
-            {/* Template Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <span className="text-xs text-neutral-400 font-semibold">Total Template Aktif</span>
-                <p className="text-xl font-black text-neutral-900 mt-1">{templatesList.length} Desain</p>
+            <button
+              type="button"
+              onClick={() => handleSelectTab("invitations")}
+              className={`flex items-center justify-center transition-all cursor-pointer relative ${
+                activeTab === "invitations" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
+              }`}
+              title="Berlangsung"
+              aria-label="Berlangsung"
+            >
+              <div
+                className={`p-1.5 sm:p-2 rounded-xl transition-all relative ${
+                  activeTab === "invitations"
+                    ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                    : "hover:bg-neutral-100"
+                }`}
+              >
+                <Radio className="w-5 h-5" />
+                {invitationsList.length > 0 && (
+                  <span className="absolute -top-1 -right-1 size-2 bg-emerald-500 rounded-full ring-2 ring-white" />
+                )}
               </div>
-              <div className="bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <span className="text-xs text-neutral-400 font-semibold">Total Undangan Dibuat</span>
-                <p className="text-xl font-black text-neutral-900 mt-1">
-                  {templatesList.reduce((acc, t) => acc + t.totalUsers, 0)} Undangan
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-                <span className="text-xs text-neutral-400 font-semibold">Akumulasi Omset Template</span>
-                <p className="text-xl font-black text-emerald-600 mt-1">
-                  Rp {(templatesList.reduce((acc, t) => acc + t.totalRevenue, 0) / 1000000).toFixed(1)} Juta
-                </p>
-              </div>
-            </div>
+            </button>
 
-            {/* Templates Data Table via Shared DataTable */}
-            <DataTable
-              columns={templateColumns}
-              data={templatesList}
-              emptyMessage="Template tidak ditemukan."
-            />
+            <button
+              type="button"
+              onClick={() => handleSelectTab("settings")}
+              className={`flex items-center justify-center transition-all cursor-pointer relative ${
+                activeTab === "settings" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
+              }`}
+              title="Pengaturan"
+              aria-label="Pengaturan"
+            >
+              <div
+                className={`p-1.5 sm:p-2 rounded-xl transition-all ${
+                  activeTab === "settings"
+                    ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                    : "hover:bg-neutral-100"
+                }`}
+              >
+                <Settings className="w-5 h-5" />
+              </div>
+            </button>
           </div>
-        )}
+        </nav>
+      </div>
 
-        {/* ----------------------------------------------------------------------- */}
-        {/* TAB 6: UNDANGAN AKTIF / TAYANG (LIVE INVITATIONS MONITOR)               */}
-        {/* ----------------------------------------------------------------------- */}
-        {activeTab === "invitations" && (
-          <div className="space-y-6 animate-fadeIn md:animate-none">
-            {/* Search Bar & Total Counter di atas tabel */}
-            <div className="bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="relative flex-1 max-w-md">
-                <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Cari acara atau pasangan..."
-                  value={invitationSearchQuery}
-                  onChange={(e) => setInvitationSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
-                />
-              </div>
-
-              <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200 border-b-[2px] border-b-emerald-300 shadow-2xs self-start sm:self-auto">
-                Total: <strong className="text-neutral-900">{invitationsList.filter((inv) =>
-                  inv.title.toLowerCase().includes(invitationSearchQuery.toLowerCase()) ||
-                  inv.groom.toLowerCase().includes(invitationSearchQuery.toLowerCase()) ||
-                  inv.bride.toLowerCase().includes(invitationSearchQuery.toLowerCase())
-                ).length} Undangan Online</strong>
-              </span>
-            </div>
-
-            {/* Invitations Table via Shared DataTable */}
-            <DataTable
-              columns={invitationColumns}
-              data={invitationsList.filter((inv) =>
-                inv.title.toLowerCase().includes(invitationSearchQuery.toLowerCase()) ||
-                inv.groom.toLowerCase().includes(invitationSearchQuery.toLowerCase()) ||
-                inv.bride.toLowerCase().includes(invitationSearchQuery.toLowerCase())
-              )}
-              emptyMessage="Undangan tidak ditemukan."
-            />
-          </div>
-        )}
-
-        {/* ----------------------------------------------------------------------- */}
-        {/* TAB 7: PENGATURAN PLATFORM                                              */}
-        {/* ----------------------------------------------------------------------- */}
-        {activeTab === "settings" && (
-          <div className="space-y-6 animate-fadeIn md:animate-none">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Profil Administrator & Kontak WhatsApp */}
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-[#7d6aee]" />
-                    <h3 className="text-sm font-extrabold text-neutral-900">
-                      Profil Administrator (Tersimpan di Cache)
-                    </h3>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditAdminName(adminProfile.name);
-                      setEditAdminEmail(adminProfile.email);
-                      setEditAdminPhone(adminProfile.phone);
-                      setEditAdminAvatar(adminProfile.avatar);
-                      setIsEditAdminProfileOpen(true);
-                    }}
-                    className="text-xs font-extrabold text-[#7d6aee] hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    <span>Edit Profil</span>
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-50/50 border border-purple-100">
-                  <img
-                    src={adminProfile.avatar}
-                    alt={adminProfile.name}
-                    className="size-14 rounded-full object-cover border-2 border-[#7d6aee] shadow-sm shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <h4 className="text-sm font-bold text-neutral-900 truncate">{adminProfile.name}</h4>
-                    <p className="text-xs text-neutral-500 truncate">{adminProfile.email}</p>
-                    <p className="text-xs font-bold text-emerald-600 mt-0.5 flex items-center gap-1">
-                      <Phone className="w-3 h-3" />
-                      <span>{adminProfile.phone || "+62 851-8797-8443"}</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-xs text-neutral-500">
-                  <p>
-                    Perubahan foto profil, nama, dan nomor WhatsApp admin langsung disimpan ke cache browser secara otomatis.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditAdminName(adminProfile.name);
-                      setEditAdminEmail(adminProfile.email);
-                      setEditAdminPhone(adminProfile.phone);
-                      setEditAdminAvatar(adminProfile.avatar);
-                      setIsEditAdminProfileOpen(true);
-                    }}
-                    className="w-full py-2.5 bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold rounded-xl border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
-                  >
-                    Ubah Foto Profil &amp; Nomor WhatsApp
-                  </button>
-                </div>
-              </div>
-
-              {/* Payment Gateway Config */}
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-[#7d6aee]" />
-                    <h3 className="text-sm font-extrabold text-neutral-900">
-                      Rekening Pembayaran &amp; QRIS
-                    </h3>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                    Aktif
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs font-semibold text-neutral-700 block mb-1">
-                      Bank Utama (BCA)
-                    </label>
-                    <input
-                      type="text"
-                      value={adminSettings.bankBca}
-                      onChange={(e) =>
-                        setAdminSettings({ ...adminSettings, bankBca: e.target.value })
-                      }
-                      className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 bg-neutral-50 font-mono focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-neutral-700 block mb-1">
-                      Merchant QRIS Statis / Dinamis
-                    </label>
-                    <input
-                      type="text"
-                      value={adminSettings.qrisNmid}
-                      onChange={(e) =>
-                        setAdminSettings({ ...adminSettings, qrisNmid: e.target.value })
-                      }
-                      className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 bg-neutral-50 font-mono focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
-                    />
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      saveAdminSettingsCache(adminSettings);
-                      showToast("Pengaturan rekening pembayaran berhasil disimpan ke cache!");
-                    }}
-                    className="w-full py-2.5 bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold rounded-xl border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
-                  >
-                    Simpan Pengaturan ke Cache
-                  </button>
-                </div>
-              </div>
-
-              {/* Tombol Logout Seperti pada Halaman Profile di App */}
-              <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs space-y-4 lg:col-span-2">
-                <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-                  <div className="flex items-center gap-2">
-                    <LogOut className="w-4 h-4 text-rose-600" />
-                    <h3 className="text-sm font-extrabold text-neutral-900">
-                      Keluar dari Sesi Administrator
-                    </h3>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs text-neutral-500 font-medium">
-                    Akhiri sesi masuk dashboard admin ini. Anda perlu masuk kembali dengan kredensial administrator untuk mengakses panel pengawasan.
-                  </p>
-                  <Button
-                    variant="danger"
-                    size="lg"
-                    onClick={() => setIsLogoutModalOpen(true)}
-                    className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <LogOut className="w-4 h-4 text-white" />
-                    <span>Log out</span>
-                  </Button>
-                  <p className="text-[11px] text-center text-neutral-400 font-medium mt-2">
-                    Anda perlu masuk kembali untuk mengakses Admin Panel
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Floating Bottom Nav for Satu Cerita Dash (Hanya di Mobile, sama persis dengan app) */}
-      {/* Paksakan menampilkan 6 icon menu TANPA judul (hilangkan menu Undangan Tayang) */}
-      <nav
-        id="satucerita-dash-bottom-navbar"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
-        aria-label="Satu Cerita Dash Navigation"
-      >
-        <div className="max-w-md mx-auto grid grid-cols-7 h-16 px-1">
-          {/* 1. Dashboard */}
-          <button
-            type="button"
-            onClick={() => handleSelectTab("overview")}
-            className={`flex items-center justify-center transition-all cursor-pointer relative ${
-              activeTab === "overview"
-                ? "text-[#7d6aee]"
-                : "text-neutral-500 hover:text-neutral-900"
-            }`}
-            title="Dashboard"
-            aria-label="Dashboard"
-          >
-            <div
-              className={`p-1.5 sm:p-2 rounded-xl transition-all ${
-                activeTab === "overview"
-                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
-                  : "hover:bg-neutral-100"
-              }`}
-            >
-              <LayoutGrid className="w-5 h-5" />
-            </div>
-          </button>
-
-          {/* 2. Pengguna */}
-          <button
-            type="button"
-            onClick={() => handleSelectTab("users")}
-            className={`flex items-center justify-center transition-all cursor-pointer relative ${
-              activeTab === "users"
-                ? "text-[#7d6aee]"
-                : "text-neutral-500 hover:text-neutral-900"
-            }`}
-            title="Pengguna"
-            aria-label="Pengguna"
-          >
-            <div
-              className={`p-1.5 sm:p-2 rounded-xl transition-all ${
-                activeTab === "users"
-                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
-                  : "hover:bg-neutral-100"
-              }`}
-            >
-              <Users className="w-5 h-5" />
-            </div>
-          </button>
-
-          {/* 3. Transaksi */}
-          <button
-            type="button"
-            onClick={() => handleSelectTab("analytics")}
-            className={`flex items-center justify-center transition-all cursor-pointer relative ${
-              activeTab === "analytics"
-                ? "text-[#7d6aee]"
-                : "text-neutral-500 hover:text-neutral-900"
-            }`}
-            title="Transaksi"
-            aria-label="Transaksi"
-          >
-            <div
-              className={`p-1.5 sm:p-2 rounded-xl transition-all ${
-                activeTab === "analytics"
-                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
-                  : "hover:bg-neutral-100"
-              }`}
-            >
-              <ChartPie className="w-5 h-5" />
-            </div>
-          </button>
-
-          {/* 4. Keuangan */}
-          <button
-            type="button"
-            onClick={() => handleSelectTab("finance")}
-            className={`flex items-center justify-center transition-all cursor-pointer relative ${
-              activeTab === "finance"
-                ? "text-[#7d6aee]"
-                : "text-neutral-500 hover:text-neutral-900"
-            }`}
-            title="Keuangan"
-            aria-label="Keuangan"
-          >
-            <div
-              className={`p-1.5 sm:p-2 rounded-xl transition-all relative ${
-                activeTab === "finance"
-                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
-                  : "hover:bg-neutral-100"
-              }`}
-            >
-              <Wallet className="w-5 h-5" />
-              {ordersList.filter((o) => o.status === "MENUNGGU_VERIFIKASI").length > 0 && (
-                <span className="absolute -top-1 -right-1 size-2.5 bg-amber-500 rounded-full ring-2 ring-white" />
-              )}
-            </div>
-          </button>
-
-          {/* 5. Template */}
-          <button
-            type="button"
-            onClick={() => handleSelectTab("templates")}
-            className={`flex items-center justify-center transition-all cursor-pointer relative ${
-              activeTab === "templates"
-                ? "text-[#7d6aee]"
-                : "text-neutral-500 hover:text-neutral-900"
-            }`}
-            title="Template"
-            aria-label="Template"
-          >
-            <div
-              className={`p-1.5 sm:p-2 rounded-xl transition-all ${
-                activeTab === "templates"
-                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
-                  : "hover:bg-neutral-100"
-              }`}
-            >
-              <Palette className="w-5 h-5" />
-            </div>
-          </button>
-
-          {/* 6. Berlangsung */}
-          <button
-            type="button"
-            onClick={() => handleSelectTab("invitations")}
-            className={`flex items-center justify-center transition-all cursor-pointer relative ${
-              activeTab === "invitations"
-                ? "text-[#7d6aee]"
-                : "text-neutral-500 hover:text-neutral-900"
-            }`}
-            title="Berlangsung"
-            aria-label="Berlangsung"
-          >
-            <div
-              className={`p-1.5 sm:p-2 rounded-xl transition-all relative ${
-                activeTab === "invitations"
-                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
-                  : "hover:bg-neutral-100"
-              }`}
-            >
-              <Radio className="w-5 h-5" />
-              {invitationsList.length > 0 && (
-                <span className="absolute -top-1 -right-1 size-2 bg-emerald-500 rounded-full ring-2 ring-white" />
-              )}
-            </div>
-          </button>
-
-          {/* 7. Pengaturan */}
-          <button
-            type="button"
-            onClick={() => handleSelectTab("settings")}
-            className={`flex items-center justify-center transition-all cursor-pointer relative ${
-              activeTab === "settings"
-                ? "text-[#7d6aee]"
-                : "text-neutral-500 hover:text-neutral-900"
-            }`}
-            title="Pengaturan"
-            aria-label="Pengaturan"
-          >
-            <div
-              className={`p-1.5 sm:p-2 rounded-xl transition-all ${
-                activeTab === "settings"
-                  ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
-                  : "hover:bg-neutral-100"
-              }`}
-            >
-              <Settings className="w-5 h-5" />
-            </div>
-          </button>
-        </div>
-      </nav>
-    </div>
-
-      {/* ========================================================================= */}
-      {/* MODAL: DETAIL USER & EDIT                                                 */}
-      {/* ========================================================================= */}
+      {/* MODAL: DETAIL USER & EDIT */}
       {selectedUserModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 space-y-4">
@@ -2765,7 +1632,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedUserModal(null)}
-                className="p-1 rounded-full hover:bg-neutral-100 text-neutral-400"
+                className="p-1 rounded-full hover:bg-neutral-100 text-neutral-400 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2831,9 +1698,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL: DETAIL PESANAN & VERIFIKASI PEMBAYARAN                             */}
-      {/* ========================================================================= */}
+      {/* MODAL: DETAIL PESANAN & VERIFIKASI PEMBAYARAN */}
       {selectedOrderModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 space-y-4 max-h-[90vh] overflow-y-auto">
@@ -2847,7 +1712,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedOrderModal(null)}
-                className="p-1 rounded-full hover:bg-neutral-100 text-neutral-400"
+                className="p-1 rounded-full hover:bg-neutral-100 text-neutral-400 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2884,7 +1749,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               </div>
             </div>
 
-            {/* Bukti Transfer */}
             {selectedOrderModal.proofUrl ? (
               <div>
                 <p className="text-xs font-bold text-neutral-800 mb-2">Foto / Bukti Transfer:</p>
@@ -2923,9 +1787,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL: TAMBAH TEMPLATE BARU                                               */}
-      {/* ========================================================================= */}
+      {/* MODAL: TAMBAH TEMPLATE BARU */}
       {isAddTemplateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 space-y-4">
@@ -2934,7 +1796,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               <button
                 type="button"
                 onClick={() => setIsAddTemplateModalOpen(false)}
-                className="p-1 rounded-full hover:bg-neutral-100 text-neutral-400"
+                className="p-1 rounded-full hover:bg-neutral-100 text-neutral-400 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -3011,9 +1873,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL: EDIT PROFIL ADMINISTRATOR (FOTO & WHATSAPP)                        */}
-      {/* ========================================================================= */}
+      {/* MODAL: EDIT PROFIL ADMINISTRATOR */}
       {isEditAdminProfileOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 overflow-hidden flex flex-col">
@@ -3034,7 +1894,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({
             </div>
 
             <div className="p-6 space-y-4">
-              {/* Upload Foto Profil */}
               <div className="flex flex-col items-center">
                 <div className="relative group">
                   <img
@@ -3151,9 +2010,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL KONFIRMASI LOGOUT                                                   */}
-      {/* ========================================================================= */}
+      {/* MODAL KONFIRMASI LOGOUT */}
       {isLogoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 overflow-hidden p-6 text-center">

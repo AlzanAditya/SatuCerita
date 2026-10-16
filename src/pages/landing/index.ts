@@ -1,5 +1,5 @@
-export * from "./HomePage";
 export * from "./CaraPesanPage";
+export * from "./HomePage";
 export * from "./KatalogPage";
 export * from "./KebijakanPage";
 export * from "./KontakPage";
