@@ -48,7 +48,8 @@ export type RouteId =
   | "dashFinance"
   | "dashTemplates"
   | "dashInvitations"
-  | "dashSettings";
+  | "dashSettings"
+  | "katalogDetail";
 
 export interface RouteMeta {
   id: RouteId;
@@ -239,7 +240,29 @@ export function normalizePath(input: string): string {
 /** Cari route berdasarkan path (termasuk alias). `null` jika tidak ada (404). */
 export function resolveRoute(input: string): RouteMeta | null {
   const path = normalizePath(input);
-  return (
-    ROUTES.find((r) => r.path === path || r.aliases?.includes(path)) ?? null
-  );
+
+  // Exact or alias match first
+  const exact = ROUTES.find((r) => r.path === path || r.aliases?.includes(path));
+  if (exact) return exact;
+
+  // Dynamic Katalog Detail route: /katalog/:templateSlug
+  if (path.startsWith("/katalog/") && path.length > 9) {
+    const rawSlug = path.slice(9);
+    const formattedTitle = rawSlug
+      .split(/[-_]/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+
+    return {
+      id: "katalogDetail",
+      path: path,
+      title: `Template Undangan ${formattedTitle} — Satu Cerita`,
+      description: `Lihat detail, fitur, dan pratinjau langsung template undangan pernikahan digital ${formattedTitle} di Satu Cerita.`,
+      indexable: true,
+      changefreq: "weekly",
+      priority: 0.85,
+    };
+  }
+
+  return null;
 }

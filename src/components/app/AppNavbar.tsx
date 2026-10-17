@@ -108,12 +108,13 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
     };
   }, []);
 
+  // Tanpa data bawaan: profil selalu dikirim dari akun yang login (lihat UserApp / AdminDash)
   const defaultUser = {
-    name: "Alzan Bella",
-    email: "student@satucerita.com",
-    avatarInitial: "AB",
-    avatar: "https://www.untitledui.com/images/avatars/olivia-rhye?fm=webp&q=80",
-    avatarSrc: "https://www.untitledui.com/images/avatars/olivia-rhye?fm=webp&q=80",
+    name: "Pengguna",
+    email: "",
+    avatarInitial: "P",
+    avatar: "",
+    avatarSrc: "",
   };
 
   const userProfile = propUserProfile || cachedProfile || defaultUser;
@@ -121,7 +122,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
   const avatarDisplaySrc =
     userProfile.avatar ||
     (userProfile as any).avatarSrc ||
-    "https://www.untitledui.com/images/avatars/olivia-rhye?fm=webp&q=80";
+    "";
 
   const handleNav = (href: string) => {
     setIsMenuOpen(false);

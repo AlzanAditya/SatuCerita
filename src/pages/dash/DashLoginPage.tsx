@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PATHS } from "@/routes";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
-import { setDashAuthenticated } from "@/lib/cache";
+import { fetchSession, googleLoginUrl } from "@/lib/auth";
+import { urls } from "@/lib/urls";
 import { SITE } from "@/config/site";
 
 export interface DashLoginPageProps {
@@ -14,22 +15,16 @@ export const DashLoginPage: React.FC<DashLoginPageProps> = ({
   onNavigate,
 }) => {
 
-  const handleSuccessfulLogin = () => {
-    // Simpan status autentikasi admin ke cache
-    setDashAuthenticated(true);
+  const [notice, setNotice] = useState<{ type: "error"; text: string } | null>(null);
 
-    // Cek apakah host adalah domain mandiri dash (dash.satucerita.id)
-    const isStandaloneDash =
-      typeof window !== "undefined" &&
-      window.location.hostname.startsWith("dash.");
-
-    // Arahkan ke menu utama / overview dash
-    if (isStandaloneDash) {
-      onNavigate("/overview");
-    } else {
-      onNavigate(PATHS.dash);
-    }
-  };
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("error");
+    if (code === "forbidden")
+      setNotice({ type: "error", text: "Akun Google ini tidak diizinkan mengakses dashboard admin." });
+    else if (code) setNotice({ type: "error", text: "Login gagal. Silakan coba lagi." });
+    // Sudah login sebagai admin -> langsung ke dashboard
+    fetchSession().then((u) => u?.role === "admin" && window.location.replace(urls.dashHome()));
+  }, []);
 
   const handleBackToLanding = () => {
     const isStandaloneDash =
@@ -92,7 +87,8 @@ export const DashLoginPage: React.FC<DashLoginPageProps> = ({
       <div className="flex-1 w-full flex flex-col justify-end md:justify-center md:items-center relative z-20 md:p-6 md:pb-12">
         <div className="w-full md:max-w-md md:mx-auto">
           <LoginCard
-            onLogin={handleSuccessfulLogin}
+            onGoogle={() => window.location.assign(googleLoginUrl("dash"))}
+            notice={notice}
             onBackToLanding={handleBackToLanding}
             googleOnly={true}
             hideTerms={true}

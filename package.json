@@ -9,7 +9,12 @@
     "ssg": "tsx scripts/generate-ssg.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "worker:dev": "wrangler dev --config worker/wrangler.toml",
+    "worker:deploy": "wrangler deploy --config worker/wrangler.toml",
+    "worker:secret": "wrangler secret put SUPABASE_ANON_KEY --config worker/wrangler.toml",
+    "worker:tail": "wrangler tail --config worker/wrangler.toml",
+    "worker:lint": "tsc -p worker/tsconfig.json"
   },
   "dependencies": {
     "lucide-react": "^0.546.0",
@@ -22,6 +27,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "supabase": "^2.121.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",

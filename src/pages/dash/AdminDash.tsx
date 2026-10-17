@@ -32,8 +32,6 @@ import { Button } from "@/components/ui/Button";
 import { DataTableColumn } from "@/components/ui/DataTable";
 import { PATHS } from "@/routes";
 import {
-  getAdminProfileCache,
-  saveAdminProfileCache,
   getAdminSettingsCache,
   saveAdminSettingsCache,
   getCache,
@@ -42,8 +40,9 @@ import {
   convertFileToDataUrl,
   AdminProfileData,
   AdminSettingsData,
-  setDashAuthenticated,
 } from "@/lib/cache";
+import { useAuth } from "@/context/AuthContext";
+import { avatarFallback, updateProfile } from "@/lib/auth";
 import {
   DashTabType,
   AdminDashProps,
@@ -132,9 +131,19 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "1y">("30d");
 
   // Admin Profile Info dari Cache
-  const [adminProfile, setAdminProfile] = useState<AdminProfileData>(() =>
-    getAdminProfileCache()
+  // Profil admin diambil dari akun Google yang login (bukan data bawaan).
+  const { user: sessionUser, setUser: setSessionUser, signOut } = useAuth();
+  const adminAvatarKey = `satucerita_avatar_${sessionUser.id}`;
+  const [adminAvatarOverride, setAdminAvatarOverride] = useState<string>(() =>
+    getCache<string>(adminAvatarKey, "")
   );
+  const adminProfile: AdminProfileData = {
+    name: sessionUser.name,
+    email: sessionUser.email,
+    phone: sessionUser.phone,
+    role: "Admin",
+    avatar: adminAvatarOverride || sessionUser.avatar || avatarFallback(sessionUser.name),
+  };
 
   // Modal Edit Profil Admin (Foto & WhatsApp)
   const [isEditAdminProfileOpen, setIsEditAdminProfileOpen] = useState(false);
@@ -1145,9 +1154,9 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     setSelectedOrderModal(null);
   };
 
-  const handlePerformLogout = () => {
+  const handlePerformLogout = async () => {
     setIsLogoutModalOpen(false);
-    setDashAuthenticated(false);
+    await signOut();
     const target = isStandalone ? "/login" : PATHS.dashLogin;
     if (onNavigate) {
       onNavigate(target);
@@ -1317,7 +1326,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
           <div
             onClick={() => {
               setEditAdminName("Admin");
-              setEditAdminEmail(adminProfile.email || "zanxastudio@gmail.com");
+              setEditAdminEmail(adminProfile.email);
               setEditAdminPhone(adminProfile.phone);
               setEditAdminAvatar(adminProfile.avatar);
               setIsEditAdminProfileOpen(true);
@@ -1325,7 +1334,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
             className={`flex items-center ${
               isSidebarCollapsed ? "justify-center p-1.5" : "justify-between gap-2 p-2"
             } rounded-2xl bg-white border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs cursor-pointer group hover:border-purple-200 transition-all`}
-            title={`Admin (${adminProfile.email || "zanxastudio@gmail.com"})`}
+            title={`Admin (${adminProfile.email})`}
           >
             <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2 min-w-0 flex-1"}`}>
               <div className="shrink-0">
@@ -1341,7 +1350,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                     Admin
                   </p>
                   <p className="text-[11px] text-neutral-500 truncate leading-tight">
-                    {adminProfile.email || "zanxastudio@gmail.com"}
+                    {adminProfile.email}
                   </p>
                 </div>
               )}
@@ -1958,7 +1967,9 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 <input
                   type="email"
                   value={editAdminEmail}
-                  onChange={(e) => setEditAdminEmail(e.target.value)}
+                  readOnly
+                  title="Email admin terkunci dan tidak dapat diubah"
+                  onChange={() => {}}
                   className="w-full bg-white border border-neutral-200 border-b-[2px] border-b-neutral-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
                 />
               </div>
@@ -1990,16 +2001,19 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const updated = saveAdminProfileCache({
-                    name: editAdminName,
-                    email: editAdminEmail,
-                    phone: editAdminPhone,
-                    avatar: editAdminAvatar,
-                  });
-                  setAdminProfile(updated);
+                onClick={async () => {
+                  const res = await updateProfile({ name: editAdminName, phone: editAdminPhone });
+                  if (!res.ok || !res.user) {
+                    showToast(res.error || "Gagal menyimpan profil admin.");
+                    return;
+                  }
+                  setSessionUser(res.user);
+                  if (editAdminAvatar && editAdminAvatar !== adminProfile.avatar) {
+                    setAdminAvatarOverride(editAdminAvatar);
+                    setCache(adminAvatarKey, editAdminAvatar);
+                  }
                   setIsEditAdminProfileOpen(false);
-                  showToast("Profil admin & nomor WhatsApp berhasil disimpan ke cache!");
+                  showToast("Profil admin berhasil disimpan!");
                 }}
                 className="px-5 py-2.5 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] cursor-pointer transition-all"
               >

@@ -4,7 +4,7 @@
  * Mengamankan penyimpanan data ke localStorage/sessionStorage dengan:
  * - Fallback in-memory jika localStorage tidak tersedia (private mode / sandboxed iframe).
  * - Caching foto profil (dalam format Data URL base64) agar tidak hilang saat reload.
- * - Caching nomor WhatsApp, nama, konfigurasi rekening, dan sesi login admin & user.
+ * - Caching preferensi UI & konfigurasi sementara. Sesi login TIDAK disimpan di sini (cookie HttpOnly via Worker).
  * - Broadcast event agar komponen lain langsung tersinkronisasi saat cache berubah.
  */
 
@@ -110,14 +110,6 @@ export interface UserProfileData {
   memberSince: string;
 }
 
-export const DEFAULT_USER_PROFILE: UserProfileData = {
-  name: "Alzan Bella",
-  email: "alzanaditya2@gmail.com",
-  phone: "+62 851-8797-8443",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-  memberSince: "Oktober 2026",
-};
-
 export interface AdminProfileData {
   name: string;
   email: string;
@@ -125,14 +117,6 @@ export interface AdminProfileData {
   role: string;
   avatar: string;
 }
-
-export const DEFAULT_ADMIN_PROFILE: AdminProfileData = {
-  name: "Admin",
-  email: "zanxastudio@gmail.com",
-  phone: "+62 851-8797-8443",
-  role: "Admin",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-};
 
 export interface AdminSettingsData {
   bankBca: string;
@@ -142,58 +126,27 @@ export interface AdminSettingsData {
   notifyOnNewOrder: boolean;
 }
 
+// Kosong sampai admin mengisi sendiri (nanti dari database). Tanpa data pribadi bawaan.
 export const DEFAULT_ADMIN_SETTINGS: AdminSettingsData = {
-  bankBca: "882-019-4821 a.n PT SATU CERITA DIGITAL",
-  qrisNmid: "NMID: ID1020304958291",
-  waGatewayNumber: "+62 851-8797-8443",
-  autoApproveQris: true,
-  notifyOnNewOrder: true,
+  bankBca: "",
+  qrisNmid: "",
+  waGatewayNumber: "",
+  autoApproveQris: false,
+  notifyOnNewOrder: false,
 };
 
 // CACHE KEYS ENUM
 export const CACHE_KEYS = {
-  USER_PROFILE: "satucerita_user_profile",
-  ADMIN_PROFILE: "satucerita_admin_profile",
   ADMIN_SETTINGS: "satucerita_admin_settings",
   ADMIN_USERS: "satucerita_admin_users",
   ADMIN_ORDERS: "satucerita_admin_orders",
   ADMIN_TEMPLATES: "satucerita_admin_templates",
   ADMIN_INVITATIONS: "satucerita_admin_invitations",
-  DASH_AUTH: "satucerita_dash_authenticated",
   USER_INVITATIONS: "satucerita_invitations_v2",
   USER_ORDERS: "satucerita_orders_v2",
   APP_ACTIVE_TAB: "satucerita_app_active_tab",
   DASH_ACTIVE_TAB: "satucerita_dash_active_tab",
 } as const;
-
-export function getUserProfileCache(): UserProfileData {
-  return getCache<UserProfileData>(CACHE_KEYS.USER_PROFILE, DEFAULT_USER_PROFILE);
-}
-
-export function saveUserProfileCache(data: Partial<UserProfileData>): UserProfileData {
-  const current = getUserProfileCache();
-  const merged = { ...current, ...data };
-  setCache(CACHE_KEYS.USER_PROFILE, merged);
-  return merged;
-}
-
-export function getAdminProfileCache(): AdminProfileData {
-  const profile = getCache<AdminProfileData>(CACHE_KEYS.ADMIN_PROFILE, DEFAULT_ADMIN_PROFILE);
-  if (profile.name === "Alzan Bella (Super Admin)" || profile.name === "Alzan Bella") {
-    profile.name = "Admin";
-  }
-  if (!profile.email || profile.email === "admin@satucerita.id") {
-    profile.email = "zanxastudio@gmail.com";
-  }
-  return profile;
-}
-
-export function saveAdminProfileCache(data: Partial<AdminProfileData>): AdminProfileData {
-  const current = getAdminProfileCache();
-  const merged = { ...current, ...data };
-  setCache(CACHE_KEYS.ADMIN_PROFILE, merged);
-  return merged;
-}
 
 export function getAdminSettingsCache(): AdminSettingsData {
   return getCache<AdminSettingsData>(CACHE_KEYS.ADMIN_SETTINGS, DEFAULT_ADMIN_SETTINGS);
@@ -206,10 +159,3 @@ export function saveAdminSettingsCache(data: Partial<AdminSettingsData>): AdminS
   return merged;
 }
 
-export function isDashAuthenticated(): boolean {
-  return getCache<boolean>(CACHE_KEYS.DASH_AUTH, true); // default true for preview
-}
-
-export function setDashAuthenticated(isAuth: boolean): void {
-  setCache<boolean>(CACHE_KEYS.DASH_AUTH, isAuth);
-}

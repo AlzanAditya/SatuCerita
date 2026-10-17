@@ -82,3 +82,9 @@ otomatis diarahkan ke path kanonik oleh router.
 1. Tambahkan entry di `ROUTES` (dan `PATHS`/`RouteId`) pada `src/routes.ts`.
 2. Tambahkan `case` di `switch` pada `src/App.tsx`.
 3. Selesai — SSG, sitemap, dan `useSeo` otomatis ikut.
+
+
+## Autentikasi (Supabase + Cloudflare Worker)
+
+Login email/Google, guard dashboard, dan migration database ada di folder `worker/` dan `supabase/`.
+Panduan konfigurasi lengkap: [`docs/SETUP-AUTH.md`](docs/SETUP-AUTH.md).

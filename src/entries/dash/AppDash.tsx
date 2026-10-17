@@ -3,7 +3,7 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { AdminDash, DashTabType, pathToDashTab, dashTabToPath } from "@/pages/dash/AdminDash";
 import { DashLoginPage } from "@/pages/dash/DashLoginPage";
 import { SITE } from "@/config/site";
-import { isDashAuthenticated } from "@/lib/cache";
+import { AuthGate } from "@/components/auth/AuthGate";
 
 export function AppDash() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -89,11 +89,13 @@ export function AppDash() {
               onNavigate={handleNavigate}
             />
           ) : (
-            <AdminDash
-              activeTab={activeTab as DashTabType}
-              currentPath={currentPath}
-              onNavigate={handleNavigate}
-            />
+            <AuthGate require="admin">
+              <AdminDash
+                activeTab={activeTab as DashTabType}
+                currentPath={currentPath}
+                onNavigate={handleNavigate}
+              />
+            </AuthGate>
           )}
         </div>
       </div>

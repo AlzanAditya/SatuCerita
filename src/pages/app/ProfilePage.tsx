@@ -87,10 +87,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           </div>
 
           <div className="min-w-0 flex-1 flex flex-col justify-center">
-            <h3 className="text-base sm:text-lg font-black text-white tracking-tight truncate">
+            <h3 className="text-base sm:text-lg md:text-[24px] font-black text-white tracking-tight truncate">
               {userProfile.name}
             </h3>
-            <p className="text-xs text-purple-100 font-medium truncate mt-0.5">
+            <p className="text-xs md:text-[16px] text-purple-100 font-medium truncate mt-0.5">
               {userProfile.email}
             </p>
           </div>
@@ -135,7 +135,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {/* Input Nama */}
           <InputGroup
             leadingAddon={
-              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-base sm:text-[18px] shrink-0">
+              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-sm sm:text-base md:text-[16px] shrink-0">
                 Nama
               </InputGroup.Prefix>
             }
@@ -150,7 +150,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             }
           >
             <InputBase
-              className="font-semibold text-base sm:text-[18px] text-neutral-800 py-3 sm:py-3.5"
+              className="font-semibold text-sm sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
               placeholder="Masukkan nama lengkap"
               value={profileNameInput}
               onChange={(e) => handleNameChange(e.target.value)}
@@ -160,7 +160,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {/* Input Nomor HP */}
           <InputGroup
             leadingAddon={
-              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-base sm:text-[18px] shrink-0">
+              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-sm sm:text-base md:text-[16px] shrink-0">
                 Nomor HP
               </InputGroup.Prefix>
             }
@@ -175,7 +175,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             }
           >
             <InputBase
-              className="font-semibold text-base sm:text-[18px] text-neutral-800 py-3 sm:py-3.5"
+              className="font-semibold text-sm sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
               placeholder="081234567890"
               value={profileWaInput}
               onChange={(e) => handleWaChange(e.target.value)}
@@ -185,7 +185,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {/* Input Email */}
           <InputGroup
             leadingAddon={
-              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-base sm:text-[18px] shrink-0">
+              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-sm sm:text-base md:text-[16px] shrink-0">
                 Email
               </InputGroup.Prefix>
             }
@@ -197,7 +197,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           >
             <InputBase
               readOnly
-              className="font-semibold text-base sm:text-[18px] text-neutral-500 py-3 sm:py-3.5 bg-neutral-50/60 cursor-not-allowed select-all"
+              className="font-semibold text-sm sm:text-base md:text-[16px] text-neutral-500 py-3 sm:py-3.5 bg-neutral-50/60 cursor-not-allowed select-all"
               placeholder="email@example.com"
               value={userProfile.email}
             />

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { UserApp } from "@/pages/app/UserApp";
 import { SITE } from "@/config/site";
+import { AuthGate } from "@/components/auth/AuthGate";
 
 type TabType =
   | "home"
@@ -94,11 +95,13 @@ export function AppUser() {
     <LanguageProvider>
       <div className="min-h-screen w-full overflow-x-clip bg-background text-text-primary flex flex-col font-sans selection:bg-[#7d6aee]/20 selection:text-[#7d6aee]">
         <div id="main-content-container" className="flex-1 w-full">
-          <UserApp
-            activeTab={activeTab}
-            currentPath={currentPath}
-            onNavigate={handleNavigate}
-          />
+          <AuthGate require="user">
+            <UserApp
+              activeTab={activeTab}
+              currentPath={currentPath}
+              onNavigate={handleNavigate}
+            />
+          </AuthGate>
         </div>
       </div>
     </LanguageProvider>

@@ -9,7 +9,17 @@ import { SocialButton } from "@/components/ui/social-button";
 import { Button } from "@/components/ui/Button";
 
 export interface LoginCardProps {
-  onLogin: () => void;
+  /** Mulai login Google (redirect penuh ke Worker). */
+  onGoogle: () => void;
+  /** Login/daftar email+password. Kembalikan { error } atau { info } untuk ditampilkan. */
+  onEmailSubmit?: (p: {
+    email: string;
+    password: string;
+    name: string;
+    isSignUp: boolean;
+  }) => Promise<{ error?: string; info?: string } | void>;
+  /** Pesan dari luar (mis. ?error= dari callback OAuth). */
+  notice?: { type: "error" | "info"; text: string } | null;
   onBackToLanding?: () => void;
   isSignUp?: boolean;
   onToggleSignUp?: () => void;
@@ -20,7 +30,9 @@ export interface LoginCardProps {
 }
 
 export const LoginCard: React.FC<LoginCardProps> = ({
-  onLogin,
+  onGoogle,
+  onEmailSubmit,
+  notice,
   isSignUp: isSignUpProp,
   onToggleSignUp: onToggleSignUpProp,
   onNavigateToKebijakan,
@@ -40,9 +52,34 @@ export const LoginCard: React.FC<LoginCardProps> = ({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<{ type: "error" | "info"; text: string } | null>(null);
+  const shown = msg || notice || null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin();
+    if (loading) return;
+    const cleanEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cleanEmail))
+      return setMsg({ type: "error", text: "Masukkan alamat email yang valid." });
+    if (isSignUp) {
+      if (name.trim().length < 2) return setMsg({ type: "error", text: "Nama lengkap minimal 2 karakter." });
+      if (password.length < 8) return setMsg({ type: "error", text: "Kata sandi minimal 8 karakter." });
+      if (password !== confirmPassword) return setMsg({ type: "error", text: "Konfirmasi kata sandi tidak sama." });
+    } else if (!password) {
+      return setMsg({ type: "error", text: "Kata sandi wajib diisi." });
+    }
+    setMsg(null);
+    setLoading(true);
+    try {
+      const res = ((await onEmailSubmit?.({ email: cleanEmail, password, name: name.trim(), isSignUp })) ||
+        undefined) as { error?: string; info?: string } | undefined;
+      if (res?.error) setMsg({ type: "error", text: res.error });
+      else if (res?.info) setMsg({ type: "info", text: res.info });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -71,6 +108,19 @@ export const LoginCard: React.FC<LoginCardProps> = ({
           )}
         </div>
 
+        {shown && (
+          <div
+            role="alert"
+            className={`mb-3.5 rounded-xl px-4 py-2.5 text-[13px] font-semibold ${
+              shown.type === "error"
+                ? "bg-red-50 text-red-600 border border-red-100"
+                : "bg-emerald-50 text-emerald-700 border border-emerald-100"
+            }`}
+          >
+            {shown.text}
+          </div>
+        )}
+
         {/* Tombol Google */}
         <div className={googleOnly ? "mb-2" : "mb-3.5"}>
           <SocialButton
@@ -78,7 +128,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({
             theme="brand"
             size="xl"
             type="button"
-            onClick={onLogin}
+            onClick={onGoogle}
             aria-label="Masuk dengan Google"
             title="Masuk dengan Google"
             className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-neutral-50 border border-neutral-200 border-b-[3px] border-b-neutral-300 shadow-2xs hover:shadow-xs active:scale-[0.99] active:border-b-[2px] transition-all flex items-center justify-center gap-3 cursor-pointer"
@@ -105,6 +155,20 @@ export const LoginCard: React.FC<LoginCardProps> = ({
 
             {/* Form Inputs */}
             <form onSubmit={handleSubmit} className="space-y-3.5">
+              {isSignUp && (
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Nama lengkap"
+                    maxLength={80}
+                    autoComplete="name"
+                    className="w-full bg-[#f4f7f6] border border-neutral-200/80 rounded-2xl px-4 py-3.5 text-[16px] font-medium text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:border-[#7d6aee]"
+                  />
+                </div>
+              )}
+
               {/* Email Field */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400">
@@ -168,17 +232,14 @@ export const LoginCard: React.FC<LoginCardProps> = ({
               <div className="flex justify-end pt-0.5 pb-0.5">
                 <button
                   type="button"
-                  onClick={() => {
-                    if (onForgotPassword) {
-                      onForgotPassword();
-                    } else if (typeof window !== "undefined") {
-                      if (window.location.hostname.includes("satucerita.id")) {
-                        window.location.href = "https://dash.satucerita.id";
-                      } else {
-                        window.location.href = "/dash";
-                      }
-                    }
-                  }}
+                  onClick={() =>
+                    onForgotPassword
+                      ? onForgotPassword()
+                      : setMsg({
+                          type: "info",
+                          text: "Reset kata sandi segera tersedia. Untuk sementara, masuk dengan Google atau hubungi admin.",
+                        })
+                  }
                   className="text-[14px] text-[#7d6aee] hover:text-[#6954e5] font-bold hover:underline cursor-pointer transition-colors"
                 >
                   Lupa kata sandi?
@@ -188,10 +249,11 @@ export const LoginCard: React.FC<LoginCardProps> = ({
               {/* Main Submit Button: Login */}
               <Button
                 type="submit"
+                disabled={loading}
                 size="lg"
                 className="w-full bg-gradient-to-r from-[#7d6aee] to-[#ad9fff] hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-xl border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc] shadow-sm hover:shadow-md text-[16px] tracking-wide mt-1"
               >
-                {isSignUp ? "Daftar Akun" : "Login"}
+                {loading ? "Memproses..." : isSignUp ? "Daftar Akun" : "Login"}
               </Button>
             </form>
           </>

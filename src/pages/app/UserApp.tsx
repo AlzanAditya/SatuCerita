@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { PATHS } from "@/routes";
 import {
   Home,
@@ -13,13 +13,9 @@ import {
 } from "lucide-react";
 import { AppNavbar } from "@/components/app/AppNavbar";
 import { Button } from "@/components/ui/Button";
-import {
-  getUserProfileCache,
-  saveUserProfileCache,
-  convertFileToDataUrl,
-  DEFAULT_USER_PROFILE,
-  UserProfileData,
-} from "@/lib/cache";
+import { getCache, setCache, convertFileToDataUrl, UserProfileData } from "@/lib/cache";
+import { useAuth } from "@/context/AuthContext";
+import { avatarFallback, formatMemberSince, updateProfile } from "@/lib/auth";
 import { UndanganPage } from "./UndanganPage";
 import { PesananPage } from "./PesananPage";
 import { ProfilePage } from "./ProfilePage";
@@ -58,11 +54,17 @@ export const UserApp: React.FC<UserAppProps> = ({
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   // User Profile
-  const [userProfile, setUserProfile] = useState<UserProfileData>(() => getUserProfileCache());
-
-  useEffect(() => {
-    saveUserProfileCache(userProfile);
-  }, [userProfile]);
+  // Profil diambil dari akun yang sedang login (Worker + Supabase), bukan data bawaan.
+  const { user, setUser, signOut } = useAuth();
+  const avatarKey = `satucerita_avatar_${user.id}`;
+  const [avatarOverride, setAvatarOverride] = useState<string>(() => getCache<string>(avatarKey, ""));
+  const userProfile: UserProfileData = {
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    avatar: avatarOverride || user.avatar || avatarFallback(user.name),
+    memberSince: formatMemberSince(user.createdAt),
+  };
 
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [editName, setEditName] = useState(userProfile.name);
@@ -118,22 +120,40 @@ export const UserApp: React.FC<UserAppProps> = ({
   }, [orders]);
 
   // Save profile changes
-  const handleSaveProfile = () => {
-    const updated: UserProfileData = {
-      ...userProfile,
-      name: editName,
-      phone: editPhone,
-      avatar: editAvatarUrl,
-    };
-    setUserProfile(updated);
-    saveUserProfileCache(updated);
+  // Edit inline di halaman Profil: disimpan ke server setelah berhenti mengetik (debounce).
+  const saveTimer = useRef<number>(0);
+  const saveSeq = useRef(0);
+  const handleInlineProfileUpdate = (u: UserProfileData) => {
+    window.clearTimeout(saveTimer.current);
+    const seq = ++saveSeq.current;
+    saveTimer.current = window.setTimeout(async () => {
+      const hasPhone = u.phone.replace(/\D/g, "").replace(/^62/, "").length > 0;
+      const res = await updateProfile({ name: u.name, phone: hasPhone ? u.phone : "" });
+      if (seq !== saveSeq.current) return; // ada ketikan yang lebih baru
+      if (res.ok && res.user) setUser(res.user);
+      else showToast(res.error || "Gagal menyimpan profil.");
+    }, 900);
+  };
+
+  const handleSaveProfile = async () => {
+    const res = await updateProfile({ name: editName, phone: editPhone });
+    if (!res.ok || !res.user) {
+      showToast(res.error || "Gagal menyimpan profil.");
+      return;
+    }
+    setUser(res.user);
+    if (editAvatarUrl && editAvatarUrl !== userProfile.avatar) {
+      setAvatarOverride(editAvatarUrl);
+      setCache(avatarKey, editAvatarUrl);
+    }
     setIsEditProfileOpen(false);
-    showToast("Profil berhasil diperbarui dan disimpan ke cache!");
+    showToast("Profil berhasil diperbarui!");
   };
 
   // Perform logout
-  const handlePerformLogout = () => {
+  const handlePerformLogout = async () => {
     setIsLogoutModalOpen(false);
+    await signOut();
     onNavigate(PATHS.home);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -397,7 +417,7 @@ export const UserApp: React.FC<UserAppProps> = ({
           {activeTab === "profile" && (
             <ProfilePage
               userProfile={userProfile}
-              onUpdateProfile={setUserProfile}
+              onUpdateProfile={handleInlineProfileUpdate}
               onOpenEditModal={() => {
                 setEditName(userProfile.name);
                 setEditPhone(userProfile.phone);

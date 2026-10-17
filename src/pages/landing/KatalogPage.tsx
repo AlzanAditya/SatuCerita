@@ -18,110 +18,15 @@ interface KatalogPageProps {
   onNavigate?: (path: string) => void;
 }
 
-interface TemplateItem {
-  id: string;
-  title: string;
-  category: string;
-  originalPrice: number;
-  discountPrice: number;
-  badge?: string;
-  discountBadge?: string;
-  frameBg: string;
-  image: string;
-  coupleName: string;
-  date: string;
-}
+import { TEMPLATES_DATA, formatRupiah, TemplateItemData } from "@/data/templates";
 
-const TEMPLATES: TemplateItem[] = [
-  {
-    id: "antheia",
-    title: "Antheia",
-    category: "ELYSIAN",
-    originalPrice: 199000,
-    discountPrice: 99000,
-    badge: "UNGGULAN",
-    discountBadge: "Hemat 50%",
-    frameBg: "#F5C744",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=700&q=80",
-    coupleName: "John & Jane",
-    date: "18 . 09 . 2027",
-  },
-  {
-    id: "hypatia",
-    title: "Hypatia",
-    category: "ELYSIAN",
-    originalPrice: 199000,
-    discountPrice: 99000,
-    badge: "UNGGULAN",
-    discountBadge: "Hemat 50%",
-    frameBg: "#EE5B4F",
-    image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=700&q=80",
-    coupleName: "John & Jane",
-    date: "12 . 06 . 2027",
-  },
-  {
-    id: "serenade",
-    title: "Serenade",
-    category: "MINIMALIS",
-    originalPrice: 189000,
-    discountPrice: 89000,
-    badge: "POPULER",
-    discountBadge: "Hemat 53%",
-    frameBg: "#7D6AEE",
-    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=700&q=80",
-    coupleName: "Fajar & Dina",
-    date: "25 . 10 . 2027",
-  },
-  {
-    id: "royal-emerald",
-    title: "Royal Emerald",
-    category: "PREMIUM",
-    originalPrice: 249000,
-    discountPrice: 129000,
-    badge: "PREMIUM",
-    discountBadge: "Hemat 48%",
-    frameBg: "#38BDF8",
-    image: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=700&q=80",
-    coupleName: "Rizky & Amanda",
-    date: "08 . 11 . 2027",
-  },
-  {
-    id: "golden-classic",
-    title: "Golden Classic",
-    category: "TRADISIONAL",
-    originalPrice: 179000,
-    discountPrice: 79000,
-    badge: "KLASIK",
-    discountBadge: "Hemat 55%",
-    frameBg: "#22C55E",
-    image: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=700&q=80",
-    coupleName: "Dimas & Sarah",
-    date: "14 . 12 . 2027",
-  },
-  {
-    id: "sweet-lavender",
-    title: "Sweet Lavender",
-    category: "ROMANTIS",
-    originalPrice: 219000,
-    discountPrice: 109000,
-    badge: "FAVORIT",
-    discountBadge: "Hemat 50%",
-    frameBg: "#F472B6",
-    image: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=80",
-    coupleName: "Aditya & Tiara",
-    date: "20 . 01 . 2028",
-  },
-];
-
-const formatRupiah = (val: number) => {
-  return "Rp " + val.toLocaleString("id-ID");
-};
+const TEMPLATES: TemplateItemData[] = TEMPLATES_DATA;
 
 export const KatalogPage: React.FC<KatalogPageProps> = ({
   currentPath = "/katalog",
   onNavigate = (_path: string) => {},
 }) => {
-  const [selectedDemo, setSelectedDemo] = useState<TemplateItem | null>(null);
+  const [selectedDemo, setSelectedDemo] = useState<TemplateItemData | null>(null);
 
   const handleOrderTemplate = (templateTitle: string) => {
     const waText = encodeURIComponent(
@@ -165,19 +70,22 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                   key={item.id}
                   className="snap-start shrink-0 w-[74vw] max-w-[275px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-3.5 sm:p-4 shadow-2xs hover:border-purple-200 transition-all flex flex-col justify-between text-left group"
                 >
-                  <div>
-                    {/* Top Frame dengan Smartphone Mockup */}
+                  <div
+                    onClick={() => onNavigate(`/katalog/${item.slug}`)}
+                    className="cursor-pointer"
+                  >
+                    {/* Top Frame dengan Smartphone Mockup (Ratio 1:1) */}
                     <div
-                      className="relative w-full rounded-xl sm:rounded-2xl border border-purple-100/80 p-2.5 sm:p-3 mb-3 flex items-center justify-center overflow-hidden"
+                      className="relative w-full aspect-square rounded-xl sm:rounded-2xl border border-purple-100/80 p-2.5 sm:p-3 mb-3 flex items-center justify-center overflow-hidden"
                       style={{ backgroundColor: item.frameBg }}
                     >
-                      {/* Smartphone Mockup (Ukuran lebih ramping & pendek) */}
-                      <div className="relative w-[78%] max-w-[165px] aspect-[9/13] bg-neutral-950 rounded-[22px] p-1.5 shadow-xl border border-neutral-800 overflow-hidden flex flex-col my-0.5">
+                      {/* Smartphone Mockup */}
+                      <div className="relative h-[86%] aspect-[9/13] max-w-[150px] bg-neutral-950 rounded-[20px] p-1 sm:p-1.5 shadow-xl border border-neutral-800 overflow-hidden flex flex-col my-auto">
                         {/* Dynamic Island / Notch */}
-                        <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-10 h-2.5 bg-neutral-900 rounded-full z-20 border border-neutral-800" />
+                        <div className="absolute top-1 left-1/2 -translate-x-1/2 w-8 h-2 bg-neutral-900 rounded-full z-20 border border-neutral-800" />
 
                         {/* Inner Screen Preview */}
-                        <div className="w-full h-full rounded-[16px] overflow-hidden relative bg-neutral-100 flex flex-col justify-end">
+                        <div className="w-full h-full rounded-[15px] overflow-hidden relative bg-neutral-100 flex flex-col justify-end">
                           <img
                             src={item.image}
                             alt={item.title}
@@ -190,7 +98,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                             <p className="text-[8px] uppercase tracking-widest font-serif opacity-80">
                               Pawiwahan
                             </p>
-                            <p className="text-[11px] font-serif font-bold tracking-wide leading-tight">
+                            <p className="text-[11px] font-serif font-bold tracking-wide leading-tight truncate">
                               {item.coupleName}
                             </p>
                             <p className="text-[7px] opacity-75 mt-0.5">{item.date}</p>
@@ -203,23 +111,23 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                     </div>
 
                     {/* Judul & Kategori */}
-                    <div className="flex items-center justify-between gap-2 mt-1.5">
-                      <h3 className="text-lg sm:text-xl font-black text-neutral-900 tracking-tight">
+                    <div className="flex items-center justify-between gap-1.5 mt-1.5">
+                      <h3 className="text-[20px] md:text-[24px] font-black text-neutral-900 tracking-tight leading-snug truncate group-hover:text-[#7d6aee] transition-colors">
                         {item.title}
                       </h3>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg border border-purple-200 font-bold text-[11px] uppercase tracking-wider bg-purple-50 text-[#7d6aee]">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md border border-purple-200 font-bold text-[12px] uppercase tracking-wider bg-purple-50 text-[#7d6aee] shrink-0">
                         {item.category}
                       </span>
                     </div>
 
                     {/* Harga */}
-                    <div className="mt-2 mb-4">
-                      <div className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight leading-none">
+                    <div className="mt-4 sm:mt-5 mb-3.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                      <span className="text-[24px] font-black text-neutral-900 tracking-tight leading-none">
                         {formatRupiah(item.discountPrice)}
-                      </div>
-                      <div className="text-xs font-extrabold text-[#EE5B4F] line-through decoration-[#EE5B4F] decoration-2 mt-1">
+                      </span>
+                      <span className="text-[16px] font-extrabold text-neutral-400 line-through decoration-[#EE5B4F] decoration-2 leading-none">
                         {formatRupiah(item.originalPrice)}
-                      </div>
+                      </span>
                     </div>
                   </div>
 
@@ -229,8 +137,8 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setSelectedDemo(item)}
-                      className="w-full"
+                      onClick={() => onNavigate(`/katalog/${item.slug}`)}
+                      className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                     >
                       <Eye className="w-4 h-4 stroke-[2.2]" />
                       <span>Lihat Demo</span>
@@ -240,8 +148,8 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => handleOrderTemplate(item.title)}
-                      className="w-full"
+                      onClick={() => onNavigate(`/katalog/${item.slug}`)}
+                      className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                     >
                       <span>Pilih Template</span>
                       <ArrowRight className="w-4 h-4 stroke-[2.5]" />

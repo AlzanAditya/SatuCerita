@@ -1,6 +1,7 @@
 export * from "./CaraPesanPage";
 export * from "./HomePage";
 export * from "./KatalogPage";
+export * from "./KatalogDetailPage";
 export * from "./KebijakanPage";
 export * from "./KontakPage";
 export * from "./LoginPage";

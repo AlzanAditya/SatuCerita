@@ -1,7 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PATHS } from "@/routes";
 import { LoginCard } from "@/components/auth/LoginCard";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { fetchSession, googleLoginUrl, loginWithEmail, signUpWithEmail } from "@/lib/auth";
+import { urls } from "@/lib/urls";
+
+const ERRORS: Record<string, string> = {
+  oauth_failed: "Login dengan Google gagal. Silakan coba lagi.",
+  forbidden: "Akun ini tidak diizinkan.",
+};
 
 export interface LoginPageProps {
   currentPath?: string;
@@ -17,7 +24,25 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   );
 
   const homePath = PATHS.home;
-  const appHomePath = PATHS.appHome;
+  const [notice, setNotice] = useState<{ type: "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("error");
+    if (code) setNotice({ type: "error", text: ERRORS[code] || "Terjadi kesalahan. Coba lagi." });
+    // Sudah login -> langsung ke dashboard user
+    fetchSession().then((u) => u && window.location.replace(urls.appHome()));
+  }, []);
+
+  const handleEmail = async (p: { email: string; password: string; name: string; isSignUp: boolean }) => {
+    if (p.isSignUp) {
+      const r = await signUpWithEmail(p.email, p.password, p.name);
+      if (!r.ok) return { error: r.error };
+      return { info: "Pendaftaran berhasil. Cek email Anda untuk konfirmasi, lalu login." };
+    }
+    const r = await loginWithEmail(p.email, p.password);
+    if (!r.ok) return { error: r.error };
+    window.location.assign(urls.appHome());
+  };
   const kebijakanPath = PATHS.kebijakan;
 
   return (
@@ -67,21 +92,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       <div className="flex-1 w-full flex flex-col justify-end md:justify-center md:items-center relative z-20 md:p-6 md:pb-12">
         <div className="w-full md:max-w-md md:mx-auto">
           <LoginCard
-            onLogin={() => onNavigate(appHomePath)}
+            onGoogle={() => window.location.assign(googleLoginUrl("app"))}
+            onEmailSubmit={handleEmail}
+            notice={notice}
             onBackToLanding={() => onNavigate(homePath)}
             isSignUp={isSignUp}
             onToggleSignUp={() => setIsSignUp(!isSignUp)}
             onNavigateToKebijakan={() => onNavigate(kebijakanPath)}
-            onForgotPassword={() => {
-              if (
-                typeof window !== "undefined" &&
-                window.location.hostname.includes("satucerita.id")
-              ) {
-                window.location.href = "https://dash.satucerita.id";
-              } else {
-                onNavigate(PATHS.dash);
-              }
-            }}
           />
         </div>
       </div>

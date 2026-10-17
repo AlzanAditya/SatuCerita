@@ -16,6 +16,10 @@ pnpm-debug.log*
 
 # Environment variables
 .env
+.dev.vars
+worker/.dev.vars
+worker/.wrangler/
+worker/node_modules/
 .env.local
 .env.*.local
 
@@ -33,3 +37,7 @@ Thumbs.db
 # Vite / TypeScript
 .vite/
 *.tsbuildinfo
+
+reference/
+supabase/
+worker/

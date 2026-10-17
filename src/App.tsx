@@ -6,6 +6,7 @@ import {
   HomePage,
   LoginPage,
   KatalogPage,
+  KatalogDetailPage,
   CaraPesanPage,
   KontakPage,
   KebijakanPage,
@@ -13,6 +14,7 @@ import {
 } from "@/pages/landing";
 import { UserApp } from "@/pages/app";
 import { AdminDash, DashLoginPage } from "@/pages/dash";
+import { AuthGate } from "@/components/auth/AuthGate";
 
 function getInitialPath(): string {
   if (typeof window === "undefined") return "/";
@@ -96,6 +98,8 @@ function AppRouter() {
       return <LoginPage currentPath={path} onNavigate={navigate} />;
     case "katalog":
       return <KatalogPage currentPath={path} onNavigate={navigate} />;
+    case "katalogDetail":
+      return <KatalogDetailPage currentPath={path} onNavigate={navigate} />;
     case "caraPesan":
       return <CaraPesanPage currentPath={path} onNavigate={navigate} />;
     case "kontak":
@@ -103,27 +107,27 @@ function AppRouter() {
     case "kebijakan":
       return <KebijakanPage currentPath={path} onNavigate={navigate} />;
     case "appHome":
-      return <UserApp activeTab="home" currentPath={path} onNavigate={navigate} />;
+      return <AuthGate require="user"><UserApp activeTab="home" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "appProses":
-      return <UserApp activeTab="proses" currentPath={path} onNavigate={navigate} />;
+      return <AuthGate require="user"><UserApp activeTab="proses" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "appProfile":
-      return <UserApp activeTab="profile" currentPath={path} onNavigate={navigate} />;
+      return <AuthGate require="user"><UserApp activeTab="profile" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dashLogin":
       return <DashLoginPage currentPath={path} onNavigate={navigate} />;
     case "dashCustomer":
-      return <AdminDash activeTab="users" currentPath={path} onNavigate={navigate} />;
+      return <AuthGate require="admin"><AdminDash activeTab="users" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dashAnalytics":
-      return <AdminDash activeTab="analytics" currentPath={path} onNavigate={navigate} />;
+      return <AuthGate require="admin"><AdminDash activeTab="analytics" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dashFinance":
-      return <AdminDash activeTab="finance" currentPath={path} onNavigate={navigate} />;
+      return <AuthGate require="admin"><AdminDash activeTab="finance" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dashTemplates":
-      return <AdminDash activeTab="templates" currentPath={path} onNavigate={navigate} />;
+      return <AuthGate require="admin"><AdminDash activeTab="templates" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dashInvitations":
-      return <AdminDash activeTab="invitations" currentPath={path} onNavigate={navigate} />;
+      return <AuthGate require="admin"><AdminDash activeTab="invitations" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dashSettings":
-      return <AdminDash activeTab="settings" currentPath={path} onNavigate={navigate} />;
+      return <AuthGate require="admin"><AdminDash activeTab="settings" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dash":
-      return <AdminDash activeTab="overview" currentPath={path} onNavigate={navigate} />;
+      return <AuthGate require="admin"><AdminDash activeTab="overview" currentPath={path} onNavigate={navigate} /></AuthGate>;
     default:
       return <NotFoundPage currentPath={path} onNavigate={navigate} />;
   }

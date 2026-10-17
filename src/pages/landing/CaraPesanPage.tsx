@@ -115,67 +115,83 @@ export const CaraPesanPage: React.FC<CaraPesanPageProps> = ({
 
       {/* 3. Konten Utama: 4 Langkah Alur Pemesanan */}
       <main className="flex-1 bg-[#faf9ff] py-10 sm:py-14 md:py-16 select-none">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col gap-9 sm:gap-11">
-            {STEPS.map((step) => (
-              <div key={step.number} className="flex flex-col items-start w-full">
-                {/* Step Number Badge */}
+        <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="relative">
+            {/* Connecting vertical line across all steps on desktop only */}
+            <div
+              aria-hidden="true"
+              className="hidden md:block absolute left-6 lg:left-7 top-7 bottom-12 w-[3px] -translate-x-1/2 bg-gradient-to-b from-[#7d6aee] via-[#9484f4] to-[#7d6aee] rounded-full z-0 opacity-80"
+            />
+
+            <div className="flex flex-col gap-9 sm:gap-11">
+              {STEPS.map((step) => (
                 <div
-                  className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 bg-white text-[#7d6aee] flex items-center justify-center font-black text-xl shadow-2xs mb-3 select-none"
+                  key={step.number}
+                  className="relative z-10 flex flex-col md:flex-row md:items-start gap-3 md:gap-6 lg:gap-8 w-full"
                 >
-                  {step.number}
-                </div>
-
-                {/* Step Content Card */}
-                <div className="w-full bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 sm:p-8 shadow-2xs hover:border-purple-200 transition-all text-left">
-                  {/* Top Header Inside Card: judul card satu baris dengan icon */}
-                  <div className="flex items-center justify-between gap-4 mb-2">
-                    <h3 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
-                      {step.title}
-                    </h3>
-                    <div className="text-neutral-900 shrink-0">
-                      {step.icon}
+                  {/* Step Number Badge on Desktop (Left Side) */}
+                  <div className="hidden md:flex shrink-0">
+                    <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-2xl border border-[#6b58e0] border-b-[4px] border-b-[#5443c9] bg-[#7d6aee] text-white flex items-center justify-center font-black text-xl lg:text-2xl shadow-md select-none">
+                      {step.number}
                     </div>
                   </div>
 
-                  {/* Subtitle / Deskripsi: diperbesar 2px menjadi text-[16px] sm:text-[18px] */}
-                  <p className="text-neutral-600 text-[16px] sm:text-[18px] leading-relaxed mb-6 font-normal">
-                    {step.subtitle}
-                  </p>
+                  {/* Step Number Badge on Mobile (Top) */}
+                  <div className="md:hidden w-12 h-12 rounded-2xl border border-[#6b58e0] border-b-[3px] border-b-[#5443c9] bg-[#7d6aee] text-white flex items-center justify-center font-black text-xl shadow-2xs select-none">
+                    {step.number}
+                  </div>
 
-                  {/* Bullets with CheckCircle2: poin-poin diperbesar 2px menjadi text-[16px] sm:text-[18px] */}
-                  <div className="space-y-3.5 sm:space-y-4 mb-6">
-                    {step.points.map((point, idx) => (
-                      <div key={idx} className="flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-[#7d6aee] shrink-0 mt-0.5 stroke-[2.2]" />
-                        <p className="text-[16px] sm:text-[18px] text-neutral-800 font-medium leading-snug">
-                          {point}
-                        </p>
+                  {/* Step Content Card */}
+                  <div className="flex-1 w-full bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-6 sm:p-8 shadow-2xs hover:border-purple-200 transition-all text-left">
+                    {/* Top Header Inside Card: judul card satu baris dengan icon */}
+                    <div className="flex items-center justify-between gap-4 mb-2">
+                      <h3 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
+                        {step.title}
+                      </h3>
+                      <div className="text-neutral-900 shrink-0">
+                        {step.icon}
                       </div>
-                    ))}
-                  </div>
-
-                  {/* CTA Button: font diperbesar 2px menjadi text-[16px] */}
-                  {step.ctaText && (
-                    <div className="pt-2">
-                      <a
-                        href={step.ctaLink}
-                        onClick={(e) => {
-                          if (step.ctaLink && onNavigate) {
-                            e.preventDefault();
-                            onNavigate(step.ctaLink);
-                          }
-                        }}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-[16px] bg-[#7d6aee] hover:bg-[#6b58e0] text-white shadow-2xs hover:shadow-xs transition-all cursor-pointer"
-                      >
-                        <span>{step.ctaText}</span>
-                        <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
-                      </a>
                     </div>
-                  )}
+
+                    {/* Subtitle / Deskripsi: diperbesar 2px menjadi text-[16px] sm:text-[18px] */}
+                    <p className="text-neutral-600 text-[16px] sm:text-[18px] leading-relaxed mb-6 font-normal">
+                      {step.subtitle}
+                    </p>
+
+                    {/* Bullets with CheckCircle2: poin-poin diperbesar 2px menjadi text-[16px] sm:text-[18px] */}
+                    <div className="space-y-3.5 sm:space-y-4 mb-6">
+                      {step.points.map((point, idx) => (
+                        <div key={idx} className="flex items-start gap-3">
+                          <CheckCircle2 className="w-5 h-5 text-[#7d6aee] shrink-0 mt-0.5 stroke-[2.2]" />
+                          <p className="text-[16px] sm:text-[18px] text-neutral-800 font-medium leading-snug">
+                            {point}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* CTA Button: font diperbesar 2px menjadi text-[16px] */}
+                    {step.ctaText && (
+                      <div className="pt-2">
+                        <a
+                          href={step.ctaLink}
+                          onClick={(e) => {
+                            if (step.ctaLink && onNavigate) {
+                              e.preventDefault();
+                              onNavigate(step.ctaLink);
+                            }
+                          }}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-[16px] bg-[#7d6aee] hover:bg-[#6b58e0] text-white shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                        >
+                          <span>{step.ctaText}</span>
+                          <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Kotak Bantuan / Konsultasi Gratis */}
