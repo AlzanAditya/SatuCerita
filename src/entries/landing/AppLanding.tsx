@@ -6,6 +6,7 @@ import {
   HomePage,
   LoginPage,
   KatalogPage,
+  KatalogDetailPage,
   CaraPesanPage,
   KontakPage,
   KebijakanPage,
@@ -45,18 +46,22 @@ function LandingRouter() {
 
   const navigate = useCallback(
     (to: string) => {
-      // Jika menuju ke app dashboard dari landing page yang mandiri
-      if (to.startsWith("/app")) {
+      // Jika menuju ke app dashboard, checkout, atau order dari landing page yang mandiri
+      if (to.startsWith("/app") || to.startsWith("/checkout") || to.startsWith("/order")) {
         const host = window.location.hostname;
-        if (!host.startsWith("app.")) {
-          // Jika berada di domain utama (mis. satucerita.id), arahkan ke app.satucerita.id
-          const targetSubdomain = host === "localhost" ? "" : `app.${host.replace(/^www\./, "")}`;
-          if (targetSubdomain) {
-            const appDomain = `${window.location.protocol}//${targetSubdomain}`;
-            const targetPath = to.replace(/^\/app/, "") || "/home";
-            window.location.href = `${appDomain}${targetPath}`;
-            return;
-          }
+        const isLocalHost = host === "localhost" || /^[\d.]+$/.test(host) || host.endsWith(".local");
+        if (!isLocalHost && !host.startsWith("app.")) {
+          // Jika berada di domain utama (mis. satucerita.zanxa.studio), arahkan ke app.satucerita.zanxa.studio
+          const rootDomain = host.replace(/^www\./, "");
+          const appDomain = `${window.location.protocol}//app.${rootDomain}${window.location.port ? ":" + window.location.port : ""}`;
+          const targetPath = to.replace(/^\/app/, "") || "/home";
+          window.location.href = `${appDomain}${targetPath}`;
+          return;
+        } else if (isLocalHost) {
+          // Pada lokal/dev environment
+          const targetPath = to.startsWith("/app") ? to : `/app${to}`;
+          window.location.href = targetPath;
+          return;
         }
       }
 
@@ -103,6 +108,8 @@ function LandingRouter() {
       return <LoginPage currentPath={path} onNavigate={navigate} />;
     case "katalog":
       return <KatalogPage currentPath={path} onNavigate={navigate} />;
+    case "katalogDetail":
+      return <KatalogDetailPage currentPath={path} onNavigate={navigate} />;
     case "caraPesan":
       return <CaraPesanPage currentPath={path} onNavigate={navigate} />;
     case "kontak":

@@ -18,8 +18,11 @@ export const PATHS = {
   kontak: "/kontak",
   kebijakan: "/kebijakan",
   appHome: "/app/home",
-  appProses: "/app/proses",
+  appPesanan: "/app/pesanan",
+  appProses: "/app/pesanan",
   appProfile: "/app/profile",
+  appCheckout: "/app/checkout",
+  appOrder: "/app/order",
   dash: "/dash",
   dashLogin: "/dash/login",
   dashCustomer: "/dash/customer",
@@ -39,8 +42,11 @@ export type RouteId =
   | "kontak"
   | "kebijakan"
   | "appHome"
+  | "appPesanan"
   | "appProses"
   | "appProfile"
+  | "appCheckout"
+  | "appOrder"
   | "dash"
   | "dashLogin"
   | "dashCustomer"
@@ -143,9 +149,9 @@ export const ROUTES: RouteMeta[] = [
     indexable: false,
   },
   {
-    id: "appProses",
-    path: PATHS.appProses,
-    aliases: ["/app/pesanan", "/app/task", "/app/bayar", "/app/pembayaran"],
+    id: "appPesanan",
+    path: PATHS.appPesanan,
+    aliases: ["/app/proses", "/app/task", "/app/bayar", "/app/pembayaran"],
     title: "Pesanan | Satu Cerita",
     description: "Pantau status pesanan dan pembayaran undangan digital Anda.",
     indexable: false,
@@ -261,6 +267,28 @@ export function resolveRoute(input: string): RouteMeta | null {
       indexable: true,
       changefreq: "weekly",
       priority: 0.85,
+    };
+  }
+
+  // Dynamic Checkout route: /app/checkout/:templateSlug
+  if (path.startsWith("/app/checkout/") && path.length > 14) {
+    return {
+      id: "appCheckout",
+      path: path,
+      title: "Checkout — Satu Cerita",
+      description: "Konfirmasi pesanan template undangan digital di Satu Cerita.",
+      indexable: false,
+    };
+  }
+
+  // Dynamic Order detail route: /app/order/:invoiceNo
+  if (path.startsWith("/app/order/") && path.length > 11) {
+    return {
+      id: "appOrder",
+      path: path,
+      title: "Detail Pesanan — Satu Cerita",
+      description: "Detail dan status pembayaran pesanan undangan digital Anda.",
+      indexable: false,
     };
   }
 

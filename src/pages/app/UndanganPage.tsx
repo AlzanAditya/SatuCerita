@@ -1,19 +1,22 @@
 import React, { useState, useMemo } from "react";
-import { Plus, Heart, Calendar, Share2, LayoutGrid, ChevronRight } from "lucide-react";
+import { Plus, Heart, Calendar, Share2, LayoutGrid, ChevronRight, Clock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PATHS } from "@/routes";
-import { UserInvitation } from "./types";
+import { UserInvitation, OrderItem } from "./types";
+import { formatRupiah } from "@/data/templates";
 
 export interface UndanganPageProps {
   invitations: UserInvitation[];
   onNavigate: (path: string) => void;
   showToast?: (msg: string) => void;
+  pendingOrders?: OrderItem[];
 }
 
 export const UndanganPage: React.FC<UndanganPageProps> = ({
   invitations,
   onNavigate,
   showToast,
+  pendingOrders = [],
 }) => {
   const [invitationFilter, setInvitationFilter] = useState<"semua" | "aktif" | "draft">("semua");
 
@@ -31,6 +34,32 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
 
   return (
     <div className="space-y-4 sm:space-y-5 animate-fadeIn">
+      {/* Pending Payment Notification */}
+      {pendingOrders.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 border-b-[3px] border-b-amber-300 rounded-2xl p-4 flex items-start gap-3 shadow-2xs">
+          <div className="size-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+            <Clock className="w-4.5 h-4.5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-extrabold text-amber-800">
+              {pendingOrders.length > 1
+                ? `${pendingOrders.length} pesanan belum dibayar`
+                : "Ada pembayaran yang belum dibayar"}
+            </h4>
+            <p className="text-xs text-amber-700 font-medium mt-0.5 leading-snug">
+              {pendingOrders[0].templateName} · {formatRupiah(pendingOrders[0].total)}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate(`/app/order/${pendingOrders[0].invoiceNo}`)}
+            className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-neutral-900 font-bold text-xs cursor-pointer transition-colors shrink-0"
+          >
+            Bayar
+          </button>
+        </div>
+      )}
+
       {/* Filter Status Undangan */}
       <div className="flex items-center justify-start">
         <div className="flex items-center gap-1.5 p-1 bg-white rounded-xl border border-purple-100 border-b-[2px] border-b-purple-200/70 shadow-2xs select-none">

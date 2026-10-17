@@ -55,7 +55,58 @@ export async function signUpWithEmail(email: string, password: string, name: str
 }
 
 export async function logoutRequest(): Promise<void> {
-  await api("/api/auth/logout", { method: "POST" });
+  try {
+    await api("/api/auth/logout", { method: "POST" });
+  } catch (_err) {
+    console.warn("[Auth] Logout request failed on API, proceeding with client cleanup", _err);
+  }
+
+  // 1. Bersihkan cookies document (non-HttpOnly)
+  if (typeof document !== "undefined") {
+    const cookies = document.cookie.split(";");
+    for (const c of cookies) {
+      const eqPos = c.indexOf("=");
+      const name = eqPos > -1 ? c.substring(0, eqPos).trim() : c.trim();
+      if (!name) continue;
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
+      const hostParts = window.location.hostname.split(".");
+      if (hostParts.length >= 2) {
+        const rootDomain = hostParts.slice(-2).join(".");
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${rootDomain}`;
+      }
+    }
+  }
+
+  // 2. Bersihkan localStorage & sessionStorage
+  if (typeof window !== "undefined") {
+    try {
+      sessionStorage.clear();
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) {
+          if (
+            key.startsWith("sb-") ||
+            key.startsWith("supabase") ||
+            key.startsWith("satucerita_avatar_") ||
+            key === "satucerita_active_user" ||
+            key === "satucerita_app_active_tab" ||
+            key === "satucerita_dash_active_tab" ||
+            key.includes("token") ||
+            key.includes("session") ||
+            key.includes("auth")
+          ) {
+            keysToRemove.push(key);
+          }
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    } catch (_err) {
+      console.warn("[Auth] Gagal membersihkan storage:", _err);
+    }
+  }
 }
 
 export async function updateProfile(p: { name?: string; phone?: string }) {

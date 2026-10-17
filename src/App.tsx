@@ -13,6 +13,8 @@ import {
   NotFoundPage,
 } from "@/pages/landing";
 import { UserApp } from "@/pages/app";
+import { CheckoutPage } from "@/pages/app/CheckoutPage";
+import { OrderDetailPage } from "@/pages/app/OrderDetailPage";
 import { AdminDash, DashLoginPage } from "@/pages/dash";
 import { AuthGate } from "@/components/auth/AuthGate";
 
@@ -108,10 +110,15 @@ function AppRouter() {
       return <KebijakanPage currentPath={path} onNavigate={navigate} />;
     case "appHome":
       return <AuthGate require="user"><UserApp activeTab="home" currentPath={path} onNavigate={navigate} /></AuthGate>;
+    case "appPesanan":
     case "appProses":
       return <AuthGate require="user"><UserApp activeTab="proses" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "appProfile":
       return <AuthGate require="user"><UserApp activeTab="profile" currentPath={path} onNavigate={navigate} /></AuthGate>;
+    case "appCheckout":
+      return <AuthGate require="user"><UserApp activeTab="checkout" currentPath={path} onNavigate={navigate} /></AuthGate>;
+    case "appOrder":
+      return <AuthGate require="user"><UserApp activeTab="order" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dashLogin":
       return <DashLoginPage currentPath={path} onNavigate={navigate} />;
     case "dashCustomer":

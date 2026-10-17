@@ -63,6 +63,8 @@ import { FinancePage } from "./FinancePage";
 import { TemplatesPage } from "./TemplatesPage";
 import { InvitationsPage } from "./InvitationsPage";
 import { SettingsPage } from "./SettingsPage";
+import { AppSidebar } from "@/components/AppSidebar";
+import { ImageCropModal } from "@/components/ImageCropModal";
 
 export * from "./types";
 
@@ -151,6 +153,18 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   const [editAdminEmail, setEditAdminEmail] = useState(adminProfile.email);
   const [editAdminPhone, setEditAdminPhone] = useState(adminProfile.phone);
   const [editAdminAvatar, setEditAdminAvatar] = useState(adminProfile.avatar);
+
+  // Image Crop Modal
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+
+  const handleSelectCropFile = async (file: File) => {
+    try {
+      const dataUrl = await convertFileToDataUrl(file);
+      setCropImageSrc(dataUrl);
+      setIsCropModalOpen(true);
+    } catch (_err) {}
+  };
 
   // Settings Platform dari Cache
   const [adminSettings, setAdminSettings] = useState<AdminSettingsData>(() =>
@@ -1158,11 +1172,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     setIsLogoutModalOpen(false);
     await signOut();
     const target = isStandalone ? "/login" : PATHS.dashLogin;
-    if (onNavigate) {
-      onNavigate(target);
-    } else {
-      window.location.href = target;
-    }
+    window.location.replace(target);
   };
 
   const navItems = [
@@ -1204,166 +1214,45 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         </div>
       )}
 
-      {/* DESKTOP SIDEBAR */}
-      <aside
-        className={`hidden md:flex flex-col ${
-          isSidebarCollapsed ? "w-16 p-2" : "w-48 p-2.5"
-        } bg-white border-r border-neutral-200/80 min-h-screen h-screen sticky top-0 shrink-0 z-30 justify-between transition-all duration-200 ease-in-out`}
-      >
-        <div className="flex flex-col gap-4">
-          {/* Header Sidebar */}
-          {isSidebarCollapsed ? (
-            <div className="flex items-center justify-center pb-3 border-b border-neutral-100">
-              <button
-                type="button"
-                onClick={() => setIsSidebarCollapsed(false)}
-                title="Buka Sidebar (Expand)"
-                className="relative size-10 rounded-xl overflow-hidden shrink-0 border border-purple-100 shadow-2xs group cursor-pointer focus:outline-none"
-              >
-                <img
-                  src="/logos/satucerita.png"
-                  alt="Satu Cerita"
-                  width="40"
-                  height="40"
-                  className="w-full h-full object-cover transition-opacity duration-150 group-hover:opacity-0"
-                />
-                <div className="absolute inset-0 bg-[#7d6aee] text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                  <PanelLeftOpen className="w-5 h-5 stroke-[2.2]" />
-                </div>
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="size-8 rounded-xl overflow-hidden shrink-0 border border-purple-100 shadow-2xs">
-                  <img
-                    src="/logos/satucerita.png"
-                    alt="Satu Cerita"
-                    width="32"
-                    height="32"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-base font-black tracking-tight text-neutral-900 block leading-tight truncate">
-                    Satu<span className="text-[#7d6aee]">Cerita</span>
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsSidebarCollapsed(true)}
-                title="Tutup Sidebar (Collapse)"
-                className="p-1.5 text-neutral-400 hover:text-[#7d6aee] hover:bg-purple-50 rounded-lg transition-colors cursor-pointer shrink-0"
-              >
-                <PanelLeft className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => handleSelectTab(item.id)}
-                  title={item.label}
-                  className={`w-full flex items-center ${
-                    isSidebarCollapsed ? "justify-center p-2.5" : "justify-between px-3 py-2"
-                  } rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-[#7d6aee] text-white shadow-2xs font-extrabold border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc]"
-                      : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
-                  }`}
-                >
-                  <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5 min-w-0"}`}>
-                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-neutral-500"}`} />
-                    {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
-                  </div>
-                  {!isSidebarCollapsed && item.badge !== undefined && (
-                    <span
-                      className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold shrink-0 ${
-                        isActive
-                          ? "bg-white/20 text-white"
-                          : item.id === "finance" && item.badge > 0
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-neutral-100 text-neutral-600"
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* SIDEBAR FOOTER */}
-        <div className="flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={() => handleSelectTab("settings")}
-            title="Pengaturan"
-            className={`w-full flex items-center ${
-              isSidebarCollapsed ? "justify-center p-2.5" : "justify-between px-3 py-2"
-            } rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeTab === "settings"
-                ? "bg-[#7d6aee] text-white shadow-2xs font-extrabold border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc]"
-                : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
-            }`}
-          >
-            <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2.5"}`}>
-              <Settings className={`w-4 h-4 shrink-0 ${activeTab === "settings" ? "text-white" : "text-neutral-500"}`} />
-              {!isSidebarCollapsed && <span>Pengaturan</span>}
-            </div>
-          </button>
-
-          <div
-            onClick={() => {
-              setEditAdminName("Admin");
-              setEditAdminEmail(adminProfile.email);
-              setEditAdminPhone(adminProfile.phone);
-              setEditAdminAvatar(adminProfile.avatar);
-              setIsEditAdminProfileOpen(true);
-            }}
-            className={`flex items-center ${
-              isSidebarCollapsed ? "justify-center p-1.5" : "justify-between gap-2 p-2"
-            } rounded-2xl bg-white border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs cursor-pointer group hover:border-purple-200 transition-all`}
-            title={`Admin (${adminProfile.email})`}
-          >
-            <div className={`flex items-center ${isSidebarCollapsed ? "justify-center" : "gap-2 min-w-0 flex-1"}`}>
-              <div className="shrink-0">
-                <img
-                  src={adminProfile.avatar}
-                  alt="Admin"
-                  className="size-8 rounded-full object-cover border border-[#7d6aee]/30 shadow-2xs group-hover:ring-2 group-hover:ring-[#7d6aee] transition-all md:transition-none"
-                />
-              </div>
-              {!isSidebarCollapsed && (
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-neutral-900 truncate leading-tight group-hover:text-[#7d6aee] transition-colors md:transition-none">
-                    Admin
-                  </p>
-                  <p className="text-[11px] text-neutral-500 truncate leading-tight">
-                    {adminProfile.email}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {!isSidebarCollapsed && (
-              <div className="p-1 rounded-lg text-neutral-400 group-hover:text-[#7d6aee] transition-colors shrink-0">
-                <ChevronRight className="w-4 h-4" />
-              </div>
-            )}
-          </div>
-        </div>
-      </aside>
+      {/* DESKTOP SIDEBAR - Shared AppSidebar (Lebar 15% lebih besar, teks & icon 14px di desktop, tanpa animasi) */}
+      <AppSidebar
+        logoSrc="/logos/satucerita.png"
+        brandName={<>Satu<span className="text-[#7d6aee]">Cerita</span></>}
+        brandSubtitle="Admin Panel"
+        onLogoClick={() => handleSelectTab("overview")}
+        collapsible
+        collapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+        navItems={navItems.map((item) => ({
+          id: item.id,
+          label: item.label,
+          icon: item.icon,
+          badge: item.badge,
+          isActive: activeTab === item.id,
+          onClick: () => handleSelectTab(item.id),
+        }))}
+        footerNavItems={[
+          {
+            id: "settings",
+            label: "Pengaturan",
+            icon: Settings,
+            isActive: activeTab === "settings",
+            onClick: () => handleSelectTab("settings"),
+          },
+        ]}
+        footerUser={{
+          avatar: adminProfile.avatar,
+          name: adminProfile.name || "Admin",
+          email: adminProfile.email,
+          onEdit: () => {
+            setEditAdminName("Admin");
+            setEditAdminEmail(adminProfile.email);
+            setEditAdminPhone(adminProfile.phone);
+            setEditAdminAvatar(adminProfile.avatar);
+            setIsEditAdminProfileOpen(true);
+          },
+        }}
+      />
 
       {/* Main Content Right Side */}
       <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -1915,14 +1804,9 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={async (e) => {
+                      onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) {
-                          try {
-                            const dataUrl = await convertFileToDataUrl(file);
-                            setEditAdminAvatar(dataUrl);
-                          } catch (_err) {}
-                        }
+                        if (file) handleSelectCropFile(file);
                       }}
                       className="hidden"
                     />
@@ -1934,14 +1818,9 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={async (e) => {
+                    onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) {
-                        try {
-                          const dataUrl = await convertFileToDataUrl(file);
-                          setEditAdminAvatar(dataUrl);
-                        } catch (_err) {}
-                      }
+                      if (file) handleSelectCropFile(file);
                     }}
                     className="hidden"
                   />
@@ -2023,6 +1902,16 @@ export const AdminDash: React.FC<AdminDashProps> = ({
           </div>
         </div>
       )}
+
+      {/* Image Crop Modal */}
+      <ImageCropModal
+        isOpen={isCropModalOpen}
+        imageSrc={cropImageSrc}
+        onClose={() => setIsCropModalOpen(false)}
+        onApplyCrop={(croppedUrl) => {
+          setEditAdminAvatar(croppedUrl);
+        }}
+      />
 
       {/* MODAL KONFIRMASI LOGOUT */}
       {isLogoutModalOpen && (

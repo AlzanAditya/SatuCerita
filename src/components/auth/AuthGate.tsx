@@ -35,6 +35,7 @@ export const AuthGate: React.FC<{ require: Role; children: React.ReactNode }> = 
 
   const signOut = useCallback(async () => {
     await logoutRequest();
+    setState({ status: "guest" });
   }, []);
 
   if (state.status !== "authed") return <Spinner />;

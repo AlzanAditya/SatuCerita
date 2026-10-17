@@ -310,9 +310,9 @@ export const HomePage: React.FC<HomePageProps> = ({
               Fitur undangan digital lengkap untuk pasangan yang ingin undangan nikah online tampil memukau sekaligus mudah dikelola dari satu dashboard.
             </p>
 
-            {/* 8 Feature Cards Grid (4 columns on desktop, 2 on tablet, swipe carousel on mobile with generous left space) */}
-            <div className="relative">
-              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 pl-5 sm:pl-0 pr-4 sm:pr-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {/* 8 Feature Cards Grid (4 columns on desktop, 2 on tablet, swipe carousel on mobile ignoring side padding) */}
+            <div className="relative -mx-4 sm:mx-0">
+              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 px-4 sm:px-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {/* Card 1 */}
                 <div className="snap-start shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
@@ -511,10 +511,10 @@ export const HomePage: React.FC<HomePageProps> = ({
               </button>
             </div>
 
-            {/* Cards Carousel on Mobile, Grid on Tablet/Desktop (Lebih sempit dan diperpendek dengan space di sisi kiri) */}
-            <div className="relative">
+            {/* Cards Carousel on Mobile, Grid on Tablet/Desktop (Ignoring mobile side padding) */}
+            <div className="relative -mx-4 sm:mx-0">
               <div
-                className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 pl-5 sm:pl-0 pr-4 sm:pr-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 px-4 sm:px-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               >
                 {filteredTemplates.map((item) => (
                   <div
@@ -587,7 +587,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => onNavigate(`/katalog/${item.id}`)}
+                        onClick={() => onNavigate(`/app/checkout/${item.id}`)}
                         className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                       >
                         <span>Pilih Template</span>
@@ -802,7 +802,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 variant="primary"
                 size="md"
                 onClick={() => {
-                  handleOrderTemplate(selectedDemo.title);
+                  onNavigate(`/app/checkout/${selectedDemo.id}`);
                   setSelectedDemo(null);
                 }}
                 className="w-full"

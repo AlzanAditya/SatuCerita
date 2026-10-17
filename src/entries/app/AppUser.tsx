@@ -1,44 +1,53 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { UserApp } from "@/pages/app/UserApp";
-import { SITE } from "@/config/site";
 import { AuthGate } from "@/components/auth/AuthGate";
+import { SITE } from "@/config/site";
 
-type TabType =
-  | "home"
-  | "task"
-  | "proses"
-  | "chat"
-  | "app"
-  | "joki"
-  | "katalog"
-  | "profile"
-  | "bayar";
+export type TabType = "home" | "proses" | "profile" | "checkout" | "order";
+
+function isLandingPath(path: string): boolean {
+  const p = (path || "/").toLowerCase().split("?")[0].split("#")[0];
+  return (
+    p === "/" ||
+    p === "/login" ||
+    p === "/signup" ||
+    p === "/cara-pesan" ||
+    p === "/kontak" ||
+    p === "/kebijakan" ||
+    p === "/katalog" ||
+    p.startsWith("/katalog/")
+  );
+}
 
 function pathToTab(pathname: string): TabType {
   const p = pathname.toLowerCase();
-  if (p.includes("proses") || p.includes("pesanan") || p.includes("bayar") || p.includes("task")) {
+  if (p.includes("/checkout")) {
+    return "checkout";
+  }
+  if (p.includes("/order")) {
+    return "order";
+  }
+  if (p.includes("pesanan") || p.includes("proses") || p.includes("bayar") || p.includes("task")) {
     return "proses";
   }
   if (p.includes("profile") || p.includes("profil")) {
     return "profile";
   }
-  if (p.includes("katalog")) {
-    return "katalog";
-  }
   return "home";
 }
 
-function tabToPath(tab: TabType): string {
+function tabToPath(tab: TabType, fullPath = ""): string {
   switch (tab) {
+    case "checkout":
+      return fullPath.replace(/^\/app/, "") || "/checkout";
+    case "order":
+      return fullPath.replace(/^\/app/, "") || "/order";
     case "proses":
-    case "bayar":
-    case "task":
-      return "/proses";
+      return "/pesanan";
     case "profile":
       return "/profile";
-    case "katalog":
-      return "/katalog";
+    case "home":
     default:
       return "/home";
   }
@@ -47,7 +56,9 @@ function tabToPath(tab: TabType): string {
 export function AppUser() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
     if (typeof window === "undefined") return "/home";
-    return window.location.pathname || "/home";
+    const p = window.location.pathname || "/home";
+    // Jika akses root di subdomain app (app.satucerita.id/), arahkan ke /home
+    return p === "/" ? "/home" : p;
   });
 
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -55,7 +66,7 @@ export function AppUser() {
     return pathToTab(window.location.pathname);
   });
 
-  // Sinkronkan browser history saat tab berubah
+  // Sinkronkan browser history saat tab / URL berubah
   useEffect(() => {
     const onPopState = () => {
       const p = window.location.pathname;
@@ -68,18 +79,35 @@ export function AppUser() {
 
   const handleNavigate = useCallback(
     (to: string) => {
-      // Jika user klik logout atau kembali ke landing page
-      if (to === "/" || to === "/login" || to === "/cara-pesan" || to === "/kontak" || to === "/kebijakan") {
+      // 1. Jika tujuan adalah halaman landing (katalog, kontak, login, beranda, dll)
+      if (isLandingPath(to)) {
         const host = window.location.hostname;
-        const landingDomain = host.startsWith("app.")
-          ? `${window.location.protocol}//${host.replace(/^app\./, "")}`
-          : (SITE.url || "https://satucerita.id");
-        window.location.href = `${landingDomain}${to === "/" ? "" : to}`;
-        return;
+        const isLocal =
+          host === "localhost" || /^[\d.]+$/.test(host) || host.endsWith(".local");
+
+        if (!isLocal && host.startsWith("app.")) {
+          // Produksi: arahkan ke domain utama satucerita.zanxa.studio / satucerita.id
+          const rootDomain = host.replace(/^app\./, "");
+          const landingDomain = `${window.location.protocol}//${rootDomain}${
+            window.location.port ? ":" + window.location.port : ""
+          }`;
+          const targetUrl = `${landingDomain}${to.startsWith("/") ? to : "/" + to}`;
+          window.location.href = targetUrl;
+          return;
+        } else if (isLocal) {
+          // Lokal dev / port tunggal
+          window.location.href = to.startsWith("/") ? to : "/" + to;
+          return;
+        }
       }
 
+      // 2. Navigasi internal di app (home, pesanan, profile, checkout, order)
       const nextTab = pathToTab(to);
-      const targetPath = tabToPath(nextTab);
+      const cleanPath = to.replace(/^\/app/, "") || "/home";
+      const targetPath =
+        nextTab === "checkout" || nextTab === "order"
+          ? cleanPath
+          : tabToPath(nextTab, cleanPath);
 
       if (window.location.pathname !== targetPath) {
         window.history.pushState(null, "", targetPath);

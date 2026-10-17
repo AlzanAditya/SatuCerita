@@ -19,6 +19,15 @@ export interface OrderAddon {
   price: number;
 }
 
+export type PaymentMethodId =
+  | "qris"
+  | "bca_va"
+  | "bni_va"
+  | "bri_va"
+  | "mandiri_va"
+  | "permata_va"
+  | "gopay";
+
 export interface OrderItem {
   id: string;
   invoiceNo: string;
@@ -35,7 +44,7 @@ export interface OrderItem {
   discountAmount?: number;
   uniqueCode: number;
   total: number;
-  paymentMethod: "qris" | "bca_va" | "mandiri_va" | "gopay";
+  paymentMethod: PaymentMethodId;
   vaNumber?: string;
   slug: string;
   customerName: string;
@@ -47,12 +56,15 @@ export type UserAppTab =
   | "home"
   | "task"
   | "proses"
+  | "pesanan"
   | "chat"
   | "app"
   | "joki"
   | "katalog"
   | "profile"
-  | "bayar";
+  | "bayar"
+  | "checkout"
+  | "order";
 
 export interface UserAppProps {
   activeTab?: UserAppTab;

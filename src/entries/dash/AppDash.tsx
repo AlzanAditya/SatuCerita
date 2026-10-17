@@ -4,6 +4,7 @@ import { AdminDash, DashTabType, pathToDashTab, dashTabToPath } from "@/pages/da
 import { DashLoginPage } from "@/pages/dash/DashLoginPage";
 import { SITE } from "@/config/site";
 import { AuthGate } from "@/components/auth/AuthGate";
+import { urls } from "@/lib/urls";
 
 export function AppDash() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -40,7 +41,7 @@ export function AppDash() {
       const isStandaloneDash =
         window.location.hostname.startsWith("dash.");
       if (isStandaloneDash) {
-        window.location.href = SITE.url || "https://satucerita.id";
+        window.location.href = urls.landing();
         return;
       }
     }

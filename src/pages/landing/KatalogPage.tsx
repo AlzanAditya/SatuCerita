@@ -28,13 +28,6 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
 }) => {
   const [selectedDemo, setSelectedDemo] = useState<TemplateItemData | null>(null);
 
-  const handleOrderTemplate = (templateTitle: string) => {
-    const waText = encodeURIComponent(
-      `Halo Satu Cerita, saya tertarik untuk memesan template undangan: "${templateTitle}". Boleh info detail dan cara pemesanannya?`
-    );
-    window.open(`https://wa.me/6285187978443?text=${waText}`, "_blank");
-  };
-
   return (
     <div className="min-h-screen bg-[#faf9ff] text-text-primary flex flex-col font-sans selection:bg-[#7d6aee]/20 selection:text-[#7d6aee]">
       {/* 1. Navbar Satu Cerita */}
@@ -59,10 +52,10 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
             </h2>
           </div>
 
-          {/* Grid / Horizontal Swipe Card Katalog */}
-          <div className="relative -mx-4 sm:mx-0 px-4 sm:px-0">
+          {/* Grid / Horizontal Swipe Card Katalog (Ignoring mobile side padding) */}
+          <div className="relative -mx-4 sm:mx-0">
             <div
-              className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 snap-x snap-mandatory scroll-smooth touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 px-4 sm:px-0 snap-x snap-mandatory scroll-smooth touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               style={{ WebkitOverflowScrolling: "touch" }}
             >
               {TEMPLATES.map((item) => (
@@ -144,11 +137,11 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                       <span>Lihat Demo</span>
                     </Button>
 
-                    {/* Tombol Pilih Template */}
+                    {/* Tombol Pilih Template -> Checkout */}
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => onNavigate(`/katalog/${item.slug}`)}
+                      onClick={() => onNavigate(`/app/checkout/${item.slug}`)}
                       className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                     >
                       <span>Pilih Template</span>
@@ -224,7 +217,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                 variant="primary"
                 size="md"
                 onClick={() => {
-                  handleOrderTemplate(selectedDemo.title);
+                  onNavigate(`/app/checkout/${selectedDemo.slug}`);
                   setSelectedDemo(null);
                 }}
                 className="w-full"

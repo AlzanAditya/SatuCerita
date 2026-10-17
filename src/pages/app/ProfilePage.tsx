@@ -3,13 +3,14 @@ import {
   Pencil,
   Check,
   AlertCircle,
-  Lock,
+  Globe,
   FileText,
   Phone,
   HelpCircle,
   ExternalLink,
   ChevronRight,
   LogOut,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { InputBase } from "@/components/ui/input";
@@ -47,6 +48,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const [profileNameInput, setProfileNameInput] = useState(userProfile.name);
   const [profileWaInput, setProfileWaInput] = useState(() => getInitialWaDigits(userProfile.phone));
+  const [profileLanguage, setProfileLanguage] = useState<"id" | "en">("id");
+  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
   useEffect(() => {
     setProfileNameInput(userProfile.name);
@@ -63,6 +66,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     setProfileWaInput(clean);
     onUpdateProfile({ ...userProfile, phone: `+62 ${clean}` });
   };
+
+  const langOptions = [
+    { value: "id" as const, label: "Indonesia" },
+    { value: "en" as const, label: "English" },
+  ];
 
   return (
     <div className="space-y-4 sm:space-y-5 animate-fadeIn">
@@ -87,10 +95,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           </div>
 
           <div className="min-w-0 flex-1 flex flex-col justify-center">
-            <h3 className="text-base sm:text-lg md:text-[24px] font-black text-white tracking-tight truncate">
+            {/* Task 1: Mobile = 20px name, Desktop = 24px */}
+            <h3 className="text-[20px] md:text-[24px] font-black text-white tracking-tight truncate">
               {userProfile.name}
             </h3>
-            <p className="text-xs md:text-[16px] text-purple-100 font-medium truncate mt-0.5">
+            {/* Task 1: Mobile = 16px email */}
+            <p className="text-[16px] text-purple-100 font-medium truncate mt-0.5">
               {userProfile.email}
             </p>
           </div>
@@ -133,9 +143,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
         <div className="space-y-3">
           {/* Input Nama */}
+          {/* Task 1: Mobile 14px for user info card */}
           <InputGroup
             leadingAddon={
-              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-sm sm:text-base md:text-[16px] shrink-0">
+              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-[14px] sm:text-base md:text-[16px] shrink-0">
                 Nama
               </InputGroup.Prefix>
             }
@@ -150,7 +161,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             }
           >
             <InputBase
-              className="font-semibold text-sm sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
+              className="font-semibold text-[14px] sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
               placeholder="Masukkan nama lengkap"
               value={profileNameInput}
               onChange={(e) => handleNameChange(e.target.value)}
@@ -160,7 +171,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {/* Input Nomor HP */}
           <InputGroup
             leadingAddon={
-              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-sm sm:text-base md:text-[16px] shrink-0">
+              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-[14px] sm:text-base md:text-[16px] shrink-0">
                 Nomor HP
               </InputGroup.Prefix>
             }
@@ -175,33 +186,55 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             }
           >
             <InputBase
-              className="font-semibold text-sm sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
+              className="font-semibold text-[14px] sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
               placeholder="081234567890"
               value={profileWaInput}
               onChange={(e) => handleWaChange(e.target.value)}
             />
           </InputGroup>
 
-          {/* Input Email */}
-          <InputGroup
-            leadingAddon={
-              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-sm sm:text-base md:text-[16px] shrink-0">
-                Email
-              </InputGroup.Prefix>
-            }
-            trailingAddon={
-              <span className="pr-3 flex items-center select-none" title="Email akun tidak dapat diedit">
-                <Lock className="w-4 h-4 text-neutral-400 shrink-0" />
-              </span>
-            }
-          >
-            <InputBase
-              readOnly
-              className="font-semibold text-sm sm:text-base md:text-[16px] text-neutral-500 py-3 sm:py-3.5 bg-neutral-50/60 cursor-not-allowed select-all"
-              placeholder="email@example.com"
-              value={userProfile.email}
-            />
-          </InputGroup>
+          {/* Task 4: Language Dropdown (replaces Email input) */}
+          <div className="flex items-stretch rounded-xl border border-neutral-200 bg-white overflow-hidden focus-within:border-[#7d6aee] transition-colors">
+            {/* Prefix */}
+            <div className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 flex items-center justify-start border-r border-neutral-200 font-semibold text-neutral-700 text-[14px] sm:text-base md:text-[16px] shrink-0">
+              <Globe className="w-4 h-4 text-neutral-400 mr-1.5 shrink-0" />
+              <span>Bahasa</span>
+            </div>
+            {/* Dropdown */}
+            <div className="relative flex-1">
+              <button
+                type="button"
+                onClick={() => setIsLangDropdownOpen((v) => !v)}
+                className="w-full h-full flex items-center justify-between px-3 py-3 sm:py-3.5 text-[14px] sm:text-base md:text-[16px] font-semibold text-neutral-800 bg-transparent cursor-pointer focus:outline-none"
+              >
+                <span>{langOptions.find((o) => o.value === profileLanguage)?.label}</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-neutral-400 transition-transform duration-150 shrink-0 ${isLangDropdownOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {isLangDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 z-20 bg-white border border-neutral-200 rounded-xl shadow-lg mt-1 overflow-hidden">
+                  {langOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        setProfileLanguage(opt.value);
+                        setIsLangDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-[14px] font-semibold transition-colors cursor-pointer ${
+                        profileLanguage === opt.value
+                          ? "bg-purple-50 text-[#7d6aee]"
+                          : "text-neutral-700 hover:bg-neutral-50"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

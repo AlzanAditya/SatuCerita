@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { PATHS } from "@/routes";
 import {
   Home,
@@ -8,17 +8,22 @@ import {
   Plus,
   LogOut,
   X,
-  Upload,
   LayoutGrid,
+  ZoomIn,
+  Crop,
 } from "lucide-react";
 import { AppNavbar } from "@/components/app/AppNavbar";
 import { Button } from "@/components/ui/Button";
+import { AppSidebar } from "@/components/AppSidebar";
+import { ImageCropModal } from "@/components/ImageCropModal";
 import { getCache, setCache, convertFileToDataUrl, UserProfileData } from "@/lib/cache";
 import { useAuth } from "@/context/AuthContext";
 import { avatarFallback, formatMemberSince, updateProfile } from "@/lib/auth";
 import { UndanganPage } from "./UndanganPage";
 import { PesananPage } from "./PesananPage";
 import { ProfilePage } from "./ProfilePage";
+import { CheckoutPage } from "./CheckoutPage";
+import { OrderDetailPage } from "./OrderDetailPage";
 import { UserAppProps, UserInvitation, OrderItem } from "./types";
 
 export * from "./types";
@@ -28,12 +33,22 @@ export const UserApp: React.FC<UserAppProps> = ({
   onNavigate,
   currentPath = "/app/home",
 }) => {
-  const prefix = "/app";
+  const isStandalone = useMemo(
+    () => typeof window !== "undefined" && window.location.hostname.startsWith("app."),
+    []
+  );
+  const prefix = isStandalone ? "" : "/app";
 
   // Determine current active tab
   const activeTab = useMemo(() => {
     if (propActiveTab) {
-      if (propActiveTab === "task" || propActiveTab === "bayar") return "proses";
+      if (
+        propActiveTab === "task" ||
+        propActiveTab === "bayar" ||
+        propActiveTab === "pesanan"
+      ) {
+        return "proses";
+      }
       return propActiveTab;
     }
     if (
@@ -47,6 +62,8 @@ export const UserApp: React.FC<UserAppProps> = ({
     if (currentPath.includes("/profile") || currentPath.includes("/profil")) {
       return "profile";
     }
+    if (currentPath.includes("/checkout")) return "checkout";
+    if (currentPath.includes("/order")) return "order";
     return "home";
   }, [propActiveTab, currentPath]);
 
@@ -54,7 +71,6 @@ export const UserApp: React.FC<UserAppProps> = ({
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   // User Profile
-  // Profil diambil dari akun yang sedang login (Worker + Supabase), bukan data bawaan.
   const { user, setUser, signOut } = useAuth();
   const avatarKey = `satucerita_avatar_${user.id}`;
   const [avatarOverride, setAvatarOverride] = useState<string>(() => getCache<string>(avatarKey, ""));
@@ -71,8 +87,23 @@ export const UserApp: React.FC<UserAppProps> = ({
   const [editPhone, setEditPhone] = useState(userProfile.phone);
   const [editAvatarUrl, setEditAvatarUrl] = useState(userProfile.avatar);
 
+  // ========== TASK 5: Crop Modal State ==========
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string>("");
+
+  const openCropModal = async (file: File) => {
+    try {
+      const dataUrl = await convertFileToDataUrl(file);
+      setCropImageSrc(dataUrl);
+      setIsCropModalOpen(true);
+    } catch (_err) {
+      showToast("Gagal membaca file gambar.");
+    }
+  };
+
   // Logout Confirmation Modal
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Toast Notice
   const [toastNotice, setToastNotice] = useState<string | null>(null);
@@ -120,7 +151,6 @@ export const UserApp: React.FC<UserAppProps> = ({
   }, [orders]);
 
   // Save profile changes
-  // Edit inline di halaman Profil: disimpan ke server setelah berhenti mengetik (debounce).
   const saveTimer = useRef<number>(0);
   const saveSeq = useRef(0);
   const handleInlineProfileUpdate = (u: UserProfileData) => {
@@ -129,7 +159,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     saveTimer.current = window.setTimeout(async () => {
       const hasPhone = u.phone.replace(/\D/g, "").replace(/^62/, "").length > 0;
       const res = await updateProfile({ name: u.name, phone: hasPhone ? u.phone : "" });
-      if (seq !== saveSeq.current) return; // ada ketikan yang lebih baru
+      if (seq !== saveSeq.current) return;
       if (res.ok && res.user) setUser(res.user);
       else showToast(res.error || "Gagal menyimpan profil.");
     }, 900);
@@ -154,21 +184,17 @@ export const UserApp: React.FC<UserAppProps> = ({
   const handlePerformLogout = async () => {
     setIsLogoutModalOpen(false);
     await signOut();
-    onNavigate(PATHS.home);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.location.replace(PATHS.home);
   };
 
-  // Avatar upload handler
+  // Avatar upload handler (opens crop modal)
   const handleAvatarFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      try {
-        const dataUrl = await convertFileToDataUrl(file);
-        setEditAvatarUrl(dataUrl);
-      } catch (_err) {
-        showToast("Gagal membaca file gambar.");
-      }
+      await openCropModal(file);
     }
+    // Reset input so same file can be selected again
+    e.target.value = "";
   };
 
   const handleConfirmPaid = (orderId: string) => {
@@ -177,8 +203,24 @@ export const UserApp: React.FC<UserAppProps> = ({
     );
   };
 
+  const handleCreateOrder = (order: OrderItem) => {
+    setOrders((prev) => {
+      const exists = prev.find((o) => o.id === order.id);
+      if (exists) return prev;
+      return [order, ...prev];
+    });
+  };
+
+  const handleUpdateOrderStatus = (id: string, status: "pending" | "paid" | "cancelled") => {
+    setOrders((prev) =>
+      prev.map((o) => (o.id === id ? { ...o, status } : o))
+    );
+  };
+
   // Determine App Bar Title
   const getAppNavbarTitle = () => {
+    if (activeTab === "checkout") return "Checkout";
+    if (activeTab === "order") return "Detail Pesanan";
     if (selectedOrderId) return "Detail Pesanan";
     if (activeTab === "home") return "Undangan";
     if (activeTab === "proses") return "Pesanan";
@@ -186,220 +228,136 @@ export const UserApp: React.FC<UserAppProps> = ({
     return "Satu Cerita App";
   };
 
+  // Pending orders count for notification
+  const pendingOrdersCount = orders.filter((o) => o.status === "pending").length;
+
+  // ===== Sidebar items =====
+  const sidebarNavItems = [
+    {
+      id: "home",
+      label: "Undangan Saya",
+      icon: Home,
+      isActive: !selectedOrderId && activeTab === "home",
+      badge: invitations.length > 0 ? invitations.length : undefined,
+      onClick: () => {
+        setSelectedOrderId(null);
+        onNavigate(`${prefix}/home`);
+      },
+    },
+    {
+      id: "proses",
+      label: "Pesanan & Tagihan",
+      icon: ShoppingBag,
+      isActive: selectedOrderId != null || activeTab === "proses",
+      badge: orders.filter((o) => o.status === "pending").length || undefined,
+      onClick: () => {
+        setSelectedOrderId(null);
+        onNavigate(`${prefix}/pesanan`);
+      },
+    },
+    {
+      id: "profile",
+      label: "Profil Akun",
+      icon: UserRound,
+      isActive: !selectedOrderId && activeTab === "profile",
+      onClick: () => {
+        setSelectedOrderId(null);
+        onNavigate(`${prefix}/profile`);
+      },
+    },
+    {
+      id: "katalog",
+      label: "Katalog Template",
+      icon: LayoutGrid,
+      isActive: false,
+      onClick: () => {
+        onNavigate(PATHS.katalog);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      },
+    },
+  ];
+
+  const isCheckoutOrOrder = activeTab === "checkout" || activeTab === "order";
+
   return (
     <div className="min-h-screen bg-[#faf9ff] flex flex-col md:flex-row font-sans text-neutral-800 pb-20 md:pb-0 select-none">
-      {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 lg:w-72 bg-white border-r border-purple-100 min-h-screen h-screen sticky top-0 shrink-0 z-30 justify-between p-4 lg:p-5">
-        <div className="flex flex-col gap-6">
-          {/* Logo / Brand Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-purple-50">
-            <div className="flex items-center gap-2.5">
-              <div className="size-9 rounded-xl bg-gradient-to-tr from-[#7d6aee] to-[#a394ff] flex items-center justify-center text-white font-black shadow-xs text-sm">
-                SC
-              </div>
-              <div>
-                <span className="text-base font-black tracking-tight text-neutral-900 block leading-tight">
-                  Satu<span className="text-[#7d6aee]">Cerita</span>
-                </span>
-                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
-                  Dashboard Pengguna
-                </span>
-              </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                onNavigate(PATHS.home);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              title="Ke Halaman Web Utama"
-              className="p-1.5 text-neutral-400 hover:text-[#7d6aee] hover:bg-purple-50 rounded-lg transition-colors cursor-pointer"
-            >
-              <SquareArrowOutUpRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Sidebar Menu Items */}
-          <nav className="space-y-1">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 px-3 pb-1 block">
-              Menu Utama
-            </span>
-
-            {/* 1. Undangan Saya */}
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedOrderId(null);
-                onNavigate(`${prefix}/home`);
-              }}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold transition-all cursor-pointer ${
-                !selectedOrderId && activeTab === "home"
-                  ? "bg-[#7d6aee] text-white shadow-xs font-bold"
-                  : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Home className="w-4 h-4" />
-                <span>Undangan Saya</span>
-              </div>
-              {invitations.length > 0 && (
-                <span
-                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
-                    !selectedOrderId && activeTab === "home"
-                      ? "bg-white/20 text-white"
-                      : "bg-purple-100 text-[#7d6aee]"
-                  }`}
-                >
-                  {invitations.length}
-                </span>
-              )}
-            </button>
-
-            {/* 2. Pesanan & Tagihan */}
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedOrderId(null);
-                onNavigate(`${prefix}/proses`);
-              }}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold transition-all cursor-pointer ${
-                selectedOrderId || activeTab === "proses"
-                  ? "bg-[#7d6aee] text-white shadow-xs font-bold"
-                  : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <ShoppingBag className="w-4 h-4" />
-                <span>Pesanan &amp; Tagihan</span>
-              </div>
-              {orders.filter((o) => o.status === "pending").length > 0 && (
-                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">
-                  {orders.filter((o) => o.status === "pending").length}
-                </span>
-              )}
-            </button>
-
-            {/* 3. Profil Akun */}
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedOrderId(null);
-                onNavigate(`${prefix}/profile`);
-              }}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold transition-all cursor-pointer ${
-                !selectedOrderId && activeTab === "profile"
-                  ? "bg-[#7d6aee] text-white shadow-xs font-bold"
-                  : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <UserRound className="w-4 h-4" />
-                <span>Profil Akun</span>
-              </div>
-            </button>
-
-            {/* 4. Katalog Template */}
-            <button
-              type="button"
-              onClick={() => {
-                onNavigate(PATHS.katalog);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900 transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                <LayoutGrid className="w-4 h-4" />
-                <span>Katalog Template</span>
-              </div>
-            </button>
-          </nav>
-        </div>
-
-        {/* SIDEBAR FOOTER: USER AVATAR + NAMA & EMAIL + LOGOUT */}
-        <div className="pt-4 border-t border-neutral-100">
-          <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-neutral-50 border border-neutral-200/70">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <img
-                src={userProfile.avatar}
-                alt={userProfile.name}
-                className="size-9 rounded-full object-cover border border-[#7d6aee]/30 shrink-0 shadow-2xs"
-              />
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-neutral-900 truncate leading-tight">
-                  {userProfile.name}
-                </p>
-                <p className="text-[11px] text-neutral-500 truncate leading-tight">
-                  {userProfile.email}
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsLogoutModalOpen(true)}
-              title="Keluar dari akun"
-              className="p-2 rounded-xl text-neutral-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
-              aria-label="Tombol Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </aside>
+      {/* DESKTOP SIDEBAR — use shared AppSidebar component (collapsible, logo satucerita, tanpa subjudul) */}
+      {!isCheckoutOrOrder && (
+        <AppSidebar
+          logoSrc="/logos/satucerita.png"
+          brandName={<>Satu<span className="text-[#7d6aee]">Cerita</span></>}
+          onLogoClick={() => onNavigate(PATHS.home)}
+          collapsible
+          collapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+          navItems={sidebarNavItems}
+          footerUser={{
+            avatar: userProfile.avatar,
+            name: userProfile.name,
+            email: userProfile.email,
+          }}
+          onLogout={() => setIsLogoutModalOpen(true)}
+        />
+      )}
 
       {/* Main Container Right Side */}
       <div className="flex-1 min-w-0 flex flex-col justify-between">
-        {/* Top Navbar (Mobile only) */}
-        <div className="md:hidden">
-          <AppNavbar
-            currentPath={currentPath}
-            onNavigate={onNavigate}
-            activeTab={activeTab}
-            title={getAppNavbarTitle()}
-            userProfile={{
-              name: userProfile.name,
-              email: userProfile.email,
-              avatar: userProfile.avatar,
-            }}
-          />
-        </div>
-
-        {/* Desktop Top Header Bar for Breadcrumbs & Title */}
-        <header className="hidden md:flex items-center justify-between px-6 lg:px-8 py-4 bg-white border-b border-purple-50 shrink-0">
-          <div>
-            <h1 className="text-lg font-black text-neutral-900 tracking-tight">
-              {getAppNavbarTitle()}
-            </h1>
-            <p className="text-xs text-neutral-400">
-              {activeTab === "home" && "Kelola dan pantau undangan digital yang telah Anda buat."}
-              {activeTab === "proses" && "Daftar pesanan aktif dan status proses verifikasi pembayaran."}
-              {activeTab === "profile" && "Informasi akun dan pengaturan data kontak Satu Cerita."}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                onNavigate(PATHS.katalog);
-                window.scrollTo({ top: 0, behavior: "smooth" });
+        {/* Top Navbar (Mobile only) — hide on checkout/order to keep clean */}
+        {!isCheckoutOrOrder && (
+          <div className="md:hidden">
+            <AppNavbar
+              currentPath={currentPath}
+              onNavigate={onNavigate}
+              activeTab={activeTab}
+              title={getAppNavbarTitle()}
+              userProfile={{
+                name: userProfile.name,
+                email: userProfile.email,
+                avatar: userProfile.avatar,
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-[#7d6aee] text-xs font-bold transition-colors cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Buat Undangan Baru</span>
-            </button>
+            />
           </div>
-        </header>
+        )}
+
+        {/* Desktop Top Header Bar */}
+        {!isCheckoutOrOrder && (
+          <header className="hidden md:flex items-center justify-between px-6 lg:px-8 py-4 bg-white border-b border-purple-50 shrink-0">
+            <div>
+              <h1 className="text-lg font-black text-neutral-900 tracking-tight">
+                {getAppNavbarTitle()}
+              </h1>
+              <p className="text-xs text-neutral-400">
+                {activeTab === "home" && "Kelola dan pantau undangan digital yang telah Anda buat."}
+                {activeTab === "proses" && "Daftar pesanan aktif dan status proses verifikasi pembayaran."}
+                {activeTab === "profile" && "Informasi akun dan pengaturan data kontak Satu Cerita."}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate(PATHS.katalog);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-[#7d6aee] text-xs font-bold transition-colors cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Buat Undangan Baru</span>
+              </button>
+            </div>
+          </header>
+        )}
 
         {/* Main Content Area */}
-        <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 animate-fadeIn">
+        <main className={`flex-1 w-full ${isCheckoutOrOrder ? "" : "max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6"} animate-fadeIn`}>
           {activeTab === "home" && (
             <UndanganPage
               invitations={invitations}
               onNavigate={onNavigate}
               showToast={showToast}
+              pendingOrders={orders.filter((o) => o.status === "pending")}
             />
           )}
 
@@ -432,6 +390,24 @@ export const UserApp: React.FC<UserAppProps> = ({
             />
           )}
 
+          {activeTab === "checkout" && (
+            <CheckoutPage
+              currentPath={currentPath}
+              onNavigate={onNavigate}
+              onCreateOrder={handleCreateOrder}
+            />
+          )}
+
+          {activeTab === "order" && (
+            <OrderDetailPage
+              currentPath={currentPath}
+              onNavigate={onNavigate}
+              orders={orders}
+              onUpdateOrderStatus={handleUpdateOrderStatus}
+              showToast={showToast}
+            />
+          )}
+
           {/* Global Toast */}
           {toastNotice && (
             <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-neutral-900 text-white text-xs font-semibold shadow-xl animate-fadeIn flex items-center gap-2">
@@ -441,106 +417,108 @@ export const UserApp: React.FC<UserAppProps> = ({
         </main>
 
         {/* Floating Bottom Nav (Mobile only) */}
-        <nav
-          id="satucerita-app-bottom-navbar"
-          className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
-          aria-label="Satu Cerita App Navigation"
-        >
-          <div className="max-w-md mx-auto grid grid-cols-4 h-16 px-1">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedOrderId(null);
-                onNavigate(`${prefix}/home`);
-              }}
-              className={`flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer ${
-                !selectedOrderId && activeTab === "home"
-                  ? "text-[#7d6aee] font-bold"
-                  : "text-neutral-500 hover:text-neutral-900 font-semibold"
-              }`}
-              aria-label="Undangan"
-            >
-              <Home className="w-5 h-5" />
-              <span
-                className={`text-[11px] leading-tight ${
+        {!isCheckoutOrOrder && (
+          <nav
+            id="satucerita-app-bottom-navbar"
+            className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
+            aria-label="Satu Cerita App Navigation"
+          >
+            <div className="max-w-md mx-auto grid grid-cols-4 h-16 px-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedOrderId(null);
+                  onNavigate(`${prefix}/home`);
+                }}
+                className={`flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer ${
                   !selectedOrderId && activeTab === "home"
-                    ? "font-bold text-[#7d6aee]"
-                    : "font-semibold"
+                    ? "text-[#7d6aee] font-bold"
+                    : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
+                aria-label="Undangan"
               >
-                Undangan
-              </span>
-            </button>
+                <Home className="w-5 h-5" />
+                <span
+                  className={`text-[11px] leading-tight ${
+                    !selectedOrderId && activeTab === "home"
+                      ? "font-bold text-[#7d6aee]"
+                      : "font-semibold"
+                  }`}
+                >
+                  Undangan
+                </span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedOrderId(null);
-                onNavigate(`${prefix}/proses`);
-              }}
-              className={`flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer ${
-                selectedOrderId || activeTab === "proses"
-                  ? "text-[#7d6aee] font-bold"
-                  : "text-neutral-500 hover:text-neutral-900 font-semibold"
-              }`}
-              aria-label="Pesanan"
-            >
-              <ShoppingBag className="w-5 h-5" />
-              <span
-                className={`text-[11px] leading-tight ${
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedOrderId(null);
+                  onNavigate(`${prefix}/pesanan`);
+                }}
+                className={`flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer ${
                   selectedOrderId || activeTab === "proses"
-                    ? "font-bold text-[#7d6aee]"
-                    : "font-semibold"
+                    ? "text-[#7d6aee] font-bold"
+                    : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
+                aria-label="Pesanan"
               >
-                Pesanan
-              </span>
-            </button>
+                <ShoppingBag className="w-5 h-5" />
+                <span
+                  className={`text-[11px] leading-tight ${
+                    selectedOrderId || activeTab === "proses"
+                      ? "font-bold text-[#7d6aee]"
+                      : "font-semibold"
+                  }`}
+                >
+                  Pesanan
+                </span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedOrderId(null);
-                onNavigate(`${prefix}/profile`);
-              }}
-              className={`flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer ${
-                !selectedOrderId && activeTab === "profile"
-                  ? "text-[#7d6aee] font-bold"
-                  : "text-neutral-500 hover:text-neutral-900 font-semibold"
-              }`}
-              aria-label="Profil"
-            >
-              <UserRound className="w-5 h-5" />
-              <span
-                className={`text-[11px] leading-tight ${
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedOrderId(null);
+                  onNavigate(`${prefix}/profile`);
+                }}
+                className={`flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer ${
                   !selectedOrderId && activeTab === "profile"
-                    ? "font-bold text-[#7d6aee]"
-                    : "font-semibold"
+                    ? "text-[#7d6aee] font-bold"
+                    : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
+                aria-label="Profil"
               >
-                Profil
-              </span>
-            </button>
+                <UserRound className="w-5 h-5" />
+                <span
+                  className={`text-[11px] leading-tight ${
+                    !selectedOrderId && activeTab === "profile"
+                      ? "font-bold text-[#7d6aee]"
+                      : "font-semibold"
+                  }`}
+                >
+                  Profil
+                </span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                onNavigate(PATHS.home);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              className="flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer text-neutral-500 hover:text-neutral-900 font-semibold"
-              aria-label="Kembali ke Landing Page"
-            >
-              <SquareArrowOutUpRight className="w-5 h-5" />
-              <span className="text-[11px] leading-tight font-semibold">
-                Kembali
-              </span>
-            </button>
-          </div>
-        </nav>
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate(PATHS.home);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer text-neutral-500 hover:text-neutral-900 font-semibold"
+                aria-label="Kembali ke Landing Page"
+              >
+                <SquareArrowOutUpRight className="w-5 h-5" />
+                <span className="text-[11px] leading-tight font-semibold">
+                  Kembali
+                </span>
+              </button>
+            </div>
+          </nav>
+        )}
       </div>
 
-      {/* Modal Edit Profil */}
+      {/* ===================== MODAL EDIT PROFIL ===================== */}
       {isEditProfileOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-purple-100 overflow-hidden flex flex-col">
@@ -556,6 +534,7 @@ export const UserApp: React.FC<UserAppProps> = ({
             </div>
 
             <div className="p-6 space-y-4">
+              {/* Avatar with Crop */}
               <div className="flex flex-col items-center">
                 <img
                   src={editAvatarUrl}
@@ -563,8 +542,8 @@ export const UserApp: React.FC<UserAppProps> = ({
                   className="size-20 rounded-full object-cover border-2 border-[#7d6aee] shadow-sm mb-3"
                 />
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 text-xs font-bold text-neutral-700 hover:bg-neutral-50 cursor-pointer shadow-2xs">
-                  <Upload className="w-3.5 h-3.5 text-[#7d6aee]" />
-                  <span>Upload Foto Baru</span>
+                  <Crop className="w-3.5 h-3.5 text-[#7d6aee]" />
+                  <span>Upload & Potong Foto</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -632,7 +611,17 @@ export const UserApp: React.FC<UserAppProps> = ({
         </div>
       )}
 
-      {/* Modal Konfirmasi Logout */}
+      {/* ===================== CROP MODAL ===================== */}
+      <ImageCropModal
+        isOpen={isCropModalOpen}
+        imageSrc={cropImageSrc}
+        onClose={() => setIsCropModalOpen(false)}
+        onApplyCrop={(croppedUrl) => {
+          setEditAvatarUrl(croppedUrl);
+        }}
+      />
+
+      {/* ===================== MODAL KONFIRMASI LOGOUT ===================== */}
       {isLogoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden p-6 text-center">

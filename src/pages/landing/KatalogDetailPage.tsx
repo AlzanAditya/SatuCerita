@@ -57,10 +57,12 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
   const [activeTab, setActiveTab] = useState<"sampul" | "acara" | "rsvp">("sampul");
 
   const handleOrderTemplate = () => {
-    const waText = encodeURIComponent(
-      `Halo Satu Cerita, saya tertarik untuk memesan template undangan: "${template.title}". Boleh info detail pemesanannya?`
-    );
-    window.open(`https://wa.me/6285187978443?text=${waText}`, "_blank");
+    const checkoutUrl = `/app/checkout/${template.slug}`;
+    if (onNavigate) {
+      onNavigate(checkoutUrl);
+    } else {
+      window.location.href = checkoutUrl;
+    }
   };
 
   const handleConsultWa = () => {
