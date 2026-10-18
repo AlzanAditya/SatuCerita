@@ -15,6 +15,7 @@ import fs from "fs";
 import path from "path";
 import { SITE } from "../src/config/site";
 import { NOT_FOUND_META, ROUTES, type RouteMeta } from "../src/routes";
+import { TEMPLATES_DATA } from "../src/data/templates";
 
 const HEAD_PLACEHOLDER = "<!--ssg:head-->";
 
@@ -200,9 +201,29 @@ export function runLandingSSG(distDir?: string) {
   }
 
   // Filter hanya route landing page (bukan route app atau dash)
-  const landingRoutes = ROUTES.filter(
+  const landingRoutes: RouteMeta[] = ROUTES.filter(
     (r) => !r.path.startsWith("/app") && !r.path.startsWith("/dash")
   );
+
+  // Masukkan halaman detail katalog & preview template ke dalam SSG
+  for (const t of TEMPLATES_DATA) {
+    landingRoutes.push({
+      id: "katalogDetail",
+      path: `/katalog/${t.slug}`,
+      title: `Template Undangan ${t.title} — Satu Cerita`,
+      description: `Lihat detail, fitur, dan pratinjau langsung template undangan pernikahan digital ${t.title} di Satu Cerita.`,
+      indexable: true,
+      changefreq: "weekly",
+      priority: 0.85,
+    });
+    landingRoutes.push({
+      id: "templatePreview",
+      path: `/preview/${t.slug}`,
+      title: `Preview Template ${t.title} — Satu Cerita`,
+      description: `Pratinjau langsung template undangan digital ${t.title} di Satu Cerita.`,
+      indexable: false,
+    });
+  }
 
   for (const route of landingRoutes) {
     const page: PageHead = {

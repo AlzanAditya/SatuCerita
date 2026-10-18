@@ -7,6 +7,7 @@ import {
   LoginPage,
   KatalogPage,
   KatalogDetailPage,
+  TemplatePreviewPage,
   CaraPesanPage,
   KontakPage,
   KebijakanPage,
@@ -110,6 +111,8 @@ function LandingRouter() {
       return <KatalogPage currentPath={path} onNavigate={navigate} />;
     case "katalogDetail":
       return <KatalogDetailPage currentPath={path} onNavigate={navigate} />;
+    case "templatePreview":
+      return <TemplatePreviewPage currentPath={path} onNavigate={navigate} />;
     case "caraPesan":
       return <CaraPesanPage currentPath={path} onNavigate={navigate} />;
     case "kontak":
