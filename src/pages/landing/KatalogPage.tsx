@@ -24,7 +24,7 @@ const TEMPLATES: TemplateItemData[] = TEMPLATES_DATA;
 
 export const KatalogPage: React.FC<KatalogPageProps> = ({
   currentPath = "/katalog",
-  onNavigate = (_path: string) => {},
+  onNavigate = (_path: string) => { },
 }) => {
   const [selectedDemo, setSelectedDemo] = useState<TemplateItemData | null>(null);
 
@@ -55,13 +55,13 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
           {/* Grid / Horizontal Swipe Card Katalog (Ignoring mobile side padding) */}
           <div className="relative -mx-4 sm:mx-0">
             <div
-              className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 px-4 sm:px-0 snap-x snap-mandatory scroll-smooth touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 pl-3.5 sm:pl-4 pr-3.5 sm:pr-4 sm:px-0 scroll-pl-0 sm:scroll-pl-0 snap-x snap-mandatory scroll-smooth touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               style={{ WebkitOverflowScrolling: "touch" }}
             >
               {TEMPLATES.map((item) => (
                 <div
                   key={item.id}
-                  className="snap-start shrink-0 w-[74vw] max-w-[275px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-3.5 sm:p-4 shadow-2xs hover:border-purple-200 transition-all flex flex-col justify-between text-left group"
+                  className="snap-start scroll-ml-6 sm:scroll-ml-0 shrink-0 w-[74vw] max-w-[275px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-3.5 sm:p-4 shadow-2xs hover:border-purple-200 transition-all flex flex-col justify-between text-left group"
                 >
                   <div
                     onClick={() => onNavigate(`/katalog/${item.slug}`)}
@@ -130,7 +130,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onNavigate(`/katalog/${item.slug}`)}
+                      onClick={() => onNavigate(`/preview/${item.slug}`)}
                       className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                     >
                       <Eye className="w-4 h-4 stroke-[2.2]" />

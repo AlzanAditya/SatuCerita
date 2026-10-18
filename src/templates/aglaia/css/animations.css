@@ -1,0 +1,26 @@
+@keyframes bob { from { translate: 0 0; } to { translate: 0 -5px; } }
+@keyframes breathe { 0% { translate: 0 0; } 45% { translate: 1.5px -4px; } 75% { translate: -1px -1.5px; } 100% { translate: 0 -2px; } }
+@keyframes flutter { from { translate: 0 0; } to { translate: 0 3px; } }
+@keyframes drift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes ripple { from { scale: .82 1; opacity: .55; } to { scale: 1.12 1; opacity: .3; } }
+@keyframes cue { to { stroke-dashoffset: -22; } }
+@keyframes blink { 50% { opacity: .25; } }
+@keyframes breath-ring { 0%, 100% { transform: scale(.94); opacity: .95; } 50% { transform: scale(1.1); opacity: .35; } }
+@keyframes pan { from { transform: scale(1.08) translateX(-2%); } to { transform: scale(1.08) translateX(2%); } }
+@keyframes voyage { from { transform: translateX(0); } to { transform: translateX(206px); } }
+@keyframes lamp { 50% { background: #ff7a6b; box-shadow: 0 0 0 3px rgba(255, 122, 107, .25); } }
+@keyframes glow { from { scale: .92; } to { scale: 1.08; } }
+@keyframes rock { 0%, 100% { translate: 0 0; rotate: -1deg; } 50% { translate: 0 -6px; rotate: 1.1deg; } }
+@keyframes seal-ripple { from { transform: scale(.55); opacity: .95; } to { transform: scale(1.2); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lane__water, .bed__bloom img, .cover__posy img, .vessel__bob, .side__bloom img, .shore img, .sticker img, .letter__flora img, .route__boat img, .lane__boat img, .lane__boat::after, .flag__cloth, .screen__badge i, .screen__play::after, .closing__lantern::after, .reel__boat img, .crest-bob, .closing__lantern img, .horizon__boat img, .scroll-cue path,  .guest-qr-trigger__button::after, .guest-qr-trigger__label { animation: none; }
+  .lane__boat { left: calc(50% - 33px); }
+  .route__boat, .polaroid__develop { display: none; }
+  .lake__slide.is-active, .lake__slide.is-active > img, .scene.is-active, .scene.is-active > img { transition: none; }
+  .hero__dawn { display: none; }
+  .closing__lantern { --glow: .8; }
+  .menu__panel, .menu.is-open .menu__panel, .menu a, .menu__scrim, .menu__list::before, .control { transition: none; }
+  .hero { height: 100vh; height: 100svh; }
+  .content { margin-top: 0; }
+}

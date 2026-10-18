@@ -55,7 +55,8 @@ export type RouteId =
   | "dashTemplates"
   | "dashInvitations"
   | "dashSettings"
-  | "katalogDetail";
+  | "katalogDetail"
+  | "templatePreview";
 
 export interface RouteMeta {
   id: RouteId;
@@ -267,6 +268,23 @@ export function resolveRoute(input: string): RouteMeta | null {
       indexable: true,
       changefreq: "weekly",
       priority: 0.85,
+    };
+  }
+
+  // Dynamic Template Preview route: /preview/:templateSlug
+  if (path.startsWith("/preview/") && path.length > 9) {
+    const rawSlug = path.slice(9);
+    const formattedTitle = rawSlug
+      .split(/[-_]/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+
+    return {
+      id: "templatePreview",
+      path: path,
+      title: `Preview Template ${formattedTitle} — Satu Cerita`,
+      description: `Pratinjau langsung template undangan digital ${formattedTitle} di Satu Cerita.`,
+      indexable: false,
     };
   }
 

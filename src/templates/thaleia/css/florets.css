@@ -1,0 +1,4 @@
+.florets { z-index: 40; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity 2s ease; }
+body.is-open .florets { opacity: 1; }
+.floret { position: absolute; top: 0; left: 0; width: var(--size, 14px); will-change: transform; }
+.floret svg { display: block; width: 100%; height: auto; overflow: visible; }

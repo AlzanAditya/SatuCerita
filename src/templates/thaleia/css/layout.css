@@ -1,0 +1,24 @@
+.showcase { display: none; }
+@media (min-width: 960px) and (min-aspect-ratio: 1/1) {
+  :root { --column: clamp(420px, 32vw, 480px); }
+  body::before { display: none; }
+  .app { margin: 0 0 0 auto; box-shadow: none; }
+  .column-fixed { left: auto; right: 0; margin: 0; }
+  html .ps-player, .guest-qr-trigger { --ps-player-right: 16px; }
+  .showcase { display: block; position: fixed; top: 0; bottom: 0; left: 0; right: var(--column); overflow: hidden; background: var(--moss-night); }
+  .showcase__photo { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 58%; animation: showcase-drift 30s ease-in-out infinite alternate; }
+  .showcase__veil { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(23, 29, 20, .92) 0%, rgba(23, 29, 20, .45) 38%, rgba(23, 29, 20, .1) 70%, rgba(23, 29, 20, .25) 100%); }
+  .showcase__text { position: absolute; left: 0; right: 0; bottom: clamp(48px, 9vh, 110px); text-align: center; color: var(--ivory-soft); }
+  .showcase__kicker { margin: 0 0 .6rem; font: 400 .8rem/1 var(--caps); letter-spacing: .5em; text-transform: uppercase; color: var(--gold-soft); }
+  .showcase__names { margin: 0; font: 400 clamp(80px, 8vw, 140px)/1 var(--script); color: #fbf9f3; text-shadow: 0 8px 30px rgba(0, 0, 0, .45); }
+  .showcase__amp { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: .34em; color: var(--gold-soft); padding: 0 .3em; vertical-align: middle; }
+  .showcase__date { display: inline-flex; align-items: center; gap: 1rem; margin: 1rem 0 0; font: 400 .8rem/1 var(--caps); letter-spacing: .42em; text-transform: uppercase; color: var(--gold-soft); }
+  .showcase__date::before, .showcase__date::after { content: ""; width: 40px; height: 1px; background: currentColor; opacity: .6; }
+}
+@keyframes showcase-drift { from { transform: scale(1.03); } to { transform: scale(1.1); } }
+
+main { position: relative; }
+.content--solo { margin-top: 0; }
+.hero__center--bare { top: max(12rem, 30svh); }
+.hero__center--bare .hero__names { font-size: clamp(3.9rem, 18vw, 4.8rem); }
+.milestone__card > .milestone__title:first-child { margin-top: -.2rem; }

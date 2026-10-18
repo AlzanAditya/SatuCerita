@@ -1,0 +1,41 @@
+.hero { position: relative; height: 230vh; height: 230svh; }
+.hero__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.hero__sky { position: absolute; inset: 0; will-change: transform; }
+.hero__sky img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 58%; }
+.hero__veil { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(245, 242, 233, .7), rgba(245, 242, 233, .25) 30%, rgba(245, 242, 233, .62) 52%, rgba(245, 242, 233, .55) 66%, rgba(245, 242, 233, .92)); }
+.hero__tree { position: absolute; bottom: 13%; z-index: 1; width: 84%; pointer-events: none; will-change: transform; }
+.hero__tree img { width: 100%; transform-origin: 50% 100%; opacity: .92; animation: pendulum-soft 9s ease-in-out infinite alternate; }
+.hero__tree--l { left: -40%; }
+.hero__tree--r { right: -40%; }
+.hero__tree--r img { animation-delay: -4.5s; }
+.flip { transform: scaleX(-1); }
+.hero__center { position: absolute; top: max(5.2rem, 17svh); left: 0; right: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.hero__arch { position: relative; width: min(42%, 170px, 25svh); will-change: transform; }
+.hero__arch-inner { position: relative; aspect-ratio: 1205 / 1673; }
+.hero__window { position: absolute; inset: 0; }
+.hero__photo { position: absolute; inset: 0; clip-path: var(--clip-arch); background: var(--linen); overflow: hidden; }
+.hero__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 52% 26%; }
+.hero__frame { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero__top { margin-top: .9rem; will-change: transform; }
+.hero__title { position: relative; z-index: 2; margin-top: .1rem; will-change: transform; }
+.hero__names { margin: 0; font-family: var(--script); font-size: clamp(3.6rem, 16.4vw, 4.4rem); font-weight: 400; line-height: 1.02; color: var(--moss); white-space: nowrap; text-shadow: 0 0 22px rgba(245, 242, 233, .95), 0 0 6px rgba(245, 242, 233, .9); }
+.hero__rule { width: 150px; height: 1px; margin: .2rem auto 0; background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent); }
+.hero__meta { display: grid; justify-items: center; gap: .3rem; margin-top: .8rem; will-change: transform; }
+.hero__date { margin: 0; font-family: var(--caps); font-size: .68rem; letter-spacing: .32em; text-transform: uppercase; color: var(--moss); }
+.hero__tagline { margin: .1rem auto 0; max-width: 27ch; font-size: .95rem; font-style: italic; line-height: 1.42; color: var(--ink-soft); }
+.hero__cue { display: grid; justify-items: center; gap: .5rem; margin-top: .9rem; font-family: var(--caps); font-size: .5rem; letter-spacing: .34em; text-transform: uppercase; color: var(--sage-deep); }
+.hero__cue-bead { position: relative; width: 10px; height: 34px; }
+.hero__cue-bead::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: linear-gradient(var(--line-sage), transparent); }
+.hero__cue-bead::after { content: ""; position: absolute; left: 1px; top: 8px; width: 8px; height: 8px; rotate: 45deg; background: var(--ivory-soft); box-shadow: 0 0 0 1px var(--sage); animation: cue-fall 2.2s var(--ease-silk) infinite; }
+.hero__bed { position: absolute; left: 0; right: 0; bottom: 0; height: 24%; z-index: 4; pointer-events: none; will-change: transform; }
+.bloom { position: absolute; will-change: transform; }
+.bloom img { width: 100%; animation: breeze 6.4s ease-in-out infinite alternate; }
+.bloom:nth-child(2n) img { animation-duration: 7.6s; animation-delay: -2.2s; }
+.bloom:nth-child(3n) img { animation-duration: 5.4s; animation-delay: -1.1s; }
+.bloom--mirror img { scale: -1 1; }
+.hero__bed .b1 { width: 140%; left: -20%; bottom: -36%; }
+.hero__bed .b2 { width: 48%; left: -20%; bottom: -20%; }
+.hero__bed .b3 { width: 48%; right: -20%; bottom: -20%; }
+.hero__bed .b4 { width: 58%; left: 21%; bottom: -14%; }
+.hero__bed .b5 { width: 38%; left: -16%; bottom: 2%; }
+.hero__bed .b6 { width: 40%; right: -17%; bottom: 0; }

@@ -1,0 +1,28 @@
+applyGuestName();
+setupMonogram();
+playCoverIntro();
+prepareHeroIntro();
+buildHeroScroll();
+buildReveals();
+buildVerse();
+buildCouple();
+buildStory();
+buildEvents();
+buildAttire();
+buildQuote();
+buildFarewell();
+buildFlorets();
+buildSceneBackdrop();
+setupMenu();
+setupCalendar();
+setupCountdown();
+setupCalendarLink();
+setupDeck(setupGallery());
+setupRsvp();
+setupGift();
+setupCountdownVideo();
+setupGuestQR();
+pauseOffscreenDecor();
+
+document.getElementById("openInvitation").addEventListener("click", openInvitation);
+window.addEventListener("load", () => ScrollTrigger.refresh());

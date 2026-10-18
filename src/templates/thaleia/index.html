@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="id" class="is-locked">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pernikahan John &amp; Jane</title>
+  <meta name="theme-color" content="#f5f2e9">
+  <meta name="description"
+    content="Undangan bernuansa untaian melati putih dan hijau sage di atas lukisan gravir rumah joglo: amplop bersegel yang terbuka, bingkai heksagon dan bergelombang, garis waktu berperangko, tiket acara bersobek, palet busana di tali jemuran, serta tumpukan foto polaroid.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Pernikahan John &amp; Jane">
+  <meta property="og:description"
+    content="Undangan bernuansa untaian melati putih dan hijau sage di atas lukisan gravir rumah joglo: amplop bersegel yang terbuka, bingkai heksagon dan bergelombang, garis waktu berperangko, tiket acara bersobek, palet busana di tali jemuran, serta tumpukan foto polaroid.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/corinthia.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/spectral-light.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/marcellus.woff2" crossorigin>
+  <link rel="preload" as="image" href="assets/background/joglo-garden.webp">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/cover.css">
+  <link rel="stylesheet" href="css/hero.css">
+  <link rel="stylesheet" href="css/scene.css">
+  <link rel="stylesheet" href="css/story.css">
+  <link rel="stylesheet" href="css/countdown.css">
+  <link rel="stylesheet" href="css/details.css">
+  <link rel="stylesheet" href="css/gallery.css">
+  <link rel="stylesheet" href="css/quote.css">
+  <link rel="stylesheet" href="css/rsvp.css">
+  <link rel="stylesheet" href="css/closing.css">
+  <link rel="stylesheet" href="css/florets.css">
+  <link rel="stylesheet" href="css/navigation.css">
+  <link rel="stylesheet" href="css/guest-qr.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/music-player.css">
+</head>
+
+<body class="is-locked">
+
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-menu" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M5 7h14M8 12h8M5 17h14" />
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+    </symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+        d="M15 5l-7 7 7 7" />
+    </symbol>
+    <symbol id="i-next" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+        d="M9 5l7 7-7 7" />
+    </symbol>
+    <symbol id="i-map" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"
+        d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" />
+      <circle cx="12" cy="10" r="2.3" fill="none" stroke="currentColor" stroke-width="1.5" />
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M12 7.5V12l3 2" />
+    </symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"
+        d="M4 6h16v14H4z M4 10h16 M8 3.5v4 M16 3.5v4" />
+    </symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="1.5" />
+      <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5" />
+      <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" />
+    </symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M8 8h11v12H8z M5 16V4h11" />
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M8 5.5v13l10.5-6.5z" />
+    </symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"
+        d="M4 9h16v4H4z M5.5 13h13v7h-13z M12 9v11 M12 9c-1.5-3.5-6-4-6-1.5S10 9 12 9zm0 0c1.5-3.5 6-4 6-1.5S14 9 12 9z" />
+    </symbol>
+    <symbol id="i-envelope" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"
+        d="M3.5 6.5h17v11h-17z M3.5 6.5L12 13l8.5-6.5" />
+    </symbol>
+    <symbol id="i-send" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"
+        d="M20.5 3.5L3.5 10.5l7 3 3 7z M10.5 13.5l10-10" />
+    </symbol>
+  </svg>
+  <aside class="showcase" aria-hidden="true">
+    <img class="showcase__photo" src="assets/couples/couple-parasol.webp" alt="" loading="lazy">
+    <div class="showcase__veil"></div>
+    <div class="showcase__text">
+      <p class="showcase__kicker">Merangkai Janji</p>
+      <p class="showcase__names">John<span class="showcase__amp">&amp;</span>Jane</p>
+      <p class="showcase__date">20 &middot; 11 &middot; 2027</p>
+    </div>
+  </aside>
+
+  <div class="app" id="app">
+
+    <section class="cover column-fixed" id="cover" aria-label="Sampul undangan">
+      <div class="cover__bg"><img src="assets/background/joglo-garden.webp" alt="" width="1024" height="1536"></div>
+      <div class="cover__corner cover__corner--l"><img src="assets/flower/corner-l.webp" alt=""></div>
+      <div class="cover__corner cover__corner--r"><img src="assets/flower/corner-l.webp" alt=""></div>
+      <div class="cover__content">
+        <div class="cover__frame" data-cover-frame>
+          <div class="cover__photo"><img src="assets/couples/couple-parasol.webp" alt="John dan Jane"
+              fetchpriority="high"></div>
+          <img class="cover__ring" src="assets/ornament/frame-hexagon.webp" alt="">
+        </div>
+        <p class="kicker" data-cover>Merangkai Janji</p>
+        <h1 class="cover__names"><span data-cover-name>John</span><span class="amp">&amp;</span><span
+            data-cover-name>Jane</span></h1>
+        <p class="cover__date" data-cover>20 &middot; 11 &middot; 2027</p>
+        <div class="namecard" id="guestCard">
+          <img class="namecard__bg" src="assets/ornament/name-card.webp" alt="">
+          <p class="cover__to">Kepada Bapak/Ibu/Saudara/i</p>
+          <p class="cover__guest" id="guestName">Tamu Undangan</p>
+        </div>
+        <button class="btn cover__open" id="openInvitation" type="button" aria-label="Buka Undangan"
+          data-invitation-open><svg>
+            <use href="#i-envelope" />
+          </svg><span>Buka Undangan</span></button>
+      </div>
+      <div class="env" aria-hidden="true">
+        <div class="env__backdrop"></div>
+        <div class="env__center">
+          <div class="env__stage">
+            <div class="env__shadow"></div>
+            <div class="env__inner"></div>
+            <div class="env__letter">
+              <img class="env__sprig" src="assets/ornament/sprig-jasmine.webp" alt="">
+              <p class="env__kicker">Merangkai Janji</p>
+              <p class="env__names">John<span class="amp">&amp;</span>Jane</p>
+              <p class="env__date">20 &middot; 11 &middot; 2027</p>
+            </div>
+            <div class="env__rim"></div>
+            <div class="env__pocket"></div>
+            <div class="env__fold"></div>
+            <div class="env__flap">
+              <div class="env__face env__face--front"></div>
+              <div class="env__face env__face--back"></div>
+            </div>
+            <div class="env__sheen"></div>
+            <div class="env__seal">
+              <span class="env__ring"></span>
+              <div class="env__half env__half--l">
+                <div class="env__wax"><span class="env__mono"><span data-mono></span><span class="amp">&amp;</span><span
+                      data-mono></span></span></div>
+              </div>
+              <div class="env__half env__half--r">
+                <div class="env__wax"><span class="env__mono"><span data-mono></span><span class="amp">&amp;</span><span
+                      data-mono></span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="backdrop column-fixed" id="backdrop" aria-hidden="true">
+      <img data-scene="joglo-garden" data-src="assets/background/joglo-garden.webp" alt="" loading="lazy">
+      <img data-scene="joglo-stilt" data-src="assets/background/joglo-stilt.webp" alt="" loading="lazy">
+    </div>
+
+    <main>
+      <section class="hero" id="home" aria-label="Pembuka">
+        <div class="hero__stage">
+          <div class="hero__sky" data-layer="sky"><img src="assets/background/joglo-stilt.webp" alt=""></div>
+          <div class="hero__veil" data-layer="veil"></div>
+          <div class="hero__tree hero__tree--l" data-layer="tree-l"><img src="assets/tree/tree-lean.webp" alt=""></div>
+          <div class="hero__tree hero__tree--r" data-layer="tree-r">
+            <div class="flip"><img src="assets/tree/tree-lean.webp" alt=""></div>
+          </div>
+          <div class="hero__center">
+            <div class="hero__arch" data-layer="arch">
+              <div class="hero__arch-inner">
+                <div class="hero__window" data-hero-window>
+                  <div class="hero__photo"><img src="assets/images/hero-couple.webp" alt="John dan Jane"></div>
+                </div>
+                <img class="hero__frame" src="assets/ornament/frame-arch.webp" alt="" data-hero-frame>
+              </div>
+            </div>
+            <div class="hero__top" data-layer="top">
+              <p class="kicker" data-hero-fade>Merangkai Janji Suci</p>
+            </div>
+            <div class="hero__title" data-layer="title">
+              <h2 class="hero__names"><span data-name>John</span><span class="amp">&amp;</span><span
+                  data-name>Jane</span></h2>
+              <div class="hero__rule" data-hero-rule aria-hidden="true"></div>
+            </div>
+            <div class="hero__meta" data-layer="meta">
+              <p class="hero__date" data-hero-fade>Sabtu &middot; 20 November 2027</p>
+              <p class="hero__tagline" data-hero-fade>Seperti melati yang dironce satu demi satu, kami merangkai hari
+                menuju satu janji.</p>
+              <div class="hero__cue" data-hero-fade aria-hidden="true"><span class="hero__cue-bead"></span><span>Gulir
+                  perlahan</span></div>
+            </div>
+          </div>
+          <div class="hero__bed" data-layer="bed">
+            <div class="bloom b4"><img src="assets/flower/fan-orchid.webp" alt=""></div>
+            <div class="bloom b5"><img src="assets/flower/rose-jasmine.webp" alt=""></div>
+            <div class="bloom b6 bloom--mirror"><img src="assets/flower/orchid-diagonal.webp" alt=""></div>
+            <div class="bloom b2"><img src="assets/flower/bouquet-round.webp" alt=""></div>
+            <div class="bloom b3 bloom--mirror"><img src="assets/flower/rose-orchid.webp" alt=""></div>
+            <div class="bloom b1"><img src="assets/flower/border-wide.webp" alt=""></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="content">
+        <section class="section opening" id="opening" data-scene="joglo-garden">
+          <div class="opening__tassel" data-fx="drop"><img src="assets/flower/jasmine-tassel.webp" alt=""
+              loading="lazy"></div>
+          <p class="kicker" data-fx="kicker">Bismillahirrahmanirrahim</p>
+          <h2 class="title" data-fx="title">Salam Bahagia</h2>
+          <div class="paper verse" data-fx="card">
+            <img class="verse__sprig" src="assets/ornament/sprig-jasmine.webp" alt="" loading="lazy">
+            <p class="verse__text" data-verse>&ldquo;Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan
+              untukmu pasangan dari jenismu sendiri, agar kamu merasa tenteram kepadanya, dan dijadikan-Nya di antaramu
+              rasa kasih dan sayang.&rdquo;</p>
+            <p class="verse__source">QS. Ar-Rum : 21</p>
+          </div>
+          <p class="opening__text" data-fx="lead">Assalamu’alaikum Warahmatullahi Wabarakatuh. Tanpa mengurangi rasa
+            hormat, kami mengundang Bapak/Ibu/Saudara/i untuk berkenan hadir dan memberikan doa restu pada pernikahan
+            kami.</p>
+        </section>
+
+        <section class="section couple" id="couple" data-scene="joglo-stilt">
+          <div class="edge edge--tr edge--couple" data-edge><img src="assets/flower/orchid-arc.webp" alt=""
+              loading="lazy"></div>
+          <header class="head">
+            <p class="kicker" data-fx="kicker">Dua Hati, Satu Untaian</p>
+            <h2 class="title" data-fx="title">Sang Mempelai</h2>
+            <p class="lead" data-fx="lead">Dipertemukan oleh takdir yang indah, dipersatukan dalam ikatan yang suci.</p>
+          </header>
+          <article class="person person--start" data-person>
+            <div class="person__media">
+              <div class="person__visual">
+                <div class="person__photo"><img src="assets/images/groom-john.webp" alt="John" loading="lazy"></div>
+                <img class="person__frame" src="assets/ornament/frame-scallop.webp" alt="" loading="lazy">
+              </div>
+              <div class="person__flora"><img src="assets/flower/rose-jasmine.webp" alt="" loading="lazy"></div>
+            </div>
+            <p class="person__role">Mempelai Pria</p>
+            <div class="person__body">
+              <p class="person__nick">John</p>
+              <h3 class="person__full">John Pradipta Wiratama</h3>
+              <span class="person__line"></span>
+              <p class="person__parents">Putra pertama dari<span>Bapak Agus Wiratama &amp; Ibu Dewi Lestari</span></p>
+              <a class="ig" href="https://instagram.com/john.wiratama" target="_blank" rel="noopener"
+                aria-label="Instagram John"><svg>
+                  <use href="#i-instagram" />
+                </svg>@john.wiratama</a>
+            </div>
+          </article>
+          <div class="union" aria-hidden="true">
+            <img class="union__rings" src="assets/ornament/rings.webp" alt="" loading="lazy">
+          </div>
+          <article class="person person--end" data-person>
+            <div class="person__media">
+              <div class="person__visual">
+                <div class="person__photo"><img src="assets/images/bride-jane.webp" alt="Jane" loading="lazy"></div>
+                <img class="person__frame" src="assets/ornament/frame-scallop.webp" alt="" loading="lazy">
+              </div>
+              <div class="person__flora"><img src="assets/flower/orchid-diagonal.webp" alt="" loading="lazy"></div>
+            </div>
+            <p class="person__role">Mempelai Wanita</p>
+            <div class="person__body">
+              <p class="person__nick">Jane</p>
+              <h3 class="person__full">Jane Ayu Maharani</h3>
+              <span class="person__line"></span>
+              <p class="person__parents">Putri kedua dari<span>Bapak Suryo Hadinoto &amp; Ibu Rina Kartika</span></p>
+              <a class="ig" href="https://instagram.com/jane.maharani" target="_blank" rel="noopener"
+                aria-label="Instagram Jane"><svg>
+                  <use href="#i-instagram" />
+                </svg>@jane.maharani</a>
+            </div>
+          </article>
+        </section>
+        <section class="section story" id="story" data-scene="joglo-garden">
+          <div class="edge edge--tr edge--story" data-edge><img src="assets/flower/corner-cascade.webp" alt=""
+              loading="lazy"></div>
+          <header class="head">
+            <p class="kicker" data-fx="kicker">Lembar Kenangan</p>
+            <h2 class="title" data-fx="title">Kisah Kami</h2>
+            <p class="lead" data-fx="lead">Tiga simpul kecil yang perlahan mengikat kami pada hari ini.</p>
+          </header>
+          <div class="timeline" id="timeline">
+            <span class="timeline__track" aria-hidden="true"><span class="timeline__fill"
+                id="timelineFill"></span></span>
+            <article class="milestone" data-milestone>
+              <span class="milestone__dot" aria-hidden="true"><img src="assets/ornament/sprig-bud.webp" alt=""
+                  loading="lazy"></span>
+              <p class="milestone__year">2020</p>
+              <div class="milestone__card">
+                <div class="stamp-wrap">
+                  <div class="stamp">
+                    <div class="stamp__media"><img src="assets/couples/couple-market-walk.webp" alt="Awal Bersua"
+                        loading="lazy"></div><span class="stamp__mark">Bab<br>01</span>
+                  </div>
+                </div>
+                <h3 class="milestone__title">Awal Bersua</h3>
+                <p class="milestone__text">Sebuah kedai kopi di sudut Braga mempertemukan kami dalam antrean yang
+                  terlalu panjang dan obrolan yang terasa terlalu singkat.</p>
+              </div>
+            </article>
+            <article class="milestone" data-milestone>
+              <span class="milestone__dot" aria-hidden="true"><img src="assets/ornament/sprig-bud.webp" alt=""
+                  loading="lazy"></span>
+              <p class="milestone__year">2023</p>
+              <div class="milestone__card">
+                <div class="stamp-wrap">
+                  <div class="stamp">
+                    <div class="stamp__media"><img src="assets/couples/couple-street.webp" alt="Saling Menjaga"
+                        loading="lazy"></div><span class="stamp__mark">Bab<br>02</span>
+                  </div>
+                </div>
+                <h3 class="milestone__title">Saling Menjaga</h3>
+                <p class="milestone__text">Tahun demi tahun berjalan beriringan, belajar memahami tanpa harus selalu
+                  sepakat, dan tetap memilih satu sama lain.</p>
+              </div>
+            </article>
+            <article class="milestone" data-milestone>
+              <span class="milestone__dot" aria-hidden="true"><img src="assets/ornament/sprig-bud.webp" alt=""
+                  loading="lazy"></span>
+              <p class="milestone__year">2027</p>
+              <div class="milestone__card">
+                <div class="stamp-wrap">
+                  <div class="stamp">
+                    <div class="stamp__media"><img src="assets/couples/couple-promise.webp" alt="Lamaran"
+                        loading="lazy"></div><span class="stamp__mark">Bab<br>03</span>
+                  </div>
+                </div>
+                <h3 class="milestone__title">Lamaran</h3>
+                <p class="milestone__text">Di hadapan kedua keluarga, sebentuk cincin dan seuntai melati menjadi saksi
+                  niat baik kami untuk melangkah bersama.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+        <section class="section countdown-section" id="save-date">
+          <div class="watch" data-fx="drop"><img src="assets/ornament/pocket-watch.webp" alt="" loading="lazy"></div>
+          <header class="head">
+            <p class="kicker" data-fx="kicker">Menghitung Hari</p>
+            <h2 class="title" data-fx="title">Hari yang Dinanti</h2>
+            <p class="lead" data-fx="lead">Setiap detik membawa kami semakin dekat pada hari yang telah lama kami
+              doakan.</p>
+          </header>
+          <div class="tiles" id="countdown" aria-label="Hitung mundur menuju hari pernikahan">
+            <div class="tile"><span class="tile__value"><span data-unit="days">00</span></span><span
+                class="tile__label">Hari</span></div>
+            <div class="tile"><span class="tile__value"><span data-unit="hours">00</span></span><span
+                class="tile__label">Jam</span></div>
+            <div class="tile"><span class="tile__value"><span data-unit="minutes">00</span></span><span
+                class="tile__label">Menit</span></div>
+            <div class="tile"><span class="tile__value"><span data-unit="seconds">00</span></span><span
+                class="tile__label">Detik</span></div>
+          </div>
+          <div class="paper calendar" data-fx="card">
+            <div class="calendar__head">
+              <span class="calendar__month">November</span>
+              <span class="calendar__year">2027</span>
+            </div>
+            <div class="calendar__grid" id="calendarGrid"></div>
+          </div>
+          <a class="btn btn--light" id="calendarLink" data-fx="rise" href="#" target="_blank" rel="noopener"><svg>
+              <use href="#i-calendar" />
+            </svg>Simpan Tanggal</a>
+        </section>
+
+        <section class="section events" id="event" data-scene="joglo-stilt">
+          <div class="edge edge--tl edge--event" data-edge><img src="assets/flower/corner-fringe.webp" alt=""
+              loading="lazy"></div>
+          <header class="head">
+            <p class="kicker" data-fx="kicker">Agenda Bahagia</p>
+            <h2 class="title" data-fx="title">Detail Acara</h2>
+            <p class="lead" data-fx="lead">Merupakan suatu kehormatan apabila Bapak/Ibu/Saudara/i berkenan hadir pada:
+            </p>
+          </header>
+          <div class="tickets">
+            <article class="ticket" data-ticket>
+              <div class="ticket__top">
+                <div class="ticket__icon"><img src="assets/ornament/rings.webp" alt="" loading="lazy"></div>
+                <p class="ticket__kind">Akad Nikah</p>
+                <h3 class="ticket__title">Ijab Kabul</h3>
+                <div class="ticket__date"><span>Sabtu</span><strong class="ticket__day"
+                    data-day="20">20</strong><span>Nov 2027</span></div>
+                <span class="ticket__tear"></span>
+              </div>
+              <div class="ticket__bottom">
+                <p class="ticket__time"><svg>
+                    <use href="#i-clock" />
+                  </svg>08.00 &ndash; 10.00 WIB</p>
+                <p class="ticket__desc">Prosesi sakral yang disaksikan keluarga dan kerabat terdekat.</p>
+                <p class="ticket__place"><strong>Masjid Raya Al-Ukhuwah</strong>Jl. Wastukencana No. 27, Bandung</p>
+                <a class="btn btn--soft"
+                  href="https://www.google.com/maps/search/?api=1&amp;query=Masjid&#43;Raya&#43;Al-Ukhuwah%2C&#43;Jl.&#43;Wastukencana&#43;No.&#43;27%2C&#43;Bandung"
+                  target="_blank" rel="noopener"><svg>
+                    <use href="#i-map" />
+                  </svg>Petunjuk Arah</a>
+              </div>
+            </article>
+            <article class="ticket" data-ticket>
+              <div class="ticket__top">
+                <div class="ticket__icon"><img src="assets/ornament/cake.webp" alt="" loading="lazy"></div>
+                <p class="ticket__kind">Resepsi</p>
+                <h3 class="ticket__title">Walimatul ‘Ursy</h3>
+                <div class="ticket__date"><span>Sabtu</span><strong class="ticket__day"
+                    data-day="20">20</strong><span>Nov 2027</span></div>
+                <span class="ticket__tear"></span>
+              </div>
+              <div class="ticket__bottom">
+                <p class="ticket__time"><svg>
+                    <use href="#i-clock" />
+                  </svg>11.00 &ndash; 14.00 WIB</p>
+                <p class="ticket__desc">Jamuan hangat untuk berbagi bahagia bersama keluarga besar dan sahabat.</p>
+                <p class="ticket__place"><strong>Pendopo Kota Bandung</strong>Jl. Dalem Kaum No. 56, Bandung</p>
+                <a class="btn btn--soft"
+                  href="https://www.google.com/maps/search/?api=1&amp;query=Pendopo&#43;Kota&#43;Bandung%2C&#43;Jl.&#43;Dalem&#43;Kaum&#43;No.&#43;56%2C&#43;Bandung"
+                  target="_blank" rel="noopener"><svg>
+                    <use href="#i-map" />
+                  </svg>Petunjuk Arah</a>
+              </div>
+            </article>
+          </div>
+        </section>
+        <section class="section attire" id="attire" data-scene="joglo-garden">
+          <header class="head">
+            <p class="kicker" data-fx="kicker">Busana Tamu</p>
+            <h2 class="title" data-fx="title">Palet Busana</h2>
+            <p class="lead" data-fx="lead">Kami akan sangat bahagia bila Anda turut mengenakan warna-warna lembut
+              berikut.</p>
+          </header>
+          <div class="line" id="clothesline">
+            <svg class="line__cord" viewBox="0 0 440 60" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M-4 10 Q220 74 444 10" />
+            </svg>
+            <div class="line__chips"></div>
+          </div>
+          <div class="swatch-data" id="swatches" hidden>
+            <span data-color="#f4f1e6">Putih Melati</span>
+            <span data-color="#9aab8c">Hijau Sage</span>
+            <span data-color="#5e6b4e">Hijau Zaitun</span>
+            <span data-color="#d9c9a8">Krem Pasir</span>
+            <span data-color="#8a6a4a">Cokelat Kayu</span>
+          </div>
+          <p class="attire__note" data-fx="lead">Batik maupun kain tradisional sangat kami persilakan. Mohon hindari
+            busana serba putih.</p>
+        </section>
+        <section class="section live" id="live" data-scene="joglo-stilt">
+          <header class="head">
+            <p class="kicker" data-fx="kicker">Hadir dari Kejauhan</p>
+            <h2 class="title" data-fx="title">Siaran Akad</h2>
+            <p class="lead" data-fx="lead">Bagi kerabat yang terpisah jarak, prosesi akad dapat disaksikan secara daring
+              melalui tautan berikut.</p>
+          </header>
+          <a class="stream" href="https://youtube.com/" target="_blank" rel="noopener" data-fx="stream"
+            aria-label="Tonton siaran langsung di YouTube">
+            <img class="stream__image" src="assets/couples/couple-parasol-close.webp" alt="" loading="lazy">
+            <span class="stream__badge">Live &middot; YouTube</span>
+            <span class="stream__play"><svg class="icon">
+                <use href="#i-play" />
+              </svg></span>
+            <span class="stream__info">
+              <span class="stream__title">Akad Nikah John &amp; Jane</span>
+              <span class="stream__meta">Sabtu, 20 November 2027 · 08.00 WIB</span>
+            </span>
+          </a>
+        </section>
+        <section class="section gallery-section" id="gallery" data-scene="joglo-garden">
+          <div class="edge edge--tl edge--gallery" data-edge><img src="assets/flower/pillar-dahlia.webp" alt=""
+              loading="lazy"></div>
+          <header class="head">
+            <p class="kicker" data-fx="kicker">Bingkai Kenangan</p>
+            <h2 class="title" data-fx="title">Galeri Kami</h2>
+            <p class="lead" data-fx="lead">Potongan cerita yang kami simpan dalam bingkai, untuk dikenang bersama.</p>
+          </header>
+          <div class="deck" id="deck">
+            <div class="deck__stage" id="deckStage">
+              <button class="deck__card" type="button" data-frame data-caption="John &amp; Jane"
+                aria-label="Lihat foto 1"><img src="assets/couples/couple-parasol-arch.webp"
+                  data-full="assets/couples/couple-parasol-arch.webp" alt="Foto 1" loading="lazy"
+                  draggable="false"></button>
+              <button class="deck__card" type="button" data-frame data-caption="John &amp; Jane"
+                aria-label="Lihat foto 2"><img src="assets/couples/couple-jasmine-hands.webp"
+                  data-full="assets/couples/couple-jasmine-hands.webp" alt="Foto 2" loading="lazy"
+                  draggable="false"></button>
+              <button class="deck__card" type="button" data-frame data-caption="John &amp; Jane"
+                aria-label="Lihat foto 3"><img src="assets/couples/couple-parasol.webp"
+                  data-full="assets/couples/couple-parasol.webp" alt="Foto 3" loading="lazy" draggable="false"></button>
+              <button class="deck__card" type="button" data-frame data-caption="John &amp; Jane"
+                aria-label="Lihat foto 4"><img src="assets/couples/bride-arch.webp"
+                  data-full="assets/couples/bride-arch.webp" alt="Foto 4" loading="lazy" draggable="false"></button>
+              <button class="deck__card" type="button" data-frame data-caption="John &amp; Jane"
+                aria-label="Lihat foto 5"><img src="assets/couples/couple-market-walk.webp"
+                  data-full="assets/couples/couple-market-walk.webp" alt="Foto 5" loading="lazy"
+                  draggable="false"></button>
+              <button class="deck__card" type="button" data-frame data-caption="John &amp; Jane"
+                aria-label="Lihat foto 6"><img src="assets/couples/couple-promise.webp"
+                  data-full="assets/couples/couple-promise.webp" alt="Foto 6" loading="lazy" draggable="false"></button>
+              <button class="deck__card" type="button" data-frame data-caption="John &amp; Jane"
+                aria-label="Lihat foto 7"><img src="assets/couples/couple-shopfront.webp"
+                  data-full="assets/couples/couple-shopfront.webp" alt="Foto 7" loading="lazy"
+                  draggable="false"></button>
+              <button class="deck__card" type="button" data-frame data-caption="John &amp; Jane"
+                aria-label="Lihat foto 8"><img src="assets/couples/couple-hands.webp"
+                  data-full="assets/couples/couple-hands.webp" alt="Foto 8" loading="lazy" draggable="false"></button>
+              <button class="deck__card" type="button" data-frame data-caption="John &amp; Jane"
+                aria-label="Lihat foto 9"><img src="assets/couples/couple-portrait.webp"
+                  data-full="assets/couples/couple-portrait.webp" alt="Foto 9" loading="lazy"
+                  draggable="false"></button>
+            </div>
+            <div class="deck__bar">
+              <button class="deck__button" id="deckPrev" type="button" aria-label="Foto sebelumnya"><svg class="icon">
+                  <use href="#i-prev" />
+                </svg></button>
+              <span class="deck__count" id="deckCount"><b>1</b> / 9</span>
+              <button class="deck__button" id="deckNext" type="button" aria-label="Foto berikutnya"><svg class="icon">
+                  <use href="#i-next" />
+                </svg></button>
+            </div>
+            <p class="deck__hint">Geser kartu teratas untuk berganti foto, ketuk untuk memperbesar.</p>
+          </div>
+        </section>
+        <section class="quote" id="quote">
+          <div class="quote__sprig quote__sprig--l"><img src="assets/flower/orchid-bud.webp" alt=""></div>
+          <div class="quote__sprig quote__sprig--r"><img src="assets/flower/rose-stem.webp" alt=""></div>
+          <div class="quote__lens" data-lens>
+            <img src="assets/couples/couple-jasmine-hands.webp" alt="" loading="lazy">
+          </div>
+          <span class="quote__mark" aria-hidden="true">&ldquo;</span>
+          <p class="quote__text" data-quote-words>Aku mencintaimu bukan hanya karena siapa dirimu, tetapi karena siapa
+            diriku saat bersamamu.</p>
+          <p class="quote__author" data-fx="kicker">Roy Croft</p>
+        </section>
+
+        <section class="section rsvp" id="rsvp" data-scene="joglo-stilt">
+          <div class="edge edge--tr edge--rsvp" data-edge><img src="assets/flower/jasmine-tail.webp" alt=""
+              loading="lazy"></div>
+          <header class="head">
+            <p class="kicker" data-fx="kicker">Kehadiran &amp; Doa</p>
+            <h2 class="title" data-fx="title">Buku Tamu</h2>
+            <p class="lead" data-fx="lead">Kabarkan kehadiran Anda dan titipkan sepucuk doa untuk perjalanan kami.</p>
+          </header>
+          <div class="tally" id="tally">
+            <div class="tally__cell"><span class="tally__value" id="tallyTotal">0</span><span
+                class="tally__label">ucapan</span></div>
+            <div class="tally__cell"><span class="tally__value" id="tallyYes">0</span><span
+                class="tally__label">hadir</span></div>
+            <div class="tally__cell"><span class="tally__value" id="tallyNo">0</span><span class="tally__label">tidak
+                hadir</span></div>
+          </div>
+          <div class="envelope" data-fx="drop"><img src="assets/ornament/envelope-open.webp" alt="" loading="lazy">
+          </div>
+          <form class="paper form" id="rsvpForm" data-fx="card" novalidate>
+            <div>
+              <label for="rsvpName">Nama Lengkap</label>
+              <div class="field-wrap"><input class="field" id="rsvpName" name="name" type="text" maxlength="60"
+                  autocomplete="name" required></div>
+            </div>
+            <fieldset>
+              <legend>Kehadiran</legend>
+              <div class="choice">
+                <input type="radio" id="attendYes" name="attendance" value="yes" checked>
+                <label for="attendYes">Hadir</label>
+                <input type="radio" id="attendNo" name="attendance" value="no">
+                <label for="attendNo">Tidak Hadir</label>
+              </div>
+            </fieldset>
+            <div id="guestGroup">
+              <label for="rsvpGuests">Jumlah Tamu</label>
+              <div class="field-wrap">
+                <select class="field" id="rsvpGuests" name="guests">
+                  <option value="1">1 orang</option>
+                  <option value="2">2 orang</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label for="rsvpMessage">Ucapan &amp; Doa</label>
+              <div class="field-wrap"><textarea class="field" id="rsvpMessage" name="message" maxlength="400"
+                  required></textarea></div>
+            </div>
+            <button class="btn" type="submit"><svg>
+                <use href="#i-send" />
+              </svg>Kirim Ucapan</button>
+            <p class="form__status" id="rsvpStatus" role="status"></p>
+          </form>
+          <div class="wishes" id="wishes" aria-live="polite"></div>
+          <div class="pager" id="wishesPager" hidden>
+            <button class="pager__button" id="wishesPrev" type="button" aria-label="Ucapan sebelumnya"><svg
+                class="icon">
+                <use href="#i-prev" />
+              </svg></button>
+            <span class="pager__count" id="wishesCount">1 / 1</span>
+            <button class="pager__button" id="wishesNext" type="button" aria-label="Ucapan berikutnya"><svg
+                class="icon">
+                <use href="#i-next" />
+              </svg></button>
+          </div>
+        </section>
+        <section class="section gift" id="gift" data-scene="joglo-garden">
+          <div class="edge edge--tl edge--gift" data-edge><img src="assets/flower/bouquet-round.webp" alt=""
+              loading="lazy"></div>
+          <header class="head">
+            <p class="kicker" data-fx="kicker">Kado Pernikahan</p>
+            <h2 class="title" data-fx="title">Berbagi Kasih</h2>
+            <img class="divider" src="assets/flower/swag-beads.webp" alt="" loading="lazy" data-fx="divider">
+            <p class="lead" data-fx="lead">Doa restu Anda adalah hadiah terindah. Namun bila ingin memberikan tanda
+              kasih, kami menyediakan:</p>
+          </header>
+          <div class="gift__parcel" id="giftParcel" data-fx="drop">
+            <div class="gift__parcel-float"><img src="assets/ornament/envelope-sealed.webp" alt="" loading="lazy"></div>
+          </div>
+          <button class="btn gift__toggle" id="giftToggle" type="button" data-fx="rise" aria-expanded="false"
+            aria-controls="giftContent"><svg>
+              <use href="#i-gift" />
+            </svg><span>Buka Amplop</span></button>
+          <div class="gift__content" id="giftContent" hidden>
+            <h3 class="gift__heading">Transfer</h3>
+            <div class="bank">
+              <img class="bank__flora" src="assets/flower/jasmine-sprig.webp" alt="" loading="lazy">
+              <div class="bank__top">
+                <p class="bank__name">Bank BCA</p><span class="bank__chip"></span>
+              </div>
+              <span class="bank__label">nomor rekening</span>
+              <p class="bank__number">7310 2468 90</p>
+              <p class="bank__holder">a.n. John Pradipta Wiratama</p>
+              <button class="btn btn--light" type="button" data-copy="7310 2468 90" data-copy-compact><svg>
+                  <use href="#i-copy" />
+                </svg><span>Salin Nomor</span></button>
+            </div>
+            <div class="bank">
+              <img class="bank__flora" src="assets/flower/jasmine-sprig.webp" alt="" loading="lazy">
+              <div class="bank__top">
+                <p class="bank__name">Bank Mandiri</p><span class="bank__chip"></span>
+              </div>
+              <span class="bank__label">nomor rekening</span>
+              <p class="bank__number">1320 0098 7654 3</p>
+              <p class="bank__holder">a.n. Jane Ayu Maharani</p>
+              <button class="btn btn--light" type="button" data-copy="1320 0098 7654 3" data-copy-compact><svg>
+                  <use href="#i-copy" />
+                </svg><span>Salin Nomor</span></button>
+            </div>
+            <h3 class="gift__heading">Kirim Kado</h3>
+            <div class="paper parcel">
+              <div class="parcel__address">
+                <span class="parcel__pin"><svg class="icon">
+                    <use href="#i-map" />
+                  </svg></span>
+                <div>
+                  <p class="parcel__name">Jane Ayu Maharani</p>
+                  <p class="parcel__text">Jl. Cihampelas No. 112, Coblong, Bandung 40131</p>
+                </div>
+              </div>
+              <button class="btn btn--soft" type="button"
+                data-copy="Jane Ayu Maharani, Jl. Cihampelas No. 112, Coblong, Bandung 40131"><svg>
+                  <use href="#i-copy" />
+                </svg><span>Salin Alamat</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="farewell" id="closing" data-scene="joglo-stilt">
+          <header class="head">
+            <p class="kicker" data-fx="kicker">Dengan Penuh Syukur</p>
+            <h2 class="title" data-fx="title">Terima Kasih</h2>
+          </header>
+          <div class="farewell__stage" data-farewell>
+            <div class="farewell__tree farewell__tree--l"><img src="assets/tree/tree-crown.webp" alt="" loading="lazy">
+            </div>
+            <div class="farewell__tree farewell__tree--r">
+              <div class="flip"><img src="assets/tree/tree-dome.webp" alt="" loading="lazy"></div>
+            </div>
+            <div class="farewell__visual">
+              <div class="farewell__photo"><img src="assets/couples/couple-parasol-close.webp" alt="John dan Jane"
+                  loading="lazy"></div>
+              <img class="farewell__frame" src="assets/ornament/frame-gold-square.webp" alt="" loading="lazy">
+            </div>
+          </div>
+          <p class="farewell__text" data-fx="lead">Merupakan kebahagiaan dan kehormatan bagi kami apabila
+            Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doanya, kami ucapkan terima
+            kasih.</p>
+          <p class="farewell__salam" data-fx="lead">Wassalamu’alaikum Warahmatullahi Wabarakatuh</p>
+          <p class="farewell__sign" data-fx="lead">Kami yang berbahagia,</p>
+          <p class="farewell__names" data-fx="title">John<span class="amp">&amp;</span>Jane</p>
+          <p class="farewell__families" data-fx="lead">Keluarga Bapak Agus Wiratama<br>&amp; Keluarga Bapak Suryo
+            Hadinoto</p>
+          <div class="vista" aria-hidden="true">
+            <div class="vista__sky"><img src="assets/background/joglo-garden.webp" alt="" loading="lazy"></div>
+            <div class="vista__mist"></div>
+            <div class="vista__bed" id="vistaBed">
+              <div class="bloom v3"><img src="assets/flower/fan-orchid.webp" alt="" loading="lazy"></div>
+              <div class="bloom v1"><img src="assets/flower/bouquet-round.webp" alt="" loading="lazy"></div>
+              <div class="bloom v2 bloom--mirror"><img src="assets/flower/rose-orchid.webp" alt="" loading="lazy"></div>
+              <div class="bloom v4"><img src="assets/flower/border-wide.webp" alt="" loading="lazy"></div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <p class="footer__names">John &amp; Jane</p>
+
+          <span class="footer__line"></span>
+          <p class="footer__date">20 &middot; 11 &middot; 2027</p>
+          <a class="footer__brand" href="https://pluviostory.id" target="_blank" rel="noopener">Dirangkai sepenuh hati
+            oleh <b>SatuCerita</b></a>
+        </footer>
+
+      </div>
+    </main>
+
+    <div class="florets column-fixed" id="florets" aria-hidden="true"></div>
+
+    <nav class="menu column-fixed" id="menu" aria-label="Navigasi undangan" aria-hidden="true">
+      <div class="menu__panel">
+        <p class="menu__label">Daftar Isi</p>
+        <div class="menu__list">
+          <a href="#home">Beranda</a>
+          <a href="#couple">Mempelai</a>
+          <a href="#story">Kisah</a>
+          <a href="#save-date">Hitung Mundur</a>
+          <a href="#event">Acara</a>
+          <a href="#gallery">Galeri</a>
+          <a href="#rsvp">Buku Tamu</a>
+          <a href="#gift">Kado</a>
+        </div>
+        <p class="menu__names">John &amp; Jane</p>
+      </div>
+    </nav>
+
+    <div class="controls column-fixed">
+      <button class="control control--menu" id="menuToggle" type="button" aria-label="Buka menu" aria-expanded="false"
+        aria-controls="menu"><svg class="icon">
+          <use href="#i-menu" />
+        </svg></button>
+    </div>
+    <dialog class="lightbox" id="lightbox" aria-label="Galeri foto">
+      <div class="lightbox__thumbs" id="lightboxThumbs"></div>
+      <button class="lightbox__button lightbox__close" id="lightboxClose" type="button" aria-label="Tutup galeri"><svg
+          class="icon">
+          <use href="#i-close" />
+        </svg></button>
+      <div class="lightbox__stage" id="lightboxStage"><img id="lightboxImage" src="data:," alt=""></div>
+      <div class="lightbox__bar">
+        <button class="lightbox__button" id="lightboxPrev" type="button" aria-label="Foto sebelumnya"><svg class="icon">
+            <use href="#i-prev" />
+          </svg></button>
+        <span class="lightbox__counter" id="lightboxCounter">1 / 9</span>
+        <button class="lightbox__button" id="lightboxNext" type="button" aria-label="Foto berikutnya"><svg class="icon">
+            <use href="#i-next" />
+          </svg></button>
+      </div>
+    </dialog>
+  </div>
+
+  <script src="vendor/gsap.min.js"></script>
+  <script src="vendor/ScrollTrigger.min.js"></script>
+  <script src="vendor/lenis.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/scroll.js"></script>
+  <script src="js/cover.js"></script>
+  <script src="js/hero.js"></script>
+  <script src="js/reveals.js"></script>
+  <script src="js/story.js"></script>
+  <script src="js/decor.js"></script>
+  <script src="js/countdown.js"></script>
+  <script src="js/media.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/rsvp.js"></script>
+  <script src="js/gift.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/music-player.js"></script>
+</body>
+
+</html>

@@ -1,5 +1,5 @@
 // Service Worker PWA - Satu Cerita
-const CACHE_NAME = 'satucerita-cache-v1';
+const CACHE_NAME = 'satucerita-cache-v2';
 const CORE_ASSETS = [
   '/',
   '/manifest.webmanifest',
@@ -48,6 +48,12 @@ self.addEventListener('fetch', (event) => {
 
   // Lewati request cross-origin
   if (url.origin !== location.origin) return;
+
+  // Jangan pernah cache API/auth maupun halaman terproteksi (app.* & dash.*)
+  if (url.pathname.startsWith('/api/')) return;
+  if (url.hostname.startsWith('app.') || url.hostname.startsWith('dash.')) {
+    if (event.request.mode === 'navigate') return;
+  }
 
   // Navigasi HTML: network-first, fallback ke cache saat offline
   if (event.request.mode === 'navigate') {

@@ -1,0 +1,32 @@
+.farewell { position: relative; padding: 5.4rem 1.5rem 0; text-align: center; }
+.farewell__stage { position: relative; width: 76%; margin: 2.6rem auto 0; }
+.farewell__visual { position: relative; aspect-ratio: 777 / 900; }
+.farewell__photo { position: absolute; inset: 0; clip-path: var(--clip-square); background: var(--linen); }
+.farewell__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 55% 30%; }
+.farewell__frame { position: absolute; inset: 0; width: 100%; height: 100%; }
+.farewell__tree { position: absolute; bottom: -2%; width: 58%; pointer-events: none; }
+.farewell__tree img { opacity: .85; transform-origin: 50% 100%; }
+.farewell__tree--l { left: -46%; }
+.farewell__tree--r { right: -46%; }
+.farewell__text { margin: 3.4rem auto 0; max-width: 32ch; font-size: 1.02rem; }
+.farewell__salam { margin: 1rem 0 0; font-style: italic; color: var(--ink); }
+.farewell__sign { margin: 1.5rem 0 0; font-style: italic; color: var(--ink-soft); }
+.farewell__names { margin: .2rem 0 .3rem; font-family: var(--script); font-size: 4rem; font-weight: 400; line-height: 1; color: var(--moss); }
+.farewell__families { margin: 0; font-size: .98rem; line-height: 1.5; color: var(--ink-soft); }
+.vista { position: relative; height: 360px; margin: 2rem -1.5rem -1px; overflow: hidden; }
+.vista__sky { position: absolute; inset: 0; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 50%); mask-image: linear-gradient(to bottom, transparent, #000 50%); }
+.vista__sky img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 70%; opacity: .7; }
+.vista__mist { position: absolute; left: 0; right: 0; bottom: 0; height: 36%; background: linear-gradient(to top, var(--ivory) 10%, rgba(245, 242, 233, 0)); }
+.vista__bed { position: absolute; left: 0; right: 0; bottom: 0; height: 46%; }
+.vista__bed .v1 { width: 40%; left: -12%; bottom: -8%; }
+.vista__bed .v2 { width: 40%; right: -12%; bottom: -8%; }
+.vista__bed .v3 { width: 50%; left: 25%; bottom: -4%; }
+.vista__bed .v4 { width: 130%; left: -15%; bottom: -30%; }
+
+.footer { position: relative; z-index: 3; padding: 2.8rem 1rem max(9rem, calc(env(safe-area-inset-bottom) + 8.5rem)); text-align: center; color: #e8ebe2; background: radial-gradient(ellipse 90% 70% at 50% 0%, #3d4c36, var(--moss-deep) 60%, var(--moss-night)); }
+.footer__names { margin: 0; font-family: var(--script); font-size: 3.3rem; line-height: 1; color: var(--ivory-soft); }
+.footer__tagline { max-width: 32ch; margin: .45rem auto 0; font: italic 400 1rem/1.45 var(--serif); color: var(--ivory-soft); opacity: .85; overflow-wrap: anywhere; }
+.footer__line { display: block; width: 46px; height: 1px; margin: .9rem auto; background: rgba(220, 197, 156, .55); }
+.footer__date { margin: 0; font-family: var(--caps); font-size: .7rem; letter-spacing: .32em; color: var(--gold-soft); }
+.footer__brand { display: inline-block; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(220, 197, 156, .25); font-family: var(--caps); font-size: .58rem; letter-spacing: .14em; color: rgba(232, 235, 226, .78); text-decoration: none; }
+.footer__brand b { color: #fff; }

@@ -1,0 +1,9 @@
+{
+  "name": "antheia-wedding-invitation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Undangan pernikahan digital tema Antheia (static site: HTML, CSS, JS)",
+  "scripts": {
+    "start": "npx --yes serve . -l 3000"
+  }
+}

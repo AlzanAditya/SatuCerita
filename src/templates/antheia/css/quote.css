@@ -1,0 +1,6 @@
+.quote { position: relative; padding: 5.4rem 1.5rem 5rem; text-align: center; background: linear-gradient(180deg, rgba(212, 224, 238, 0), rgba(212, 224, 238, .5) 45%, rgba(212, 224, 238, 0)); }
+.quote__window { position: relative; width: 100%; aspect-ratio: 3 / 2; border-radius: 10px; overflow: hidden; box-shadow: 0 0 0 6px var(--paper-soft), 0 0 0 7px var(--gold), 0 30px 46px -30px rgba(17, 26, 55, .85); }
+.quote__window img { position: absolute; top: 0; left: -8%; width: 116%; max-width: none; height: 100%; object-fit: cover; will-change: transform; }
+.quote__mark { display: block; height: 2.6rem; margin: 2rem 0 0; font-family: var(--serif); font-size: 4.6rem; line-height: 1; color: var(--gold); }
+.quote__text { margin: 0 auto 1rem; max-width: 27ch; font-size: 1.3rem; font-style: italic; line-height: 1.55; color: var(--navy); }
+.quote__author { margin: 0; font-family: var(--caps); font-size: .64rem; letter-spacing: .3em; color: var(--gold); }

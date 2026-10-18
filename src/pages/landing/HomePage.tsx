@@ -141,10 +141,10 @@ const formatRupiah = (val: number) => {
 
 export const HomePage: React.FC<HomePageProps> = ({
   currentPath = "/",
-  onNavigate = (_path: string) => {},
+  onNavigate = (_path: string) => { },
 }) => {
   const [activeCategory, setActiveCategory] = useState<"ALL" | "ELYSIAN" | "DELUXE">("ALL");
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(1); // Default open item #2 as in screenshot
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null); // Semua accordion ter-collapse secara default
   const [selectedDemo, setSelectedDemo] = useState<TemplateItem | null>(null);
 
   const katalogPath = PATHS.katalog;
@@ -312,9 +312,9 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             {/* 8 Feature Cards Grid (4 columns on desktop, 2 on tablet, swipe carousel on mobile ignoring side padding) */}
             <div className="relative -mx-4 sm:mx-0">
-              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 px-4 sm:px-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 pl-4 pr-4 sm:px-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {/* Card 1 */}
-                <div className="snap-start shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start scroll-ml-6 sm:scroll-ml-0 shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
                     <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-amber-50 text-amber-600 flex items-center justify-center shadow-2xs mb-3.5">
                       <SlidersHorizontal className="w-5 h-5 stroke-[2.2]" />
@@ -329,7 +329,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {/* Card 2 */}
-                <div className="snap-start shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start scroll-ml-6 sm:scroll-ml-0 shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
                     <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-rose-50 text-rose-600 flex items-center justify-center shadow-2xs mb-3.5">
                       <ImagePlus className="w-5 h-5 stroke-[2.2]" />
@@ -344,7 +344,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {/* Card 3 */}
-                <div className="snap-start shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start scroll-ml-6 sm:scroll-ml-0 shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
                     <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-purple-50 text-[#7D6AEE] flex items-center justify-center shadow-2xs mb-3.5">
                       <Music className="w-5 h-5 stroke-[2.2]" />
@@ -359,7 +359,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {/* Card 4 */}
-                <div className="snap-start shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start scroll-ml-6 sm:scroll-ml-0 shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
                     <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-pink-50 text-pink-600 flex items-center justify-center shadow-2xs mb-3.5">
                       <Heart className="w-5 h-5 stroke-[2.2]" />
@@ -374,7 +374,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {/* Card 5 */}
-                <div className="snap-start shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start scroll-ml-6 sm:scroll-ml-0 shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
                     <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-2xs mb-3.5">
                       <QrCode className="w-5 h-5 stroke-[2.2]" />
@@ -389,7 +389,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {/* Card 6 */}
-                <div className="snap-start shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start scroll-ml-6 sm:scroll-ml-0 shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
                     <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-rose-50 text-rose-600 flex items-center justify-center shadow-2xs mb-3.5">
                       <MessageCircle className="w-5 h-5 stroke-[2.2]" />
@@ -404,7 +404,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {/* Card 7 */}
-                <div className="snap-start shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start scroll-ml-6 sm:scroll-ml-0 shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
                     <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-sky-50 text-sky-600 flex items-center justify-center shadow-2xs mb-3.5">
                       <Globe className="w-5 h-5 stroke-[2.2]" />
@@ -419,7 +419,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {/* Card 8 */}
-                <div className="snap-start shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
+                <div className="snap-start scroll-ml-6 sm:scroll-ml-0 shrink-0 w-[76vw] max-w-[280px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-100 border-b-[3px] border-b-purple-200/80 p-4 sm:p-5 shadow-2xs hover:border-purple-200 transition-all text-left flex flex-col justify-between">
                   <div>
                     <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-purple-100 bg-purple-50 text-[#7D6AEE] flex items-center justify-center shadow-2xs mb-3.5">
                       <Link2 className="w-5 h-5 stroke-[2.2]" />
@@ -467,59 +467,56 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <span>Lihat semua template</span>
                 <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </button>
-            </div>
-
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 mb-8 [scrollbar-width:none]">
-              <button
-                type="button"
-                onClick={() => setActiveCategory("ALL")}
-                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${
-                  activeCategory === "ALL"
+            </div>            {/* Category Filter Pills */}
+            <div className="relative -mx-4 sm:mx-0 mb-8">
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pl-6 pr-6 sm:px-0 scroll-pl-6 sm:scroll-pl-0 [scrollbar-width:none]">
+                <button
+                  type="button"
+                  onClick={() => setActiveCategory("ALL")}
+                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${activeCategory === "ALL"
                     ? "bg-white text-[#7d6aee] border-white shadow-xs"
                     : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
-                }`}
-              >
-                <span>Semua</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ALL" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>14</span>
-              </button>
+                    }`}
+                >
+                  <span>Semua</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ALL" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>14</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setActiveCategory("ELYSIAN")}
-                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${
-                  activeCategory === "ELYSIAN"
+                <button
+                  type="button"
+                  onClick={() => setActiveCategory("ELYSIAN")}
+                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${activeCategory === "ELYSIAN"
                     ? "bg-white text-[#7d6aee] border-white shadow-xs"
                     : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
-                }`}
-              >
-                <span>Elysian</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ELYSIAN" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>6</span>
-              </button>
+                    }`}
+                >
+                  <span>Elysian</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ELYSIAN" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>6</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setActiveCategory("DELUXE")}
-                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${
-                  activeCategory === "DELUXE"
+                <button
+                  type="button"
+                  onClick={() => setActiveCategory("DELUXE")}
+                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${activeCategory === "DELUXE"
                     ? "bg-white text-[#7d6aee] border-white shadow-xs"
                     : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
-                }`}
-              >
-                <span>Deluxe</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "DELUXE" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>8</span>
-              </button>
+                    }`}
+                >
+                  <span>Deluxe</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "DELUXE" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>8</span>
+                </button>
+              </div>
             </div>
 
             {/* Cards Carousel on Mobile, Grid on Tablet/Desktop (Ignoring mobile side padding) */}
             <div className="relative -mx-4 sm:mx-0">
               <div
-                className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 px-4 sm:px-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 pl-3.5 sm:pl-4 pr-3.5 sm:pr-4 sm:px-0 scroll-pl-0 sm:scroll-pl-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               >
                 {filteredTemplates.map((item) => (
                   <div
                     key={item.id}
-                    className="snap-start shrink-0 w-[72vw] max-w-[275px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-200 border-b-[3px] border-b-purple-300 p-3 sm:p-4 shadow-2xs hover:border-purple-300 transition-all flex flex-col justify-between text-left group"
+                    className="snap-start scroll-ml-6 sm:scroll-ml-0 shrink-0 w-[72vw] max-w-[275px] sm:w-auto sm:max-w-none bg-white rounded-2xl sm:rounded-3xl border border-purple-200 border-b-[3px] border-b-purple-300 p-3 sm:p-4 shadow-2xs hover:border-purple-300 transition-all flex flex-col justify-between text-left group"
                   >
                     <div
                       onClick={() => onNavigate(`/katalog/${item.id}`)}
@@ -578,7 +575,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onNavigate(`/katalog/${item.id}`)}
+                        onClick={() => onNavigate(`/preview/${item.id}`)}
                         className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                       >
                         <Eye className="w-4 h-4 stroke-[2.2]" />

@@ -1,0 +1,68 @@
+.hero { position: relative; height: 220vh; height: 220svh; }
+.hero__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; overflow: clip; background: var(--mist); }
+.hero__lake { position: absolute; inset: -3% -4%; will-change: transform; }
+.hero__lake-in { position: absolute; inset: 0; }
+.hero__lake img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 34%; }
+.lake__slide { position: absolute; inset: 0; overflow: hidden; visibility: hidden; transform: translate3d(-100%, 0, 0); }
+.lake__slide > img { transform: translate3d(100%, 0, 0); }
+.lake__slide.is-active, .lake__slide.is-leaving, .lake__slide.is-active > img, .lake__slide.is-leaving > img { visibility: visible; transform: translate3d(0, 0, 0); }
+.lake__slide.is-active { z-index: 1; }
+.lake__slide.is-active, .lake__slide.is-active > img { transition: transform 2.8s var(--ease-sail); }
+.lake__slide.is-leaving { z-index: 0; }
+.hero__side { position: absolute; bottom: 0; z-index: 3; width: 34%; height: 62%; pointer-events: none; will-change: transform; }
+.hero__side--l { left: 0; }
+.hero__side--r { right: 0; }
+.tree__in { position: absolute; inset: 0; display: block; }
+.side__bloom { position: absolute; display: block; }
+.side__bloom img { height: 100%; width: auto; max-width: none; transform-origin: 50% 100%; animation: breathe 6.8s ease-in-out infinite alternate; }
+.side__bloom:nth-child(2n) img { animation-duration: 8s; animation-delay: -3s; }
+.side__bloom--flip img { scale: -1 1; }
+.hero__side--l .side__bloom--mid { left: -26%; bottom: 25%; height: 26%; }
+.hero__side--r .side__bloom--mid { right: -24%; bottom: 25%; height: 26%; }
+.hero__side--l .side__bloom--iris { left: -12%; bottom: 46%; height: 20%; }
+.hero__side--r .side__bloom--iris { right: -12%; bottom: 46%; height: 20%; }
+.hero__side--l .side__bloom--corn { left: 30%; bottom: 31%; height: 16%; }
+.hero__side--r .side__bloom--corn { right: 30%; bottom: 31%; height: 16%; }
+.hero__side--l .side__bloom--low { left: 34%; bottom: 20%; height: 19%; }
+.hero__side--r .side__bloom--low { right: 34%; bottom: 20%; height: 19%; }
+.hero__side--l .side__bloom--base { left: -8%; bottom: 13%; height: 22%; }
+.hero__side--r .side__bloom--base { right: -8%; bottom: 13%; height: 22%; }
+.hero__side--l .side__bloom--fmn { left: 14%; bottom: 60%; height: 12%; }
+.hero__side--r .side__bloom--fmn { right: 14%; bottom: 60%; height: 12%; }
+.hero__dawn { position: absolute; left: 0; right: 0; top: -14%; bottom: 0; z-index: 2; background: linear-gradient(to bottom, var(--paper) 72%, rgba(247, 244, 236, 0)); pointer-events: none; will-change: transform; }
+.hero__mist { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(247, 244, 236, .78) 0%, rgba(247, 244, 236, .5) 22%, rgba(247, 244, 236, .08) 40%, rgba(247, 244, 236, 0) 58%, rgba(247, 244, 236, .55) 80%, rgba(247, 244, 236, .9) 100%); }
+.hero__title { position: absolute; top: max(4.8rem, 11svh); left: 0; right: 0; z-index: 3; padding: 0 1.4rem; text-align: center; will-change: transform; }
+.hero__title .eyebrow { color: var(--sea-deep); text-shadow: 0 0 14px rgba(252, 250, 245, 1), 0 0 4px rgba(252, 250, 245, 1); }
+.hero__names { display: flex; align-items: baseline; justify-content: center; gap: .12em; margin: .3rem 0 .15rem; font-family: var(--script); font-weight: 400; font-size: clamp(3rem, 14vw, 3.9rem); line-height: 1.15; color: var(--sea-deep); white-space: nowrap; text-shadow: 0 0 26px rgba(252, 250, 245, .95); }
+.hero__names .amp { font-size: .6em; color: var(--gold); }
+.mask { display: inline-block; overflow: hidden; padding: .06em .3em .22em; margin: -.06em -.3em -.22em; }
+.mask > span { display: inline-block; }
+.hero__date { margin: .3rem 0 0; padding-left: .3em; font-family: var(--caps); font-size: .66rem; font-weight: 500; letter-spacing: .3em; color: var(--ink); text-shadow: 0 0 12px rgba(252, 250, 245, 1), 0 0 3px rgba(252, 250, 245, 1); }
+.hero__tagline { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; max-width: 30ch; margin: .7rem auto 0; font-style: italic; font-size: .94rem; line-height: 1.6; color: var(--ink); text-shadow: 0 0 12px rgba(252, 250, 245, 1), 0 0 3px rgba(252, 250, 245, 1); }
+.hero__vessel { position: absolute; left: 21%; bottom: 25%; z-index: 2; width: 58%; will-change: transform; }
+.vessel__sail { position: relative; display: block; }
+.vessel__bob { display: block; transform-origin: 50% 92%; animation: rock 4.8s ease-in-out infinite; }
+.vessel__bob img { width: 100%; }
+.hero__shore { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; height: 23%; pointer-events: none; }
+.shore { position: absolute; will-change: transform; }
+.shore__in { display: block; height: 100%; }
+.shore img { height: 100%; width: auto; max-width: none; animation: breathe 6.2s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+.shore:nth-child(2n) img { animation-duration: 7.4s; animation-delay: -2.4s; }
+.shore--back { left: 50%; height: 108%; bottom: -4%; translate: -50% 0; }
+.shore--l { left: -12%; height: 96%; bottom: -16%; }
+.shore--r { right: -12%; height: 96%; bottom: -16%; }
+.shore--c { left: 50%; height: 82%; bottom: -38%; translate: -50% 0; }
+.shore--fl { left: 8%; height: 74%; bottom: -36%; }
+.shore--fr { right: 8%; height: 74%; bottom: -36%; }
+.hero__fog { position: absolute; inset: 0; z-index: 5; background: linear-gradient(to bottom, rgba(247, 244, 236, .55), var(--paper) 58%); opacity: 0; pointer-events: none; }
+.scroll-cue { position: absolute; left: 50%; bottom: max(1.1rem, env(safe-area-inset-bottom)); z-index: 6; transform: translateX(-50%); }
+.scroll-cue__in { text-transform: uppercase; display: grid; justify-items: center; gap: .25rem; padding: .55rem 1rem .5rem 1.3rem; border-radius: 14px; background: rgba(252, 250, 245, .9); font-family: var(--caps); font-size: .56rem; letter-spacing: .34em; color: var(--sea-deep); }
+.scroll-cue svg { width: 40px; height: 10px; overflow: visible; }
+.scroll-cue path { fill: none; stroke: var(--sea); stroke-width: 1.4; stroke-linecap: round; stroke-dasharray: 6 5; animation: cue 1.6s linear infinite; }
+@media (max-height: 760px) {
+  .hero__title { top: max(4.2rem, 9svh); }
+  .hero__names { font-size: clamp(2.6rem, 12vw, 3.3rem); }
+  .hero__tagline { font-size: .86rem; }
+  .hero__vessel { width: 52%; left: 24%; bottom: 23%; }
+  .hero__shore { height: 21%; }
+}

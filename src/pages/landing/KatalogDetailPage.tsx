@@ -7,15 +7,10 @@ import {
   Smartphone,
   Monitor,
   Maximize2,
-  Minimize2,
   MessageCircle,
   Globe,
   Sparkles,
   Music,
-  Calendar,
-  Heart,
-  Volume2,
-  VolumeX,
   Book,
   BookOpen,
   Flower,
@@ -27,6 +22,8 @@ import {
   Quote,
   MessageSquare,
   Gift,
+  Heart,
+  Calendar,
   Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -52,9 +49,6 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
     getTemplateBySlug(rawSlug) || TEMPLATES_DATA[0];
 
   const [previewMode, setPreviewMode] = useState<"phone" | "desktop">("phone");
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [isPlayingMusic, setIsPlayingMusic] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<"sampul" | "acara" | "rsvp">("sampul");
 
   const handleOrderTemplate = () => {
     const checkoutUrl = `/app/checkout/${template.slug}`;
@@ -281,54 +275,29 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                   </button>
                 </div>
 
-                {/* Buka Layar Penuh Button */}
+                {/* Buka Layar Penuh Button -> navigate ke /preview/:slug */}
                 <button
                   type="button"
-                  onClick={() => setIsFullscreen(!isFullscreen)}
+                  onClick={() => onNavigate(`/preview/${template.slug}`)}
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-purple-50 text-neutral-800 border border-purple-200 border-b-[3px] border-b-purple-300 font-bold text-xs shadow-2xs transition-all cursor-pointer"
                 >
-                  {isFullscreen ? (
-                    <>
-                      <Minimize2 className="w-3.5 h-3.5 text-[#7d6aee]" />
-                      <span>Tutup layar penuh</span>
-                    </>
-                  ) : (
-                    <>
-                      <Maximize2 className="w-3.5 h-3.5 text-[#7d6aee]" />
-                      <span>Buka layar penuh</span>
-                    </>
-                  )}
+                  <Maximize2 className="w-3.5 h-3.5 text-[#7d6aee]" />
+                  <span>Buka layar penuh</span>
                 </button>
               </div>
 
               {/* Mockup Frame Container */}
               <div
-                className={`relative w-full rounded-2xl sm:rounded-3xl border border-purple-200 border-b-[4px] border-b-purple-300 bg-white p-3 sm:p-5 shadow-2xs transition-all ${
-                  isFullscreen
-                    ? "fixed inset-4 z-50 overflow-y-auto bg-white/95 backdrop-blur-md flex flex-col items-center justify-center p-6 shadow-2xl"
-                    : ""
-                }`}
+                className="relative w-full rounded-2xl sm:rounded-3xl border border-purple-200 border-b-[4px] border-b-purple-300 bg-white p-3 sm:p-5 shadow-2xs transition-all"
               >
-                {/* Fullscreen Close Floating Button */}
-                {isFullscreen && (
-                  <button
-                    type="button"
-                    onClick={() => setIsFullscreen(false)}
-                    className="absolute top-4 right-4 z-50 p-2 rounded-xl bg-neutral-900 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer hover:bg-neutral-800"
-                  >
-                    <Minimize2 className="w-4 h-4" />
-                    <span>Kembali</span>
-                  </button>
-                )}
-
-                {/* Device Window Dots (Tanpa separator dan tanpa badge satucerita.id) */}
+                {/* Device Window Dots */}
                 <div className="flex items-center gap-1.5 pb-1 mb-2.5 w-full">
                   <span className="w-3 h-3 rounded-full bg-[#EE5B4F]" />
                   <span className="w-3 h-3 rounded-full bg-[#F5C744]" />
                   <span className="w-3 h-3 rounded-full bg-[#22C55E]" />
                 </div>
 
-                {/* Interactive Simulated Preview Frame */}
+                {/* Device Mockup Frame */}
                 <div className="flex justify-center w-full py-2">
                   <div
                     className={`transition-all duration-300 relative rounded-2xl overflow-hidden border border-neutral-800 shadow-xl bg-neutral-950 ${
@@ -342,80 +311,34 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                       <span className="w-2 h-2 rounded-full bg-neutral-800" />
                     </div>
 
-                    {/* Background Preview Image with Gradient */}
-                    <img
-                      src={template.image}
-                      alt={template.title}
-                      className="absolute inset-0 w-full h-full object-cover opacity-85"
+                    {/* Template iframe — tampil jika folder ada, fallback ke screenshot */}
+                    <iframe
+                      key={template.slug}
+                      src={`/templates/${template.slug}/index.html`}
+                      title={`Preview ${template.title}`}
+                      className="absolute inset-0 w-full h-full border-0 pointer-events-none"
+                      sandbox="allow-scripts allow-same-origin"
+                      loading="lazy"
+                      onError={(e) => {
+                        // Jika template belum ada, sembunyikan iframe dan tampilkan fallback
+                        (e.currentTarget as HTMLIFrameElement).style.display = "none";
+                      }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30" />
 
-                    {/* Floating Audio Play/Pause Button */}
-                    <button
-                      type="button"
-                      onClick={() => setIsPlayingMusic(!isPlayingMusic)}
-                      className={`absolute top-4 right-4 z-30 w-9 h-9 rounded-full flex items-center justify-center border transition-all cursor-pointer ${
-                        isPlayingMusic
-                          ? "bg-[#7d6aee] text-white border-white animate-spin"
-                          : "bg-white/30 backdrop-blur-md text-white border-white/50"
-                      }`}
-                      title={isPlayingMusic ? "Jeda Musik" : "Putar Musik"}
-                    >
-                      {isPlayingMusic ? (
-                        <Volume2 className="w-4 h-4" />
-                      ) : (
-                        <VolumeX className="w-4 h-4" />
-                      )}
-                    </button>
-
-                    {/* Floating Preview Navigation Pill Tabs */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 p-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white">
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("sampul")}
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                          activeTab === "sampul"
-                            ? "bg-[#7d6aee] text-white shadow-xs"
-                            : "text-white/70 hover:text-white"
-                        }`}
-                      >
-                        Sampul
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("acara")}
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                          activeTab === "acara"
-                            ? "bg-[#7d6aee] text-white shadow-xs"
-                            : "text-white/70 hover:text-white"
-                        }`}
-                      >
-                        Acara
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("rsvp")}
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                          activeTab === "rsvp"
-                            ? "bg-[#7d6aee] text-white shadow-xs"
-                            : "text-white/70 hover:text-white"
-                        }`}
-                      >
-                        RSVP
-                      </button>
-                    </div>
-
-                    {/* Preview Screen Content Based on activeTab */}
-                    <div className="relative z-20 w-full h-full p-6 flex flex-col justify-between text-white text-center">
-                      {/* Top Header Tag */}
-                      <div className="pt-4">
-                        <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[9px] uppercase tracking-widest font-bold">
-                          {template.category} Wedding Invitation
-                        </span>
-                      </div>
-
-                      {/* Middle Tab Content */}
-                      {activeTab === "sampul" && (
+                    {/* Fallback overlay (hanya muncul jika iframe gagal) */}
+                    <div className="absolute inset-0 z-10 pointer-events-none">
+                      <img
+                        src={template.image}
+                        alt={template.title}
+                        className="w-full h-full object-cover opacity-60"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30" />
+                      <div className="relative z-20 w-full h-full p-6 flex flex-col justify-between text-white text-center">
+                        <div className="pt-4">
+                          <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[9px] uppercase tracking-widest font-bold">
+                            {template.category} Wedding Invitation
+                          </span>
+                        </div>
                         <div className="my-auto space-y-2 py-4">
                           <p className="text-[11px] font-serif uppercase tracking-widest text-purple-200">
                             The Wedding Celebration Of
@@ -430,71 +353,17 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                             </p>
                             <span className="h-[1px] w-6 bg-white/50" />
                           </div>
-                          <p className="text-[11px] text-white/80 max-w-xs mx-auto pt-2 italic">
-                            &ldquo;Dua insan bersatu dalam janji suci pernikahan&rdquo;
-                          </p>
                         </div>
-                      )}
-
-                      {activeTab === "acara" && (
-                        <div className="my-auto space-y-3 p-4 rounded-xl bg-black/40 backdrop-blur-sm border border-white/20 text-left">
-                          <div className="flex items-center gap-2 text-[#F5C744]">
-                            <Calendar className="w-4 h-4" />
-                            <span className="text-xs font-bold uppercase tracking-wider">
-                              Akad &amp; Resepsi
-                            </span>
-                          </div>
-                          <p className="text-sm font-bold text-white">
-                            Sabtu, {template.date}
-                          </p>
-                          <p className="text-xs text-white/80">
-                            Pukul 09.00 WIB - Selesai
-                          </p>
-                          <p className="text-xs text-purple-200">
-                            Grand Ballroom Hotel Mulia, Jakarta Selatan
-                          </p>
+                        <div className="pb-8">
+                          <button
+                            type="button"
+                            onClick={() => onNavigate(`/preview/${template.slug}`)}
+                            className="px-5 py-2 rounded-xl bg-white text-neutral-900 font-bold text-xs shadow-md hover:bg-neutral-100 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <span>Buka Preview Penuh</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                      )}
-
-                      {activeTab === "rsvp" && (
-                        <div className="my-auto space-y-2 p-4 rounded-xl bg-black/40 backdrop-blur-sm border border-white/20 text-center">
-                          <Heart className="w-5 h-5 mx-auto text-[#EE5B4F]" />
-                          <p className="text-sm font-bold text-white">
-                            Konfirmasi Kehadiran
-                          </p>
-                          <p className="text-xs text-white/80">
-                            Mohon berkenan mengisi kehadiran untuk membantu kami
-                            mempersiapkan perjamuan terbaik.
-                          </p>
-                          <div className="pt-2 flex justify-center gap-2">
-                            <span className="px-2.5 py-1 rounded-md bg-emerald-500/80 text-[10px] font-bold">
-                              Hadir
-                            </span>
-                            <span className="px-2.5 py-1 rounded-md bg-rose-500/80 text-[10px] font-bold">
-                              Tidak Hadir
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Bottom Button inside Preview */}
-                      <div className="pb-8">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setActiveTab(
-                              activeTab === "sampul"
-                                ? "acara"
-                                : activeTab === "acara"
-                                ? "rsvp"
-                                : "sampul"
-                            )
-                          }
-                          className="px-5 py-2 rounded-xl bg-white text-neutral-900 font-bold text-xs shadow-md hover:bg-neutral-100 transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <span>Buka Lembaran Acara</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
                       </div>
                     </div>
                   </div>

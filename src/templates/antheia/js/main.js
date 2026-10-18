@@ -1,0 +1,28 @@
+applyGuestName();
+setupMonogram();
+setupInstagramHandles();
+playCoverIntro();
+prepareHeroIntro();
+buildHeroScroll();
+buildReveals();
+buildWordReveals();
+buildCouple();
+buildStory();
+buildEvents();
+buildAttire();
+buildBlossoms();
+buildPanImages();
+buildSceneBackdrop();
+setupMenu();
+setupCalendar();
+setupCountdown();
+setupCalendarLink();
+setupFlow(setupGallery());
+setupRsvp();
+setupGift();
+setupCountdownVideo();
+setupGuestQR();
+pauseOffscreenDecor();
+
+document.getElementById("openInvitation").addEventListener("click", openInvitation);
+window.addEventListener("load", () => ScrollTrigger.refresh());

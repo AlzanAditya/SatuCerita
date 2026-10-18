@@ -11,6 +11,7 @@ import {
   KontakPage,
   KebijakanPage,
   NotFoundPage,
+  TemplatePreviewPage,
 } from "@/pages/landing";
 import { UserApp } from "@/pages/app";
 import { CheckoutPage } from "@/pages/app/CheckoutPage";
@@ -102,6 +103,8 @@ function AppRouter() {
       return <KatalogPage currentPath={path} onNavigate={navigate} />;
     case "katalogDetail":
       return <KatalogDetailPage currentPath={path} onNavigate={navigate} />;
+    case "templatePreview":
+      return <TemplatePreviewPage currentPath={path} onNavigate={navigate} />;
     case "caraPesan":
       return <CaraPesanPage currentPath={path} onNavigate={navigate} />;
     case "kontak":
@@ -143,7 +146,7 @@ function AppRouter() {
 export default function App() {
   return (
     <LanguageProvider>
-      <div className="min-h-screen w-full overflow-x-clip bg-background text-text-primary flex flex-col font-sans selection:bg-[#7d6aee]/20 selection:text-[#7d6aee]">
+      <div className="min-h-screen min-h-[100dvh] w-full overflow-x-clip bg-background text-text-primary flex flex-col font-sans selection:bg-[#7d6aee]/20 selection:text-[#7d6aee]">
         <div id="main-content-container" className="flex-1 w-full">
           <AppRouter />
         </div>

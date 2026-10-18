@@ -1,0 +1,48 @@
+.tickets { display: grid; gap: 2.2rem; margin-top: 2.6rem; perspective: 1400px; }
+.ticket { position: relative; display: grid; text-align: center; }
+.ticket__top, .ticket__bottom { position: relative; background: var(--ivory-soft); }
+.ticket__top { padding: 2rem 1.4rem 1.5rem; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 10px); }
+.ticket__bottom { padding: 1.5rem 1.4rem 1.9rem; clip-path: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 13px); }
+.ticket__tear { position: absolute; left: 20px; right: 20px; bottom: 0; height: 1px; background: repeating-linear-gradient(90deg, var(--gold) 0 6px, transparent 6px 11px); transform-origin: 0 50%; }
+.ticket__icon { width: 64px; margin: 0 auto .6rem; }
+.ticket__icon img { animation: bob 3.2s ease-in-out infinite alternate; }
+.ticket__kind { margin: 0; font-family: var(--caps); font-size: .64rem; letter-spacing: .34em; text-transform: uppercase; color: var(--gold-ink); }
+.ticket__title { margin: .2rem 0 1rem; font-family: var(--script); font-size: clamp(2.9rem, 13vw, 3.4rem); font-weight: 400; line-height: 1; color: var(--moss); }
+.ticket__date { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: .9rem; margin: 0 .4rem; font-family: var(--caps); text-transform: uppercase; }
+.ticket__date > span:first-child, .ticket__date > span:last-child { padding: .4rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: .6rem; letter-spacing: .22em; color: var(--ink); }
+.ticket__day { display: block; overflow: hidden; height: 1em; font-size: 3.4rem; line-height: 1; color: var(--moss); font-variant-numeric: tabular-nums lining-nums; }
+.ticket__time { display: inline-flex; align-items: center; gap: .5rem; margin: 0; font-family: var(--caps); font-size: .68rem; letter-spacing: .16em; color: var(--moss); }
+.ticket__time svg { width: 15px; height: 15px; }
+.ticket__desc { margin: .7rem auto 0; max-width: 30ch; font-size: .98rem; font-style: italic; color: var(--ink-soft); }
+.ticket__place { margin: .9rem 0 0; font-size: .98rem; line-height: 1.45; color: var(--ink-soft); }
+.ticket__place strong { display: block; font-size: 1.1rem; color: var(--moss); }
+.ticket .btn { margin-top: 1.2rem; }
+
+.line { position: relative; height: 190px; margin: 2rem -1.5rem 1rem; }
+.line__cord { position: absolute; top: 0; left: 0; width: 100%; height: 60px; overflow: visible; }
+.line__cord path { fill: none; stroke: var(--gold); stroke-width: 1.2; }
+.line__chips { position: absolute; inset: 0; }
+.chip { position: absolute; top: var(--y); left: var(--x); width: 60px; margin-left: -30px; transform-origin: 50% 0; }
+.chip__swing { transform-origin: 50% 0; animation: pendulum 3.4s ease-in-out infinite alternate; animation-delay: var(--d, 0s); }
+.chip__peg { display: block; width: 9px; height: 18px; margin: 0 auto -7px; border-radius: 2px; position: relative; z-index: 2; background: linear-gradient(90deg, #c7a46d, #9b7845); }
+.chip__card { display: block; padding: 4px 4px 0; background: var(--ivory-soft); box-shadow: inset 0 0 0 1px rgba(180, 140, 85, .25); }
+.chip__fill { display: block; height: 62px; background: var(--c); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .06); }
+.chip__name { display: block; padding: .35rem 0 .45rem; font-family: var(--caps); font-size: .44rem; line-height: 1.3; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.attire__note { margin: .6rem auto 0; max-width: 29ch; font-size: 1rem; font-style: italic; color: var(--moss); }
+
+.stream { position: relative; display: block; margin: 2.2rem .2rem 0; aspect-ratio: 4 / 5; overflow: hidden; color: #fff; text-decoration: none; border-radius: 3px; box-shadow: 0 0 0 7px var(--ivory-soft), 0 0 0 8px var(--line); }
+.stream__image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; transition: transform 1.4s var(--ease-out); }
+.stream:hover .stream__image { transform: scale(1.04); }
+.stream::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(23, 29, 20, .94) 6%, rgba(23, 29, 20, .3) 52%, rgba(23, 29, 20, .08)); }
+.stream__badge { position: absolute; top: 1rem; left: 1rem; z-index: 2; display: inline-flex; align-items: center; gap: .5rem; padding: .45rem .8rem; border-radius: 2px; background: rgba(23, 29, 20, .6); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); font-family: var(--caps); font-size: .56rem; letter-spacing: .24em; text-transform: uppercase; color: var(--gold-soft); box-shadow: inset 0 0 0 1px rgba(220, 197, 156, .35); }
+.stream__badge::before { content: ""; width: 6px; height: 6px; rotate: 45deg; background: #d9534f; box-shadow: 0 0 0 3px rgba(217, 83, 79, .25); animation: pulse-dot 1.3s ease-in-out infinite; }
+.stream__play { position: absolute; top: 50%; left: 50%; z-index: 2; display: grid; place-items: center; width: 56px; height: 56px; margin: -28px 0 0 -28px; color: var(--ivory-soft); background: rgba(251, 249, 243, .14); border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(220, 197, 156, .8); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: transform .5s var(--ease-out), background .4s, color .4s; }
+.stream__play::before { content: ""; position: absolute; inset: -7px; border-radius: 50%; border: 1px solid rgba(220, 197, 156, .35); pointer-events: none; }
+.stream:hover .stream__play { transform: scale(1.06); background: var(--ivory-soft); color: var(--moss); }
+.stream__play .icon { width: 18px; height: 18px; margin-left: 2px; }
+.stream__info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 1.6rem 1.4rem; text-align: center; }
+.stream__title { display: block; font-family: var(--script); font-size: clamp(2.1rem, 9vw, 2.5rem); line-height: 1.05; }
+.stream__meta { display: block; margin-top: .35rem; font-size: .95rem; opacity: .9; }
+.stream__caption { margin: 1.4rem 0 0; }
+.stream__caption .stream__title { color: var(--moss); }
+.stream__caption .stream__meta { margin-bottom: 1rem; color: var(--ink-soft); }

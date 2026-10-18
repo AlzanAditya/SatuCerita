@@ -1,0 +1,45 @@
+.hero { position: relative; height: 240vh; height: 240svh; }
+.hero__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.hero__sky { position: absolute; inset: 0; will-change: transform; }
+.hero__sky img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; }
+.hero__veil { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(242, 240, 232, .55), rgba(242, 240, 232, .12) 30%, rgba(242, 240, 232, .3) 62%, rgba(242, 240, 232, .85)); }
+.hero__penjor { position: absolute; top: calc(max(4.6rem, 15svh) - 5.6rem); z-index: 3; width: 36%; pointer-events: none; will-change: transform; }
+.hero__penjor img { width: 100%; transform-origin: 13% 100%; animation: sway-soft 7s ease-in-out infinite alternate; }
+.hero__penjor--l { left: -16%; }
+.hero__penjor--r { right: -16%; }
+.hero__penjor-tilt { rotate: 16deg; transform-origin: 13% 100%; }
+.hero__penjor--r .hero__penjor-flip { scale: -1 1; }
+.hero__penjor--r img { animation-delay: -3.5s; }
+.hero__center { position: absolute; top: max(4.6rem, 15svh); left: 0; right: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.hero__arch { position: relative; width: min(46%, 196px, 27svh); will-change: transform; }
+.hero__top { margin-top: 1rem; }
+.hero__arch-inner { position: relative; aspect-ratio: 683 / 900; }
+.hero__photo { position: absolute; inset: 0; clip-path: var(--arch-gold); background: var(--paper-deep); overflow: hidden; }
+.hero__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 46% 20%; }
+.hero__frame { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero__title { position: relative; z-index: 2; margin-top: .25rem; will-change: transform; }
+.hero__names { margin: 0; font-family: var(--script); font-size: clamp(2.9rem, 13.4vw, 3.5rem); font-weight: 400; line-height: 1.12; color: var(--navy); white-space: nowrap; text-shadow: 0 0 18px rgba(242, 240, 232, .95), 0 0 4px rgba(242, 240, 232, .9); }
+.hero__rule { display: flex; align-items: center; justify-content: center; gap: .6rem; width: 170px; margin: .35rem auto 0; }
+.hero__rule::before, .hero__rule::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+.hero__rule::after { transform: scaleX(-1); }
+.hero__rule span { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); }
+.hero__meta { display: grid; justify-items: center; gap: .3rem; margin-top: .9rem; will-change: transform; }
+.hero__date { margin: 0; font-family: var(--caps); font-size: .68rem; letter-spacing: .3em; color: var(--navy); text-transform: uppercase; }
+.hero__tagline { margin: .1rem auto 0; max-width: 26ch; font-size: .92rem; font-style: italic; line-height: 1.4; color: var(--ink-soft); }
+.hero__cue { display: grid; justify-items: center; gap: .45rem; margin-top: .8rem; font-family: var(--caps); font-size: .5rem; letter-spacing: .34em; color: var(--navy); text-transform: uppercase; }
+.hero__cue-line { position: relative; width: 1px; height: 34px; overflow: hidden; background: rgba(31, 46, 92, .18); }
+.hero__cue-line::after { content: ""; position: absolute; left: 0; width: 1px; height: 30%; background: var(--navy); animation: cue-run 1.8s var(--ease-swing) infinite; }
+.hero__garden { position: absolute; left: 0; right: 0; bottom: 0; height: 27%; z-index: 4; pointer-events: none; }
+.hero__side { position: absolute; inset: 0; will-change: transform; }
+.bloom { position: absolute; will-change: transform; }
+.bloom img { width: 100%; animation: drift 6s ease-in-out infinite alternate; }
+.bloom:nth-child(2n) img { animation-duration: 7.4s; animation-delay: -2.6s; }
+.bloom:nth-child(3n) img { animation-duration: 5.2s; animation-delay: -1.4s; }
+.bloom--mirror img { scale: -1 1; }
+.hero__side--l .b1 { width: 36%; left: -12%; bottom: 30%; }
+.hero__side--l .b2 { width: 50%; left: -14%; bottom: -16%; }
+.hero__side--l .b3 { width: 30%; left: 16%; bottom: -20%; }
+.hero__side--r .b1 { width: 36%; right: -12%; bottom: 30%; }
+.hero__side--r .b2 { width: 50%; right: -14%; bottom: -16%; }
+.hero__side--r .b3 { width: 30%; right: 16%; bottom: -20%; }
+.hero__side--c .b1 { width: 64%; left: 18%; bottom: -10%; }

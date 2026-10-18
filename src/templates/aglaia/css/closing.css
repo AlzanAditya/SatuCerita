@@ -1,0 +1,36 @@
+.closing { position: relative; padding: 5.4rem 1.5rem 0; text-align: center; }
+.closing__lantern { --glow: 0; position: absolute; top: 0; width: 12%; pointer-events: none; transform-origin: 50% 0; }
+.closing__lantern::after { content: ""; position: absolute; left: -30%; right: -30%; top: 26%; height: 40%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 214, 140, .8), rgba(255, 214, 140, 0)); opacity: var(--glow); mix-blend-mode: screen; pointer-events: none; animation: glow 3.4s ease-in-out infinite alternate; }
+.closing__lantern img { animation: bob 4.4s ease-in-out infinite alternate; }
+.closing__lantern--l { left: 7%; }
+.closing__lantern--r { right: 7%; }
+.closing__lantern--r img { animation-delay: -2.2s; }
+.closing__portrait { position: relative; width: 74%; margin: 2rem auto 0; }
+.print--closing { rotate: -2deg; }
+.closing__text { position: relative; z-index: 2; margin: 1rem auto 0; max-width: 32ch; font-size: 1rem; }
+.closing > .sticker { top: 31%; }
+@media (max-width: 400px) { .closing > .sticker--left { left: -19%; } .closing > .sticker--right { right: -19%; } }
+.closing__sign { margin: 1.6rem 0 0; font-style: italic; color: var(--ink-soft); }
+.closing__names { font-size: clamp(3rem, 14vw, 3.5rem); margin: .1rem 0 .3rem; }
+.closing__names .amp { font-size: .62em; color: var(--gold); }
+.closing__families { margin: 0; font-size: .92rem; line-height: 1.6; color: var(--ink-soft); }
+.horizon { position: relative; height: 430px; margin: 2rem -1.5rem -1px; overflow: hidden; }
+.horizon__lake { position: absolute; inset: 0; -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, #000 34%); mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, #000 34%); }
+.horizon__lake img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; opacity: .78; }
+.horizon__boat { position: absolute; left: 42%; top: 38%; width: 30%; will-change: transform; }
+.horizon__boat img { animation: bob 4s ease-in-out infinite alternate; }
+.horizon__mist { position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: linear-gradient(to top, var(--paper) 18%, rgba(247, 244, 236, .6) 55%, rgba(247, 244, 236, 0)); }
+.horizon__shore { position: absolute; left: 0; bottom: -24%; width: 100%; pointer-events: none; }
+
+.footer { position: relative; z-index: 3; padding: 2.8rem 1.6rem max(9rem, calc(env(safe-area-inset-bottom) + 8.5rem)); text-align: left; color: #e4eef5; background: linear-gradient(180deg, #24597b 0%, var(--sea-deep) 62%); }
+.footer__wave { position: absolute; left: 0; right: 0; bottom: calc(100% - 1px); width: 100%; height: 34px; display: block; }
+.footer__wave path { fill: #24597b; }
+.footer__seal { position: absolute; right: 1.5rem; top: -2.9rem; z-index: 2; width: 66px; }
+.footer__log { display: grid; gap: .2rem; padding-bottom: 1.2rem; border-bottom: 1px dashed rgba(224, 204, 159, .45); }
+.footer__stamp { display: grid; gap: .2rem; }
+.footer__label { font-family: var(--caps); font-size: .58rem; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; color: var(--gold-soft); }
+.footer__names { font-family: var(--serif); font-style: italic; font-size: 1.65rem; line-height: 1.2; color: #fff; }
+.footer .footer__tagline { max-width: 34ch; margin: .2rem 0 0; font: italic 400 1rem/1.45 var(--serif); color: rgba(228, 238, 245, .82); overflow-wrap: anywhere; }
+.footer__line { margin: 1.1rem 0 0; font-size: .95rem; font-style: italic; color: rgba(228, 238, 245, .9); }
+.footer__brand { display: inline-block; margin-top: 1.5rem; font-family: var(--caps); font-size: .6rem; letter-spacing: .14em; color: rgba(228, 238, 245, .72); text-decoration: none; }
+.footer__brand b { font-weight: 600; color: #fff; }

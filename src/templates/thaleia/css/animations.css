@@ -1,0 +1,21 @@
+.is-offscreen, .is-offscreen * { animation-play-state: paused !important; }
+@media (max-width: 440px) { body::before { display: none; } }
+
+@media (max-height: 720px) {
+  .cover__content { padding: 3.6rem 1.4rem 2rem; }
+  .cover__frame { width: min(28vw, 108px, 17svh); }
+  .cover__names { font-size: clamp(3rem, 14vw, 3.6rem); }
+  .cover__date { margin-bottom: .6rem; }
+  .namecard { width: min(54vw, 200px); }
+  .cover__open { margin-top: 1rem; }
+  .hero__arch { width: min(38%, 150px, 24svh); }
+  .hero__tagline { display: none; }
+  .hero__bed { height: 22%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .florets { display: none; }
+  .cover__corner img, .cover__open, .hero__tree img, .hero__cue-bead::after, .bloom img, .opening__tassel img, .person__flora img, .watch img, .calendar__day.is-event::before, .calendar__day.is-event.is-pulsing::after, .ticket__icon img, .chip__swing, .stream__badge::before, .quote__sprig img, .gift__parcel-float, .showcase__photo, .guest-qr-trigger__label { animation: none; }
+  .verse__text .vw { opacity: 1; }
+  .menu__panel, .menu a, .backdrop img { transition: none; }
+}

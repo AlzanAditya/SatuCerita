@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="id" class="is-locked">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pernikahan John &amp; Jane</title>
+  <meta name="theme-color" content="#f7f4ec">
+  <meta name="description"
+    content="Danau berukir yang teduh, perahu layar yang berlayar perlahan, dan bunga biru langit; dibuka dengan amplop bersegel lilin, kisah perjalanan berlabuh di setiap babak.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Pernikahan John &amp; Jane">
+  <meta property="og:description"
+    content="Danau berukir yang teduh, perahu layar yang berlayar perlahan, dan bunga biru langit; dibuka dengan amplop bersegel lilin, kisah perjalanan berlabuh di setiap babak.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/great-vibes.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/castoro.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/josefin-sans.woff2" crossorigin>
+  <link rel="preload" as="image" href="assets/background/bg-lake-cypress.webp">
+  <link rel="preload" as="image" href="assets/images/cover-couple.webp">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/cover.css">
+  <link rel="stylesheet" href="css/hero.css">
+  <link rel="stylesheet" href="css/scene.css">
+  <link rel="stylesheet" href="css/story.css">
+  <link rel="stylesheet" href="css/countdown.css">
+  <link rel="stylesheet" href="css/details.css">
+  <link rel="stylesheet" href="css/gallery.css">
+  <link rel="stylesheet" href="css/quote.css">
+  <link rel="stylesheet" href="css/rsvp.css">
+  <link rel="stylesheet" href="css/closing.css">
+  <link rel="stylesheet" href="css/navigation.css">
+  <link rel="stylesheet" href="css/guest-qr.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/music-player.css">
+</head>
+
+<body class="is-locked">
+
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-menu" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M5 8h14M5 12h10M5 16h14" />
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+    </symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+        d="M15 5l-7 7 7 7" />
+    </symbol>
+    <symbol id="i-next" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+        d="M9 5l7 7-7 7" />
+    </symbol>
+    <symbol id="i-map" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
+        d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" />
+      <circle cx="12" cy="10" r="2.3" fill="none" stroke="currentColor" stroke-width="1.6" />
+    </symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"
+        d="M4 6h16v14H4z M4 10h16 M8 3.5v4 M16 3.5v4" />
+    </symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="1.6" />
+      <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6" />
+      <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" />
+    </symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M8 8h11v12H8z M5 16V4h11" />
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M8 5.5v13l10.5-6.5z" />
+    </symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
+        d="M4 9h16v4H4z M5.5 13h13v7h-13z M12 9v11 M12 9c-1.5-3.5-6-4-6-1.5S10 9 12 9zm0 0c1.5-3.5 6-4 6-1.5S14 9 12 9z" />
+    </symbol>
+    <symbol id="i-send" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"
+        d="M4 12l16-7-6 15-3-6z M11 14l9-9" />
+    </symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24">
+      <path fill="currentColor"
+        d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" />
+    </symbol>
+  </svg>
+  <aside class="showcase" aria-hidden="true">
+    <img class="showcase__photo" src="assets/couples/couple-sunlit-hill.webp" alt="" loading="lazy">
+    <div class="showcase__veil"></div>
+    <div class="showcase__text">
+      <p class="showcase__kicker">Undangan Pernikahan</p>
+      <p class="showcase__names">John<span>&amp;</span>Jane</p>
+      <p class="showcase__date"><span>Minggu</span>20 Desember 2026</p>
+    </div>
+  </aside>
+
+  <div class="app" id="app">
+
+    <section class="cover column-fixed" id="cover" aria-label="Sampul undangan">
+      <div class="cover__scene">
+        <div class="cover__sky"><img src="assets/background/bg-lake-cypress.webp" alt="" width="900" height="1350">
+        </div>
+        <div class="cover__veil"></div>
+        <div class="cover__glow"></div>
+        <div class="cover__bed" aria-hidden="true">
+          <div class="bed__bloom bed--back"><img src="assets/flower/garland-peony-wide.webp" alt="" width="900"
+              height="603"></div>
+          <div class="bed__bloom bed--l"><img src="assets/flower/cluster-meadow.webp" alt="" width="520" height="499">
+          </div>
+          <div class="bed__bloom bed--r"><img src="assets/flower/cluster-magnolia-camellia.webp" alt="" width="520"
+              height="512"></div>
+          <div class="bed__bloom bed--fl"><img src="assets/flower/bouquet-anemone-ranunculus.webp" alt="" width="520"
+              height="448"></div>
+          <div class="bed__bloom bed--fr"><img src="assets/flower/bouquet-lisianthus-round.webp" alt="" width="520"
+              height="485"></div>
+          <div class="bed__bloom bed--ml"><img src="assets/flower/bouquet-tulip-daffodil.webp" alt="" width="505"
+              height="520"></div>
+          <div class="bed__bloom bed--mr"><img src="assets/flower/bouquet-cornflower-sweetpea.webp" alt="" width="515"
+              height="520"></div>
+          <div class="bed__bloom bed--c"><img src="assets/flower/cluster-peony-blush.webp" alt="" width="520"
+              height="344"></div>
+          <div class="bed__bloom bed--cl"><img src="assets/flower/bouquet-anemone-round.webp" alt="" width="520"
+              height="509"></div>
+          <div class="bed__bloom bed--cr"><img src="assets/flower/bouquet-lisianthus-upright.webp" alt="" width="517"
+              height="520"></div>
+        </div>
+        <div class="cover__content">
+          <div class="cover__frame" data-cover-frame>
+            <div class="cover__photo"><img src="assets/images/cover-couple.webp" alt="John &amp; Jane"
+                fetchpriority="high"></div>
+            <svg class="cover__ring" viewBox="0 0 300 400" aria-hidden="true">
+              <defs>
+                <linearGradient id="ringGold" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#efe0b4" />
+                  <stop offset=".35" stop-color="#b8924f" />
+                  <stop offset=".6" stop-color="#f3e6be" />
+                  <stop offset="1" stop-color="#a47b3b" />
+                </linearGradient>
+              </defs>
+              <ellipse class="ring__halo" cx="150" cy="200" rx="135" ry="185" />
+              <ellipse class="ring__pearls" cx="150" cy="200" rx="135" ry="185" />
+              <ellipse class="ring__outer" cx="150" cy="200" rx="144" ry="194" pathLength="1" />
+              <ellipse class="ring__inner" cx="150" cy="200" rx="126" ry="176" pathLength="1" />
+              <path class="ring__gem" d="M6 200l8-11 8 11-8 11z" />
+              <path class="ring__gem" d="M278 200l8-11 8 11-8 11z" />
+              <path class="ring__gem" d="M150 388l9 6-9 6-9-6z" />
+            </svg>
+            <div class="cover__posy cover__posy--cradle"><img src="assets/flower/crescent-iris-freesia.webp" alt=""
+                width="520" height="386"></div>
+          </div>
+          <p class="eyebrow cover__kicker" data-cover>Undangan Pernikahan</p>
+          <p class="cover__names"><span class="sr-only">John &amp; Jane</span><span class="cover__word"
+              aria-hidden="true">John</span><span class="amp" aria-hidden="true">&amp;</span><span class="cover__word"
+              aria-hidden="true">Jane</span></p>
+          <p class="cover__date" data-cover>Minggu, 20 Desember 2026</p>
+          <div class="envelope" id="envelope" data-invitation-open>
+            <span class="envelope__shadow"></span>
+            <div class="envelope__back"></div>
+            <div class="envelope__card" data-envelope-card aria-hidden="true">
+              <img src="assets/boat/boat-origami.webp" alt="" width="360" height="165">
+              <p class="envelope__card-names">John &amp; Jane</p>
+              <p class="envelope__card-date">Minggu, 20 Desember 2026</p>
+            </div>
+            <div class="envelope__pocket">
+              <svg class="envelope__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M0 0L50 100L100 0" />
+              </svg>
+              <p class="cover__to">Kepada Yth. Bapak/Ibu/Saudara/i</p>
+              <p class="cover__guest" id="guestName">Tamu Undangan</p>
+            </div>
+            <div class="envelope__flap" data-envelope-flap><svg class="envelope__lines" viewBox="0 0 100 100"
+                preserveAspectRatio="none" aria-hidden="true">
+                <path d="M1 0L50 97L99 0" />
+              </svg></div>
+            <button class="cover__seal" id="openInvitation" type="button" aria-label="Buka Undangan"
+              data-invitation-open>
+              <img class="seal__img" src="assets/ornament/wax-seal.webp" alt="" width="354" height="360">
+            </button>
+          </div>
+          <p class="cover__hint" data-cover>Ketuk segel untuk membuka</p>
+        </div>
+      </div>
+      <div class="cover__tide" aria-hidden="true">
+        <svg viewBox="0 0 400 74" preserveAspectRatio="none">
+          <path class="shadow" d="M0 0H400V42C372 60 340 62 306 48S240 28 204 42S134 68 96 54S30 32 0 46Z" />
+          <path class="foam" d="M0 0H400V30C372 48 340 50 306 36S240 16 204 30S134 56 96 42S30 20 0 34Z" />
+          <path class="crest-line" d="M400 30C372 48 340 50 306 36S240 16 204 30S134 56 96 42S30 20 0 34" />
+        </svg>
+      </div>
+    </section>
+
+    <div class="backdrop column-fixed" id="backdrop" aria-hidden="true">
+      <div class="scene" data-scene="willow"><img data-src="assets/background/bg-lake-willow.webp" alt="" width="900"
+          height="1350"></div>
+      <div class="scene" data-scene="cypress"><img data-src="assets/background/bg-lake-cypress.webp" alt="" width="900"
+          height="1350"></div>
+      <div class="scene" data-scene="karst"><img data-src="assets/background/bg-lake-karst.webp" alt="" width="900"
+          height="1350"></div>
+      <div class="scene" data-scene="pine-islet"><img data-src="assets/background/bg-lake-pine-islet.webp" alt=""
+          width="900" height="1350"></div>
+      <div class="scene" data-scene="alpine"><img data-src="assets/background/bg-lake-alpine.webp" alt="" width="900"
+          height="1350"></div>
+      <div class="scene" data-scene="misty-rocks"><img data-src="assets/background/bg-lake-misty-rocks.webp" alt=""
+          width="900" height="1350"></div>
+      <div class="scene" data-scene="pine-shore"><img data-src="assets/background/bg-lake-pine-shore.webp" alt=""
+          width="900" height="1350"></div>
+    </div>
+
+    <main>
+      <section class="hero" id="home" aria-label="Pembuka">
+        <div class="hero__stage">
+          <div class="hero__lake" data-layer="lake">
+            <div class="hero__lake-in"><span class="lake__slide is-active"><img
+                  src="assets/background/bg-lake-pine-islet.webp" alt="" width="900" height="1350"></span>
+            </div>
+          </div>
+          <div class="hero__mist"></div>
+          <div class="hero__side hero__side--l" data-layer="tree" data-side="-1" aria-hidden="true">
+            <div class="tree__in">
+              <span class="side__bloom side__bloom--fmn"><img decoding="async"
+                  src="assets/flower/sprig-forget-me-not.webp" alt="" width="223" height="360"></span>
+              <span class="side__bloom side__bloom--iris"><img decoding="async" src="assets/flower/sprig-iris.webp"
+                  alt="" width="398" height="420"></span>
+              <span class="side__bloom side__bloom--corn"><img decoding="async"
+                  src="assets/flower/sprig-cornflower.webp" alt="" width="310" height="420"></span>
+              <span class="side__bloom side__bloom--mid"><img decoding="async" src="assets/flower/bouquet-tulip.webp"
+                  alt="" width="447" height="520"></span>
+              <span class="side__bloom side__bloom--low"><img decoding="async"
+                  src="assets/flower/bouquet-cornflower-sweetpea.webp" alt="" width="515" height="520"></span>
+              <span class="side__bloom side__bloom--base"><img decoding="async"
+                  src="assets/flower/bouquet-anemone-ranunculus.webp" alt="" width="520" height="448"></span>
+            </div>
+          </div>
+          <div class="hero__side hero__side--r" data-layer="tree" data-side="1" aria-hidden="true">
+            <div class="tree__in">
+              <span class="side__bloom side__bloom--fmn side__bloom--flip"><img decoding="async"
+                  src="assets/flower/sprig-forget-me-not.webp" alt="" width="223" height="360"></span>
+              <span class="side__bloom side__bloom--iris side__bloom--flip"><img decoding="async"
+                  src="assets/flower/sprig-iris.webp" alt="" width="398" height="420"></span>
+              <span class="side__bloom side__bloom--corn side__bloom--flip"><img decoding="async"
+                  src="assets/flower/sprig-cornflower.webp" alt="" width="310" height="420"></span>
+              <span class="side__bloom side__bloom--mid"><img decoding="async"
+                  src="assets/flower/bouquet-lisianthus-upright.webp" alt="" width="517" height="520"></span>
+              <span class="side__bloom side__bloom--low side__bloom--flip"><img decoding="async"
+                  src="assets/flower/bouquet-tulip-daffodil.webp" alt="" width="505" height="520"></span>
+              <span class="side__bloom side__bloom--base"><img decoding="async"
+                  src="assets/flower/bouquet-lisianthus-round.webp" alt="" width="520" height="485"></span>
+            </div>
+          </div>
+          <div class="hero__vessel" data-layer="vessel" aria-hidden="true">
+            <div class="vessel__sail" id="vesselSail">
+              <span class="vessel__bob"><img src="assets/boat/boat-wave-left.webp" alt="" width="760"
+                  height="594"></span>
+            </div>
+          </div>
+          <div class="hero__dawn" aria-hidden="true"></div>
+          <div class="hero__title" data-layer="title">
+            <p class="eyebrow" data-hero-line>Berlayar Bersama</p>
+            <h1 class="hero__names"><span class="sr-only">John &amp; Jane</span><span class="mask"
+                aria-hidden="true"><span>John</span></span><span class="mask amp"
+                aria-hidden="true"><span>&amp;</span></span><span class="mask"
+                aria-hidden="true"><span>Jane</span></span></h1>
+            <p class="hero__date" data-hero-line>Minggu · 20 Desember 2026</p>
+            <p class="hero__tagline" data-hero-line>Tali sudah dilepas dari tambatan. Antar kami ke tengah danau dengan
+              doa terbaik Anda.</p>
+          </div>
+          <div class="hero__shore" data-layer="shore" aria-hidden="true">
+            <div class="shore shore--back" data-side="0"><span class="shore__in"><img decoding="async"
+                  src="assets/flower/garland-cosmos-wave.webp" alt="" width="900" height="560"></span></div>
+            <div class="shore shore--l" data-side="-1"><span class="shore__in"><img decoding="async"
+                  src="assets/flower/cluster-meadow.webp" alt="" width="520" height="499"></span></div>
+            <div class="shore shore--r" data-side="1"><span class="shore__in"><img decoding="async"
+                  src="assets/flower/cluster-magnolia-camellia.webp" alt="" width="520" height="512"></span></div>
+            <div class="shore shore--fl" data-side="-1"><span class="shore__in"><img decoding="async"
+                  src="assets/flower/bouquet-anemone-ranunculus.webp" alt="" width="520" height="448"></span></div>
+            <div class="shore shore--fr" data-side="1"><span class="shore__in"><img decoding="async"
+                  src="assets/flower/bouquet-lisianthus-round.webp" alt="" width="520" height="485"></span></div>
+            <div class="shore shore--c" data-side="0"><span class="shore__in"><img decoding="async"
+                  src="assets/flower/bouquet-anemone-round.webp" alt="" width="520" height="509"></span></div>
+          </div>
+          <div class="hero__fog" data-layer="fog"></div>
+          <div class="scroll-cue" aria-hidden="true">
+            <div class="scroll-cue__in"><svg viewBox="0 0 40 10">
+                <path d="M0 5Q5 0 10 5T20 5T30 5T40 5" />
+              </svg>Gulir pelan</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="content">
+
+        <section class="section opening" id="prolog" data-scene="willow">
+          <span class="sticker sticker--left"><img src="assets/flower/bouquet-lisianthus-upright.webp" alt=""
+              width="517" height="520" loading="lazy"></span>
+          <span class="sticker sticker--right"><img src="assets/flower/bouquet-tulip.webp" alt="" width="447"
+              height="520" loading="lazy"></span>
+          <article class="letter" data-letter>
+            <img class="letter__seal" src="assets/ornament/wax-seal.webp" alt="" width="354" height="360" loading="lazy"
+              data-seal>
+            <figure class="letter__postcard" data-postcard>
+              <span class="letter__stamp">
+                <div class="stamp__media"><img src="assets/couples/couple-rock-close.webp" alt="John &amp; Jane"
+                    loading="lazy"></div>
+              </span>
+            </figure>
+            <p class="eyebrow letter__greeting" data-letter-line>Assalamu’alaikum Warahmatullahi Wabarakatuh</p>
+
+            <p class="letter__verse" data-letter-verse>“Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan
+              pasangan untukmu dari jenismu sendiri, agar kamu merasa tenteram kepadanya, dan Dia menjadikan di antaramu
+              rasa kasih dan sayang.”</p>
+            <p class="letter__source" data-letter-line>QS. Ar-Rum · 21</p>
+            <img class="letter__divider" src="assets/ornament/divider-shell-ribbon.webp" alt="" width="760" height="221"
+              loading="lazy" data-letter-line>
+            <p class="letter__note" data-letter-line>Berpegang pada ayat ini, kami bersiap menambatkan tali di dermaga
+              yang sama, dan berharap Anda berkenan turut melepas pelayaran pertama kami.</p>
+          </article>
+          <div class="letter__flora" data-flora="left"><img src="assets/flower/bouquet-iris-crescent.webp" alt=""
+              width="515" height="520" loading="lazy"></div>
+        </section>
+
+        <section class="section couple" id="couple" data-scene="cypress">
+          <span class="sticker sticker--left"><img src="assets/flower/bouquet-cornflower-sweetpea.webp" alt=""
+              width="515" height="520" loading="lazy"></span>
+          <span class="sticker sticker--right"><img src="assets/flower/bouquet-tulip-daffodil.webp" alt="" width="505"
+              height="520" loading="lazy"></span>
+          <header class="head">
+            <p class="eyebrow" data-reveal>Kedua Mempelai</p>
+            <h2 class="heading" data-reveal="rise">Yang Akan *Berlabuh*</h2>
+            <p class="lead" data-reveal>Dua insan yang lama saling mencari arah, kini memilih satu perahu dan satu
+              tujuan.</p>
+          </header>
+          <article class="mate" data-mate="left">
+            <span class="sticker sticker--left"><img src="assets/flower/bouquet-tulip-daffodil.webp" alt="" width="505"
+                height="520" loading="lazy"></span>
+            <div class="mate__frame">
+              <div class="mate__photo"><img src="assets/couples/bride-portrait.webp" alt="Jane" loading="lazy"></div>
+              <img class="mate__frame-img" src="assets/ornament/frame-arch-frangipani.webp" alt="" width="481"
+                height="720" loading="lazy">
+            </div>
+            <p class="mate__role">Mempelai Wanita</p>
+            <h3 class="mate__name">Jane Amelia Putri</h3>
+            <span class="mate__line"></span>
+            <p class="mate__parents">Putri tercinta dari<br><span>Bapak Daniel Kusuma</span> &amp; <span>Ibu Maria
+                Lestari</span></p>
+            <a class="mate__ig" href="https://instagram.com/janeamelia" target="_blank" rel="noopener"
+              aria-label="Instagram Jane"><svg>
+                <use href="#i-instagram" />
+              </svg>@janeamelia</a>
+          </article>
+          <div class="couple__joiner" data-joiner aria-hidden="true">
+            <img src="assets/ornament/ring-box.webp" alt="" width="390" height="420" loading="lazy">
+            <span>&amp;</span>
+          </div>
+          <article class="mate" data-mate="right">
+            <span class="sticker sticker--right"><img src="assets/flower/bouquet-lisianthus-upright.webp" alt=""
+                width="517" height="520" loading="lazy"></span>
+            <div class="mate__frame">
+              <div class="mate__photo"><img src="assets/couples/groom-portrait.webp" alt="John" loading="lazy"></div>
+              <img class="mate__frame-img" src="assets/ornament/frame-arch-frangipani.webp" alt="" width="481"
+                height="720" loading="lazy">
+            </div>
+            <p class="mate__role">Mempelai Pria</p>
+            <h3 class="mate__name">John Adrian Wijaya</h3>
+            <span class="mate__line"></span>
+            <p class="mate__parents">Putra tercinta dari<br><span>Bapak Hendra Wijaya</span> &amp; <span>Ibu Ratna
+                Sari</span></p>
+            <a class="mate__ig" href="https://instagram.com/johnadrian" target="_blank" rel="noopener"
+              aria-label="Instagram John"><svg>
+                <use href="#i-instagram" />
+              </svg>@johnadrian</a>
+          </article>
+        </section>
+
+        <div class="lane" data-lane="left" aria-hidden="true">
+          <svg class="lane__water" viewBox="0 0 800 34" preserveAspectRatio="none">
+            <path
+              d="M0 12Q25 7 50 12T100 12T150 12T200 12T250 12T300 12T350 12T400 12T450 12T500 12T550 12T600 12T650 12T700 12T750 12T800 12" />
+            <path
+              d="M0 24Q25 19 50 24T100 24T150 24T200 24T250 24T300 24T350 24T400 24T450 24T500 24T550 24T600 24T650 24T700 24T750 24T800 24" />
+          </svg>
+          <div class="lane__boat"><img src="assets/boat/boat-dinghy-left.webp" alt="" width="399" height="480"
+              loading="lazy"></div>
+        </div>
+
+        <section class="section story" id="story" data-scene="karst">
+          <span class="sticker sticker--left sticker--round"><img src="assets/flower/bouquet-anemone-ranunculus.webp"
+              alt="" width="520" height="448" loading="lazy"></span>
+          <span class="sticker sticker--right"><img src="assets/flower/bouquet-cornflower-sweetpea.webp" alt=""
+              width="515" height="520" loading="lazy"></span>
+          <header class="head">
+            <p class="eyebrow" data-reveal>Buku Harian Kapal</p>
+            <h2 class="heading" data-reveal="rise">Catatan *Pelayaran*</h2>
+            <p class="lead" data-reveal>Setiap pelayaran panjang dimulai dari satu pertemuan kecil. Inilah pelabuhan
+              yang kami singgahi hingga hari ini.</p>
+          </header>
+          <div class="route" id="route">
+            <svg class="route__svg" aria-hidden="true">
+              <path class="route__base" d="" />
+            </svg>
+            <div class="route__reveal" aria-hidden="true">
+              <div class="route__reveal-in"><svg class="route__svg">
+                  <path class="route__ink" d="" />
+                </svg></div>
+            </div>
+            <div class="route__boat" id="routeBoat" aria-hidden="true"><img src="assets/boat/boat-origami.webp" alt=""
+                width="360" height="165" loading="lazy"></div>
+            <article class="stop">
+              <div class="stop__media">
+                <figure class="polaroid"><img src="assets/couples/couple-rock-smile.webp" alt="Satu Kompas, Dua Arah"
+                    loading="lazy"><span class="polaroid__develop"></span></figure>
+              </div>
+              <span class="stop__pin" aria-hidden="true"></span>
+              <div class="stop__body">
+                <span class="stop__year">2017</span>
+                <h3 class="stop__title">Satu Kompas, Dua Arah</h3>
+                <p class="stop__text">Kami sama-sama tersesat mencari dermaga di tepi Danau Toba. Satu peta dibagi dua,
+                  dan sejak itu arah kami tak pernah benar-benar berpisah.</p>
+              </div>
+            </article>
+            <article class="stop stop--flip">
+              <div class="stop__media">
+                <figure class="polaroid"><img src="assets/couples/couple-cliff-wide.webp" alt="Belajar Membaca Angin"
+                    loading="lazy"><span class="polaroid__develop"></span></figure>
+              </div>
+              <span class="stop__pin" aria-hidden="true"></span>
+              <div class="stop__body">
+                <span class="stop__year">2020</span>
+                <h3 class="stop__title">Belajar Membaca Angin</h3>
+                <p class="stop__text">Merencanakan perjalanan pertama berdua mengajari kami berkompromi: kapan
+                  mendayung, kapan cukup menunggu angin.</p>
+              </div>
+            </article>
+            <article class="stop">
+              <div class="stop__media">
+                <figure class="polaroid"><img src="assets/couples/couple-hills-embrace.webp" alt="Tali yang Ditambatkan"
+                    loading="lazy"><span class="polaroid__develop"></span></figure>
+              </div>
+              <span class="stop__pin" aria-hidden="true"></span>
+              <div class="stop__body">
+                <span class="stop__year">2025</span>
+                <h3 class="stop__title">Tali yang Ditambatkan</h3>
+                <p class="stop__text">Jane mengira itu piknik biasa, sampai John berlutut di ujung dermaga dengan sebuah
+                  cincin dan suara yang sedikit bergetar.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section countdown-section has-garden" id="save-date" data-scene="alpine">
+          <div class="garden" aria-hidden="true"><img src="assets/background/bg-garden-fountain.webp" alt="" width="900"
+              height="1350" loading="lazy"></div>
+          <span class="sticker sticker--left"><img src="assets/flower/bouquet-tulip.webp" alt="" width="447"
+              height="520" loading="lazy"></span>
+          <span class="sticker sticker--right"><img src="assets/flower/bouquet-lisianthus-upright.webp" alt=""
+              width="517" height="520" loading="lazy"></span>
+          <header class="head">
+            <img class="crest crest--tall crest-bob" src="assets/ornament/bells-bow.webp" alt="" width="367"
+              height="420" loading="lazy" data-reveal="crest">
+            <p class="eyebrow" data-reveal>Menunggu Angin Baik</p>
+            <h2 class="heading" data-reveal="rise">Sebelum *Berlabuh*</h2>
+            <p class="lead" data-reveal>Layar sudah terkembang; tinggal menunggu angin membawa kita ke tanggal ini.</p>
+          </header>
+          <div class="panels" id="countdown" data-target="2026-12-20T08:00:00&#43;07:00"
+            aria-label="Hitung mundur menuju hari pernikahan">
+            <img class="panels__img" src="assets/ornament/countdown-panels.webp" alt="" width="1000" height="205"
+              loading="lazy">
+            <div class="panels__slot" style="--i:0"><span class="tick" data-unit="days"><span>00</span></span><span
+                class="panels__label">Hari</span></div>
+            <div class="panels__slot" style="--i:1"><span class="tick" data-unit="hours"><span>00</span></span><span
+                class="panels__label">Jam</span></div>
+            <div class="panels__slot" style="--i:2"><span class="tick" data-unit="minutes"><span>00</span></span><span
+                class="panels__label">Menit</span></div>
+            <div class="panels__slot" style="--i:3"><span class="tick" data-unit="seconds"><span>00</span></span><span
+                class="panels__label">Detik</span></div>
+          </div>
+          <div class="logbook" id="logbook">
+            <div class="logbook__head"><span class="logbook__month">Desember</span><span
+                class="logbook__year">2026</span></div>
+            <div class="logbook__grid" id="calendarGrid"></div>
+          </div>
+          <a class="btn" id="calendarLink" data-reveal href="#" target="_blank" rel="noopener"><svg>
+              <use href="#i-calendar" />
+            </svg>Simpan ke Kalender</a>
+        </section>
+
+        <section class="section events" id="event" data-scene="misty-rocks">
+          <span class="sticker sticker--left"><img src="assets/flower/bouquet-tulip-daffodil.webp" alt="" width="505"
+              height="520" loading="lazy"></span>
+          <span class="sticker sticker--right sticker--round"><img src="assets/flower/bouquet-lisianthus-round.webp"
+              alt="" width="520" height="485" loading="lazy"></span>
+          <header class="head">
+            <img class="crest" src="assets/ornament/compass.webp" alt="" width="393" height="420" loading="lazy"
+              data-reveal="crest">
+            <p class="eyebrow" data-reveal>Jadwal Pelayaran</p>
+            <h2 class="heading" data-reveal="rise">Rute *Hari Bahagia*</h2>
+            <p class="lead" data-reveal>Catat jam keberangkatannya. Kami menyiapkan tempat terbaik untuk Anda di setiap
+              dermaga.</p>
+          </header>
+          <article class="ticket" data-ticket>
+            <div class="ticket__top">
+              <p class="ticket__kind">Prosesi Sakral</p>
+              <h3 class="ticket__name">Akad Nikah</h3>
+              <p class="ticket__desc">Janji suci yang diucapkan dalam lingkar kecil orang-orang tersayang.</p>
+            </div>
+            <div class="ticket__seam" aria-hidden="true"><span class="ticket__stamp"><span
+                  class="ticket__stamp-day">20</span><span class="ticket__stamp-month">Des 2026</span></span></div>
+            <div class="ticket__bottom">
+              <span class="ticket__tear" aria-hidden="true"></span>
+              <dl class="ticket__grid">
+                <div>
+                  <dt>Tanggal</dt>
+                  <dd>Minggu, 20 Desember 2026</dd>
+                </div>
+                <div>
+                  <dt>Waktu</dt>
+                  <dd>08.00&nbsp;–&nbsp;10.00&nbsp;WIB</dd>
+                </div>
+              </dl>
+              <p class="ticket__place"><strong>Masjid Baiturrahman</strong>Jl. Telaga Biru No. 21, Bogor</p>
+              <a class="btn btn--line"
+                href="https://www.google.com/maps/search/?api=1&amp;query=Masjid&#43;Baiturrahman%2C&#43;Jl.&#43;Telaga&#43;Biru&#43;No.&#43;21%2C&#43;Bogor"
+                target="_blank" rel="noopener"><svg>
+                  <use href="#i-map" />
+                </svg>Petunjuk Arah</a>
+            </div>
+          </article>
+          <article class="ticket" data-ticket>
+            <div class="ticket__top">
+              <p class="ticket__kind">Jamuan Bahagia</p>
+              <h3 class="ticket__name">Resepsi Pernikahan</h3>
+              <p class="ticket__desc">Jamuan siang dan ramah tamah di tepi Danau Lido.</p>
+            </div>
+            <div class="ticket__seam" aria-hidden="true"><span class="ticket__stamp"><span
+                  class="ticket__stamp-day">20</span><span class="ticket__stamp-month">Des 2026</span></span></div>
+            <div class="ticket__bottom">
+              <span class="ticket__tear" aria-hidden="true"></span>
+              <dl class="ticket__grid">
+                <div>
+                  <dt>Tanggal</dt>
+                  <dd>Minggu, 20 Desember 2026</dd>
+                </div>
+                <div>
+                  <dt>Waktu</dt>
+                  <dd>11.00&nbsp;–&nbsp;14.00&nbsp;WIB</dd>
+                </div>
+              </dl>
+              <p class="ticket__place"><strong>Pavilion Tepi Danau</strong>Kawasan Danau Lido, Jl. Raya Bogor–Sukabumi
+                Km. 21, Bogor</p>
+              <a class="btn btn--line"
+                href="https://www.google.com/maps/search/?api=1&amp;query=Pavilion&#43;Tepi&#43;Danau%2C&#43;Kawasan&#43;Danau&#43;Lido%2C&#43;Jl.&#43;Raya&#43;Bogor%E2%80%93Sukabumi&#43;Km.&#43;21%2C&#43;Bogor"
+                target="_blank" rel="noopener"><svg>
+                  <use href="#i-map" />
+                </svg>Petunjuk Arah</a>
+            </div>
+          </article>
+        </section>
+
+        <section class="section attire has-garden" id="attire" data-scene="pine-shore">
+          <div class="garden" aria-hidden="true"><img src="assets/background/bg-garden-gate.webp" alt="" width="900"
+              height="1350" loading="lazy"></div>
+          <span class="sticker sticker--left"><img src="assets/flower/bouquet-lisianthus-upright.webp" alt=""
+              width="517" height="520" loading="lazy"></span>
+          <span class="sticker sticker--right"><img src="assets/flower/bouquet-tulip-daffodil.webp" alt="" width="505"
+              height="520" loading="lazy"></span>
+          <header class="head">
+            <p class="eyebrow" data-reveal>Warna Dermaga</p>
+            <h2 class="heading" data-reveal="rise">Nuansa *Busana*</h2>
+            <p class="lead" data-reveal>Putih kami sisihkan untuk pengantin; selebihnya, pilih nuansa air dan langit di
+              bawah ini.</p>
+          </header>
+          <figure class="attire__figure" data-reveal="rising"><img src="assets/ornament/attire-gown-suit.webp" alt=""
+              width="508" height="640" loading="lazy"></figure>
+          <div class="bunting" id="bunting">
+            <svg class="bunting__rope" aria-hidden="true">
+              <path d="" />
+            </svg>
+            <div class="flag" style="--c:#9cc9e4"><span class="flag__cloth"></span><span class="flag__name">Langit
+                Pagi</span></div>
+            <div class="flag" style="--c:#2b5d7d"><span class="flag__cloth"></span><span class="flag__name">Biru
+                Danau</span></div>
+            <div class="flag" style="--c:#f1eadb"><span class="flag__cloth"></span><span class="flag__name">Pasir
+                Danau</span></div>
+            <div class="flag" style="--c:#e3b4ab"><span class="flag__cloth"></span><span class="flag__name">Merah
+                Senja</span></div>
+            <div class="flag" style="--c:#c3cfd4"><span class="flag__cloth"></span><span class="flag__name">Abu
+                Kabut</span></div>
+          </div>
+          <p class="attire__note" data-reveal>Kain yang ringan dan alas kaki yang nyaman akan memudahkan Anda di area
+            tepi danau.</p>
+        </section>
+
+        <div class="lane" data-lane="right" aria-hidden="true">
+          <svg class="lane__water" viewBox="0 0 800 34" preserveAspectRatio="none">
+            <path
+              d="M0 12Q25 7 50 12T100 12T150 12T200 12T250 12T300 12T350 12T400 12T450 12T500 12T550 12T600 12T650 12T700 12T750 12T800 12" />
+            <path
+              d="M0 24Q25 19 50 24T100 24T150 24T200 24T250 24T300 24T350 24T400 24T450 24T500 24T550 24T600 24T650 24T700 24T750 24T800 24" />
+          </svg>
+          <div class="lane__boat"><img src="assets/boat/boat-lateen-right.webp" alt="" width="495" height="560"
+              loading="lazy"></div>
+        </div>
+
+        <section class="section live" id="live" data-scene="willow">
+          <span class="sticker sticker--left"><img src="assets/flower/bouquet-cornflower-sweetpea.webp" alt=""
+              width="515" height="520" loading="lazy"></span>
+          <span class="sticker sticker--right"><img src="assets/flower/bouquet-tulip.webp" alt="" width="447"
+              height="520" loading="lazy"></span>
+          <header class="head">
+            <img class="crest crest--wide" src="assets/ornament/live-camera.webp" alt="" width="480" height="179"
+              loading="lazy" data-reveal="crest">
+            <p class="eyebrow" data-reveal>Siaran Langsung</p>
+            <h2 class="heading" data-reveal="rise">Saksikan dari *Jauh*</h2>
+            <p class="lead" data-reveal>Tak sempat hadir? Ikuti akad kami secara daring dan kirimkan doa terbaik dari
+              mana pun Anda berada.</p>
+          </header>
+          <a class="screen" href="https://youtube.com/" target="_blank" rel="noopener"
+            aria-label="Tonton siaran langsung di YouTube" data-live>
+            <span class="screen__frame"><img src="assets/couples/couple-cliff-wide.webp" alt="" loading="lazy"><span
+                class="screen__shade"></span></span>
+            <span class="screen__badge"><i></i>Live</span>
+            <span class="screen__play"><svg class="icon">
+                <use href="#i-play" />
+              </svg></span>
+          </a>
+          <div class="live__caption" data-reveal>
+            <p class="live__title">Akad Nikah John &amp; Jane</p>
+            <p class="live__meta">Tayang Minggu, 20 Desember 2026 · 08.00 WIB melalui YouTube</p>
+            <a class="btn btn--line" href="https://youtube.com/" target="_blank" rel="noopener"><svg>
+                <use href="#i-play" />
+              </svg>Tonton di YouTube</a>
+          </div>
+        </section>
+
+        <section class="gallery-section" id="gallery" data-scene="cypress">
+          <div class="gallery" id="galleryPin">
+            <span class="sticker sticker--left" style="top: .2rem"><img src="assets/flower/bouquet-tulip-daffodil.webp"
+                alt="" width="505" height="520" loading="lazy"></span>
+            <span class="sticker sticker--right" style="top: .2rem"><img
+                src="assets/flower/bouquet-cornflower-sweetpea.webp" alt="" width="515" height="520"
+                loading="lazy"></span>
+            <header class="head">
+              <p class="eyebrow" data-reveal>Arsip Kabin</p>
+              <h2 class="heading" data-reveal="rise">Album *Geladak*</h2>
+              <p class="lead" data-reveal>Ombak boleh berganti, wajah-wajah di album ini tetap kami bawa ke mana pun
+                berlayar.</p>
+            </header>
+            <div class="reel" id="reel">
+              <div class="reel__track" id="reelTrack">
+                <svg class="reel__rope" id="reelRope" aria-hidden="true">
+                  <path d="" />
+                  <path d="" />
+                </svg>
+                <button class="reel__item" type="button" data-frame aria-label="Lihat foto 1"><span class="snap"><span
+                      class="snap__clip"></span><span class="snap__photo"><img
+                        src="assets/couples/couple-sunset-rock.webp" data-full="assets/couples/couple-sunset-rock.webp"
+                        alt="Foto 1" loading="lazy" draggable="false"></span><span class="snap__caption"><span
+                        class="snap__script">J &amp; J</span><span class="snap__no">No. 01</span></span></span></button>
+                <button class="reel__item" type="button" data-frame aria-label="Lihat foto 2"><span class="snap"><span
+                      class="snap__clip"></span><span class="snap__photo"><img src="assets/couples/couple-closeup.webp"
+                        data-full="assets/couples/couple-closeup.webp" alt="Foto 2" loading="lazy"
+                        draggable="false"></span><span class="snap__caption"><span class="snap__script">J &amp;
+                        J</span><span class="snap__no">No. 02</span></span></span></button>
+                <button class="reel__item" type="button" data-frame aria-label="Lihat foto 3"><span class="snap"><span
+                      class="snap__clip"></span><span class="snap__photo"><img
+                        src="assets/couples/bride-dress-swirl.webp" data-full="assets/couples/bride-dress-swirl.webp"
+                        alt="Foto 3" loading="lazy" draggable="false"></span><span class="snap__caption"><span
+                        class="snap__script">J &amp; J</span><span class="snap__no">No. 03</span></span></span></button>
+                <button class="reel__item" type="button" data-frame aria-label="Lihat foto 4"><span class="snap"><span
+                      class="snap__clip"></span><span class="snap__photo"><img
+                        src="assets/couples/couple-cliff-wide.webp" data-full="assets/couples/couple-cliff-wide.webp"
+                        alt="Foto 4" loading="lazy" draggable="false"></span><span class="snap__caption"><span
+                        class="snap__script">J &amp; J</span><span class="snap__no">No. 04</span></span></span></button>
+                <button class="reel__item" type="button" data-frame aria-label="Lihat foto 5"><span class="snap"><span
+                      class="snap__clip"></span><span class="snap__photo"><img
+                        src="assets/couples/couple-rock-close.webp" data-full="assets/couples/couple-rock-close.webp"
+                        alt="Foto 5" loading="lazy" draggable="false"></span><span class="snap__caption"><span
+                        class="snap__script">J &amp; J</span><span class="snap__no">No. 05</span></span></span></button>
+                <button class="reel__item" type="button" data-frame aria-label="Lihat foto 6"><span class="snap"><span
+                      class="snap__clip"></span><span class="snap__photo"><img
+                        src="assets/couples/couple-hills-embrace.webp"
+                        data-full="assets/couples/couple-hills-embrace.webp" alt="Foto 6" loading="lazy"
+                        draggable="false"></span><span class="snap__caption"><span class="snap__script">J &amp;
+                        J</span><span class="snap__no">No. 06</span></span></span></button>
+                <button class="reel__item" type="button" data-frame aria-label="Lihat foto 7"><span class="snap"><span
+                      class="snap__clip"></span><span class="snap__photo"><img src="assets/couples/bride-portrait.webp"
+                        data-full="assets/couples/bride-portrait.webp" alt="Foto 7" loading="lazy"
+                        draggable="false"></span><span class="snap__caption"><span class="snap__script">J &amp;
+                        J</span><span class="snap__no">No. 07</span></span></span></button>
+                <button class="reel__item" type="button" data-frame aria-label="Lihat foto 8"><span class="snap"><span
+                      class="snap__clip"></span><span class="snap__photo"><img
+                        src="assets/couples/couple-sunlit-hill.webp" data-full="assets/couples/couple-sunlit-hill.webp"
+                        alt="Foto 8" loading="lazy" draggable="false"></span><span class="snap__caption"><span
+                        class="snap__script">J &amp; J</span><span class="snap__no">No. 08</span></span></span></button>
+              </div>
+            </div>
+            <div class="reel__progress" aria-hidden="true">
+              <span class="reel__line"></span><span class="reel__fill" id="reelFill"></span>
+              <span class="reel__boat" id="reelBoat"><img src="assets/boat/boat-lateen-right.webp" alt="" width="495"
+                  height="560" loading="lazy"></span>
+            </div>
+            <p class="reel__hint"><span class="reel__count" id="reelCount">01 / 08</span><br>Gulir untuk menyusuri
+              album, ketuk foto untuk memperbesar.</p>
+          </div>
+        </section>
+
+        <section class="quote" id="quote" data-scene="karst">
+          <span class="sticker sticker--left" style="top: 1rem"><img src="assets/flower/bouquet-lisianthus-upright.webp"
+              alt="" width="517" height="520" loading="lazy"></span>
+          <span class="sticker sticker--right sticker--round" style="top: 1rem"><img
+              src="assets/flower/bouquet-anemone-round.webp" alt="" width="520" height="509" loading="lazy"></span>
+          <img class="quote__doves" src="assets/ornament/doves-ribbon.webp" alt="" width="640" height="323"
+            loading="lazy" data-reveal="crest">
+          <figure class="print print--quote" id="quoteWindow">
+            <div class="print__photo"><img src="assets/couples/bride-dress-swirl.webp" alt="" loading="lazy"></div>
+            <figcaption class="print__caption">Sebelum berlayar</figcaption>
+          </figure>
+          <figure class="quote__card" data-reveal="card">
+            <img class="quote__vine" src="assets/ornament/quote-vine.webp" alt="" width="760" height="323"
+              loading="lazy">
+            <blockquote class="quote__text" id="quoteText">Apa pun jiwa kita terbuat darinya, jiwanya dan jiwaku adalah
+              sama.</blockquote>
+            <figcaption class="quote__author">Emily Brontë</figcaption>
+          </figure>
+        </section>
+
+        <section class="section rsvp" id="rsvp" data-scene="alpine">
+          <span class="sticker sticker--left"><img src="assets/flower/bouquet-tulip.webp" alt="" width="447"
+              height="520" loading="lazy"></span>
+          <span class="sticker sticker--right"><img src="assets/flower/bouquet-lisianthus-upright.webp" alt=""
+              width="517" height="520" loading="lazy"></span>
+          <header class="head">
+            <img class="crest crest--tall crest-bob" src="assets/ornament/bottle-message.webp" alt="" width="251"
+              height="420" loading="lazy" data-reveal="crest">
+            <p class="eyebrow" data-reveal>RSVP &amp; Ucapan</p>
+            <h2 class="heading" data-reveal="rise">Pesan dalam *Botol*</h2>
+            <p class="lead" data-reveal>Sebelum kapal kami berangkat, kabari kami: Anda ikut naik, atau melambai dari
+              dermaga? Selipkan juga doa Anda di dalam botol ini.</p>
+          </header>
+          <div class="tally" data-reveal>
+            <div class="tally__item"><span class="tally__value" id="tallyTotal">0</span><span
+                class="tally__label">Doa</span></div>
+            <span class="tally__dot"></span>
+            <div class="tally__item"><span class="tally__value" id="tallyYes">0</span><span
+                class="tally__label">Hadir</span></div>
+            <span class="tally__dot"></span>
+            <div class="tally__item"><span class="tally__value" id="tallyNo">0</span><span
+                class="tally__label">Berhalangan</span></div>
+          </div>
+          <form class="form" id="rsvpForm" data-reveal="soft" novalidate>
+            <div>
+              <label for="rsvpName">Nama Anda</label>
+              <input class="field" id="rsvpName" name="name" type="text" maxlength="60" autocomplete="name" required>
+            </div>
+            <fieldset>
+              <legend>Konfirmasi kehadiran</legend>
+              <div class="choice">
+                <input type="radio" id="attendYes" name="attendance" value="yes" checked>
+                <label for="attendYes">Ya, saya hadir</label>
+                <input type="radio" id="attendNo" name="attendance" value="no">
+                <label for="attendNo">Berhalangan</label>
+              </div>
+            </fieldset>
+            <div id="guestGroup">
+              <label for="rsvpGuests">Jumlah tamu</label>
+              <select class="field" id="rsvpGuests" name="guests">
+                <option value="1">1 orang</option>
+                <option value="2">2 orang</option>
+              </select>
+            </div>
+            <div>
+              <label for="rsvpMessage">Ucapan &amp; doa</label>
+              <textarea class="field" id="rsvpMessage" name="message" maxlength="400" required></textarea>
+            </div>
+            <button class="btn" type="submit"><svg>
+                <use href="#i-send" />
+              </svg>Titipkan Pesan</button>
+            <p class="form__status" id="rsvpStatus" role="status"></p>
+          </form>
+          <div class="wishes" id="wishes" aria-live="polite"></div>
+          <div class="pager" id="wishesPager" hidden>
+            <button class="pager__button" id="wishesPrev" type="button" aria-label="Ucapan sebelumnya"><svg
+                class="icon">
+                <use href="#i-prev" />
+              </svg></button>
+            <span class="pager__count" id="wishesCount">1 / 1</span>
+            <button class="pager__button" id="wishesNext" type="button" aria-label="Ucapan berikutnya"><svg
+                class="icon">
+                <use href="#i-next" />
+              </svg></button>
+          </div>
+        </section>
+
+        <div class="lane" data-lane="left" aria-hidden="true">
+          <svg class="lane__water" viewBox="0 0 800 34" preserveAspectRatio="none">
+            <path
+              d="M0 12Q25 7 50 12T100 12T150 12T200 12T250 12T300 12T350 12T400 12T450 12T500 12T550 12T600 12T650 12T700 12T750 12T800 12" />
+            <path
+              d="M0 24Q25 19 50 24T100 24T150 24T200 24T250 24T300 24T350 24T400 24T450 24T500 24T550 24T600 24T650 24T700 24T750 24T800 24" />
+          </svg>
+          <div class="lane__boat"><img src="assets/boat/boat-ketch-left.webp" alt="" width="527" height="560"
+              loading="lazy"></div>
+        </div>
+
+        <section class="section gift" id="gift" data-scene="misty-rocks">
+          <span class="sticker sticker--left"><img src="assets/flower/bouquet-cornflower-sweetpea.webp" alt=""
+              width="515" height="520" loading="lazy"></span>
+          <span class="sticker sticker--right"><img src="assets/flower/bouquet-tulip-daffodil.webp" alt="" width="505"
+              height="520" loading="lazy"></span>
+          <header class="head">
+            <img class="crest crest--tall" src="assets/ornament/envelope-card.webp" alt="" width="345" height="480"
+              loading="lazy" data-reveal="crest">
+            <p class="eyebrow" data-reveal>Titipan Kasih</p>
+            <h2 class="heading" data-reveal="rise">Bekal *Pelayaran*</h2>
+            <p class="lead" data-reveal>Bagi yang ingin menitipkan bekal untuk pelayaran pertama kami, rekening dan
+              alamat berikut siap menerima titipan Anda.</p>
+          </header>
+          <button class="btn gift__toggle" id="giftToggle" type="button" data-reveal aria-expanded="false"
+            aria-controls="giftContent"><svg>
+              <use href="#i-gift" />
+            </svg><span>Buka Amplop</span></button>
+          <div class="gift__content" id="giftContent" hidden>
+            <h3 class="gift__label">Transfer Bank</h3>
+            <div class="tag">
+              <span class="tag__hole"></span>
+              <div class="tag__top">
+                <p class="tag__bank">Bank BCA</p><span class="tag__chip">rekening</span>
+              </div>
+              <p class="tag__number">1234 5678 90</p>
+              <p class="tag__holder">a.n. Jane Amelia Putri</p>
+              <button class="btn btn--line" type="button" data-copy="1234 5678 90" data-copy-compact><svg>
+                  <use href="#i-copy" />
+                </svg><span>Salin Nomor</span></button>
+            </div>
+            <div class="tag">
+              <span class="tag__hole"></span>
+              <div class="tag__top">
+                <p class="tag__bank">Bank Mandiri</p><span class="tag__chip">rekening</span>
+              </div>
+              <p class="tag__number">1400 0123 4567</p>
+              <p class="tag__holder">a.n. John Adrian Wijaya</p>
+              <button class="btn btn--line" type="button" data-copy="1400 0123 4567" data-copy-compact><svg>
+                  <use href="#i-copy" />
+                </svg><span>Salin Nomor</span></button>
+            </div>
+            <h3 class="gift__label">Kirim Bingkisan</h3>
+            <div class="tag tag--address">
+              <span class="tag__hole"></span>
+              <img class="tag__gift" src="assets/ornament/gift-box.webp" alt="" width="397" height="420" loading="lazy">
+              <p class="tag__name">Jane Amelia Putri</p>
+              <p class="tag__text">Jl. Telaga Biru No. 21, Bogor, Jawa Barat 16129</p>
+              <button class="btn btn--line" type="button"
+                data-copy="Jane Amelia Putri, Jl. Telaga Biru No. 21, Bogor, Jawa Barat 16129"><svg>
+                  <use href="#i-copy" />
+                </svg><span>Salin Alamat</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="closing" id="closing" data-scene="pine-islet">
+          <div class="closing__lantern closing__lantern--l" aria-hidden="true"><img src="assets/ornament/lantern.webp"
+              alt="" width="146" height="360" loading="lazy"></div>
+          <div class="closing__lantern closing__lantern--r" aria-hidden="true"><img src="assets/ornament/lantern.webp"
+              alt="" width="146" height="360" loading="lazy"></div>
+          <span class="sticker sticker--left"><img src="assets/flower/bouquet-tulip.webp" alt="" width="447"
+              height="520" loading="lazy"></span>
+          <span class="sticker sticker--right"><img src="assets/flower/bouquet-lisianthus-upright.webp" alt=""
+              width="517" height="520" loading="lazy"></span>
+          <p class="eyebrow" data-reveal>Pelabuhan Terakhir</p>
+          <h2 class="heading" data-reveal="rise">Sampai *Bertemu*</h2>
+          <div class="closing__portrait">
+            <figure class="print print--closing" data-reveal="rising">
+              <div class="print__photo"><img src="assets/couples/couple-sunset-rock.webp" alt="John &amp; Jane"
+                  loading="lazy"></div>
+              <figcaption class="print__caption">John &amp; Jane</figcaption>
+            </figure>
+          </div>
+          <p class="closing__text" data-reveal>Merupakan kehormatan bagi kami bila Bapak/Ibu/Saudara/i berkenan hadir
+            dan mengiringi doa. Sampai jumpa di dermaga bahagia kami.</p>
+          <p class="closing__sign" data-reveal>Salam hangat dari geladak kami,</p>
+          <p class="script closing__names" data-reveal="rise">John <span class="amp">&amp;</span> Jane</p>
+          <p class="closing__families" data-reveal>Bersama keluarga Wijaya<br>&amp; keluarga Kusuma</p>
+          <div class="horizon" id="horizon" aria-hidden="true">
+            <div class="horizon__lake"><img src="assets/background/bg-lake-pine-shore.webp" alt="" width="900"
+                height="1350" loading="lazy"></div>
+            <div class="horizon__mist"></div>
+            <div class="horizon__boat" id="horizonBoat"><img src="assets/boat/boat-wave-left.webp" alt="" width="760"
+                height="594" loading="lazy"></div>
+            <img class="horizon__shore" src="assets/flower/garland-peony-wide.webp" alt="" width="900" height="603"
+              loading="lazy">
+          </div>
+        </section>
+
+        <footer class="footer">
+          <svg class="footer__wave" viewBox="0 0 400 34" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 34V20C40 6 80 6 124 18S210 34 256 20S350 2 400 16V34Z" />
+          </svg>
+          <img class="footer__seal" src="assets/ornament/wax-seal.webp" alt="" width="354" height="360" loading="lazy">
+          <div class="footer__log">
+            <div class="footer__stamp"><span class="footer__label">Berlabuh · 20 Desember 2026</span><span
+                class="footer__names">John &amp; Jane</span></div>
+          </div>
+          <p class="footer__line">Doa Anda adalah angin baik di layar kami.</p>
+          <a class="footer__brand" href="https://pluviostory.id" target="_blank" rel="noopener">Dilayarkan dengan cinta
+            oleh <b>SatuCerita</b></a>
+        </footer>
+
+      </div>
+    </main>
+
+    <nav class="menu column-fixed" id="menu" aria-label="Navigasi undangan" aria-hidden="true" inert>
+      <div class="menu__scrim" id="menuScrim"></div>
+      <div class="menu__panel" data-lenis-prevent>
+        <img class="menu__doves" src="assets/ornament/doves-ribbon.webp" alt="" width="640" height="323" loading="lazy">
+        <p class="menu__label">Peta Undangan</p>
+        <div class="menu__list">
+          <a href="#home">Dermaga Awal</a>
+          <a href="#couple">Yang Akan Berlabuh</a>
+          <a href="#story">Catatan Pelayaran</a>
+          <a href="#save-date">Sebelum Berlabuh</a>
+          <a href="#event">Rute Hari Bahagia</a>
+          <a href="#gallery">Album Geladak</a>
+          <a href="#rsvp">Pesan dalam Botol</a>
+          <a href="#gift">Bekal Pelayaran</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="controls column-fixed">
+      <button class="control control--menu" id="menuToggle" type="button" aria-label="Buka menu" aria-expanded="false"
+        aria-controls="menu"><svg class="icon">
+          <use href="#i-menu" />
+        </svg></button>
+    </div>
+
+    <dialog class="lightbox" id="lightbox" aria-label="Galeri foto">
+      <div class="lightbox__thumbs" id="lightboxThumbs" data-lenis-prevent></div>
+      <button class="lightbox__button lightbox__close" id="lightboxClose" type="button" aria-label="Tutup galeri"><svg
+          class="icon">
+          <use href="#i-close" />
+        </svg></button>
+      <div class="lightbox__stage" id="lightboxStage"><img id="lightboxImage" src="data:," alt=""></div>
+      <div class="lightbox__bar">
+        <button class="lightbox__button" id="lightboxPrev" type="button" aria-label="Foto sebelumnya"><svg class="icon">
+            <use href="#i-prev" />
+          </svg></button>
+        <span class="lightbox__counter" id="lightboxCounter">1 / 8</span>
+        <button class="lightbox__button" id="lightboxNext" type="button" aria-label="Foto berikutnya"><svg class="icon">
+            <use href="#i-next" />
+          </svg></button>
+      </div>
+    </dialog>
+  </div>
+
+  <script src="vendor/gsap.min.js"></script>
+  <script src="vendor/ScrollTrigger.min.js"></script>
+  <script src="vendor/lenis.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/scroll.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/cover.js"></script>
+  <script src="js/hero.js"></script>
+  <script src="js/story.js"></script>
+  <script src="js/countdown.js"></script>
+  <script src="js/media.js"></script>
+  <script src="js/tickets.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/closing.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/opening.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/rsvp.js"></script>
+  <script src="js/gift.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/music-player.js"></script>
+</body>
+
+</html>

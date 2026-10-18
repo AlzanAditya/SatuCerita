@@ -82,7 +82,7 @@ export function AppDash() {
 
   return (
     <LanguageProvider>
-      <div className="min-h-screen w-full overflow-x-clip bg-background text-text-primary flex flex-col font-sans selection:bg-[#7d6aee]/20 selection:text-[#7d6aee]">
+      <div className="min-h-screen min-h-[100dvh] w-full overflow-x-clip bg-background text-text-primary flex flex-col font-sans selection:bg-[#7d6aee]/20 selection:text-[#7d6aee]">
         <div id="main-content-container" className="flex-1 w-full">
           {isLoginPage ? (
             <DashLoginPage

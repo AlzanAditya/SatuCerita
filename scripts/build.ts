@@ -116,10 +116,10 @@ async function buildAll() {
     fs.copyFileSync(path.join(dashOutDir, "index.html"), path.join(dashOutDir, "404.html"));
   }
 
-  // Landing redirects
+  // Landing redirects (SPA fallback, tanpa me-rewrite /login ke /login.html karena Cloudflare Pages akan 308 redirect loop)
   fs.writeFileSync(
     path.join(landingOutDir, "_redirects"),
-    "/login  /login.html  200\n/signup  /signup.html  200\n/*  /index.html  200\n",
+    "/*  /index.html  200\n",
     "utf-8"
   );
 

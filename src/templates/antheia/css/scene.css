@@ -1,0 +1,17 @@
+.backdrop { z-index: 0; pointer-events: none; background: var(--paper); }
+.backdrop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; clip-path: inset(0 0 100% 0); transform: scale(1.08); transition: clip-path 0s 1.8s, opacity 0s 1.8s, transform 0s 1.8s; }
+.backdrop img.is-active { z-index: 1; opacity: .5; clip-path: inset(0 0 0 0); transform: scale(1); transition: clip-path 1.8s var(--ease-swing), transform 2.6s var(--ease-out), opacity 0s; }
+.backdrop::after { content: ""; position: absolute; inset: 0; z-index: 2; background: radial-gradient(ellipse 95% 62% at 50% 50%, rgba(242, 240, 232, .9), rgba(242, 240, 232, .55)), linear-gradient(to bottom, rgba(212, 224, 238, .25), rgba(242, 240, 232, 0) 45%, rgba(212, 224, 238, .3)); }
+
+.content { position: relative; z-index: 2; margin-top: -50vh; margin-top: -50svh; }
+.section { position: relative; padding: 5.6rem 1.5rem; text-align: center; }
+.head { position: relative; z-index: 2; }
+.accent { position: absolute; z-index: 1; width: 26%; pointer-events: none; }
+.accent img { width: 100%; transform-origin: 50% 0; animation: sway 7s ease-in-out infinite alternate; }
+.accent--mirror img { scale: -1 1; }
+.accent--wide { width: 34%; }
+.accent--tl { top: .4rem; left: -10%; }
+.accent--tr { top: .4rem; right: -10%; }
+.accent--bl { bottom: .4rem; left: -10%; }
+.accent--br { bottom: .4rem; right: -10%; }
+.accent:nth-of-type(2n) img { animation-duration: 8.2s; animation-delay: -3s; }

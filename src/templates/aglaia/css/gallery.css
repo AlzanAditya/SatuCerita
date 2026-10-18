@@ -1,0 +1,60 @@
+.gallery-section { position: relative; }
+.gallery { position: relative; display: flex; flex-direction: column; justify-content: center; height: 100vh; height: 100svh; padding: 3rem 0 2rem; text-align: center; overflow: clip; }
+.gallery .head { padding: 0 1.5rem; }
+.gallery .lead { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: .92rem; }
+.reel { position: relative; margin-top: .4rem; }
+.reel__track { position: relative; display: flex; align-items: flex-start; gap: 1.4rem; width: max-content; padding: 2.7rem 1.7rem 1.2rem; will-change: transform; }
+.reel__rope { position: absolute; left: 0; top: 0; width: 100%; height: 70px; overflow: visible; pointer-events: none; }
+.reel__rope path { fill: none; stroke: #b99662; stroke-width: 2.6; stroke-linecap: round; }
+.reel__rope path + path { stroke: #84622f; stroke-width: 2.6; stroke-dasharray: 2.5 4.5; opacity: .55; }
+.reel__item { position: relative; flex: none; width: min(56vw, 226px, 32svh); padding: 0; border: 0; background: none; color: inherit; cursor: zoom-in; text-align: left; }
+.snap { position: relative; display: block; padding: 10px 10px 0; border-radius: 3px; background: #fffefb; rotate: var(--tilt, -2deg); transform-origin: 50% 0; box-shadow: 0 0 0 1px rgba(43, 93, 125, .07); transition: rotate .7s var(--ease-out); }
+.reel__item:nth-of-type(4n+1) .snap { --tilt: -3deg; }
+.reel__item:nth-of-type(4n+2) .snap { --tilt: 2.2deg; }
+.reel__item:nth-of-type(4n+3) .snap { --tilt: -1.4deg; }
+.reel__item:nth-of-type(4n+4) .snap { --tilt: 3deg; }
+.reel__item:hover .snap, .reel__item:focus-visible .snap { rotate: 0deg; }
+.reel__item:focus-visible { outline: none; }
+.reel__item:focus-visible .snap { box-shadow: 0 0 0 3px var(--sky); }
+.snap__clip { position: absolute; top: -20px; left: 50%; z-index: 2; width: 13px; height: 34px; margin-left: -6.5px; border-radius: 3px; background: linear-gradient(90deg, #b5884f, #e8c993 45%, #c99f63 55%, #a77a42); }
+.snap__clip::after { content: ""; position: absolute; left: 50%; top: 4px; bottom: 4px; width: 1px; margin-left: -.5px; background: rgba(88, 58, 22, .5); }
+.snap__photo { display: block; aspect-ratio: 4 / 5; overflow: hidden; background: var(--mist); }
+.snap__photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; pointer-events: none; -webkit-user-drag: none; }
+.snap__caption { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; padding: .55rem .25rem .75rem; }
+.snap__script { font-family: var(--script); font-size: 1.4rem; line-height: 1; color: var(--sea-deep); }
+.snap__no { font-family: var(--caps); font-size: .58rem; font-weight: 500; letter-spacing: .22em; color: var(--gold-ink); }
+.reel__progress { position: relative; width: min(72%, 270px); height: 50px; margin: 1.1rem auto 0; }
+.reel__line, .reel__fill { position: absolute; left: 0; right: 0; bottom: 9px; height: 1px; }
+.reel__line { background: rgba(43, 93, 125, .25); }
+.reel__fill { background: var(--sea); transform: scaleX(0); transform-origin: 0 50%; }
+.reel__boat { position: absolute; left: 0; bottom: 8px; width: 40px; will-change: transform; }
+.reel__boat img { animation: bob 2.6s ease-in-out infinite alternate; }
+@media (max-height: 700px) { .reel__boat { width: 32px; } }
+.reel__hint { margin: .25rem auto 0; max-width: 32ch; font-size: .84rem; font-style: italic; color: var(--ink-soft); padding: 0 1.5rem; }
+.reel__count { font-family: var(--caps); font-style: normal; font-size: .64rem; letter-spacing: .24em; color: var(--sea); }
+.gallery__video { padding: 0 1.5rem 3rem; }
+.gallery.is-static { height: auto; padding-bottom: 3rem; }
+.gallery.is-static .reel { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.gallery.is-static .reel::-webkit-scrollbar { display: none; }
+.gallery.is-static .reel__item { scroll-snap-align: center; }
+.gallery.is-static .reel__track { margin-inline: auto; }
+
+.media-video { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .6s ease; pointer-events: none; }
+.media-video.is-loaded { opacity: 1; }
+.gallery__video { padding: 0 1.5rem 3rem; }
+.quote--plain .quote__card { margin-top: .6rem; }
+.letter__title { margin: .2rem 0 .6rem; font-family: var(--serif); font-weight: 400; font-size: 1.6rem; line-height: 1.2; color: var(--sea-deep); }
+.lightbox { border: 0; padding: 0; margin: 0; width: 100%; height: 100%; max-width: none; max-height: none; background: transparent; color: #fff; overflow: hidden; }
+.lightbox::backdrop { background: rgba(10, 27, 40, .95); }
+.lightbox__stage { position: absolute; inset: 4.4rem 0 6rem; display: flex; align-items: center; justify-content: center; padding: 0 1rem; touch-action: pan-y; }
+.lightbox__stage img { max-width: 100%; max-height: 100%; width: auto; border-radius: 12px; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .8); user-select: none; -webkit-user-drag: none; }
+.lightbox__bar { position: absolute; left: 0; right: 0; bottom: max(1.4rem, env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: 1.4rem; }
+.lightbox__counter { min-width: 6ch; font-family: var(--caps); font-size: .76rem; letter-spacing: .24em; text-align: center; }
+.lightbox__button { display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 14px; background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer; transition: background .3s; }
+.lightbox__button:hover { background: rgba(255, 255, 255, .24); }
+.lightbox__close { position: absolute; top: max(1rem, env(safe-area-inset-top)); right: 1rem; }
+.lightbox__thumbs { position: absolute; top: max(1rem, env(safe-area-inset-top)); left: 1rem; right: 4.6rem; display: flex; gap: .4rem; overflow-x: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.lightbox__thumbs::-webkit-scrollbar { display: none; }
+.lightbox__thumb { flex: none; width: 44px; height: 48px; padding: 0; border: 0; border-radius: 10px; overflow: hidden; opacity: .4; cursor: pointer; transition: opacity .3s, box-shadow .3s; }
+.lightbox__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.lightbox__thumb.is-active { opacity: 1; box-shadow: 0 0 0 2px #fff; }

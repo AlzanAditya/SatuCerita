@@ -1,0 +1,17 @@
+.guest-qr-trigger { --ps-player-right: max(16px, calc((100vw - var(--column)) / 2 + 16px)); position: fixed; right: calc(var(--ps-player-right) + env(safe-area-inset-right)); bottom: calc(16px + 56px + env(safe-area-inset-bottom)); z-index: 60; width: 48px; height: 48px; opacity: 0; visibility: hidden; transition: opacity .6s var(--ease-out), visibility .6s; }
+body.is-open .guest-qr-trigger { opacity: 1; visibility: visible; }
+.guest-qr-trigger__button { position: absolute; inset: 0; display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; background: var(--moss); color: var(--ivory-soft); cursor: pointer; }
+.guest-qr-trigger__button:hover + .guest-qr-trigger__label, .guest-qr-trigger__button:focus-visible + .guest-qr-trigger__label { opacity: 1; visibility: visible; transform: translate(0, -50%) scale(1); animation: none; }
+.guest-qr-trigger__button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.guest-qr-trigger__icon { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.guest-qr-trigger__label { position: absolute; top: 50%; right: calc(100% + 10px); padding: 10px 14px; border-radius: 3px; background: var(--ivory-soft); box-shadow: inset 0 0 0 1px var(--line), 0 10px 22px -12px rgba(23, 29, 20, .7); color: var(--moss); font: 400 .58rem/1 var(--caps); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; opacity: 0; visibility: hidden; pointer-events: none; transform: translate(8px, -50%) scale(.96); animation: guest-qr-reveal 3.6s ease-in-out infinite; }
+@keyframes guest-qr-reveal { 0%, 12%, 82%, 100% { opacity: 0; visibility: hidden; transform: translate(8px, -50%) scale(.96); } 25%, 68% { opacity: 1; visibility: visible; transform: translate(0, -50%) scale(1); } }
+@keyframes guest-qr-ring { 0%, 12%, 100% { opacity: 0; transform: scale(.98); } 24% { opacity: .45; } 48% { opacity: 0; transform: scale(1.08); } }
+.guest-qr-modal { position: fixed; inset: 0; width: min(calc(100% - 32px), 380px); max-width: none; max-height: calc(100dvh - 32px); margin: auto; padding: 34px 22px 28px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--ivory-soft); color: var(--ink); text-align: center; box-shadow: 0 24px 80px rgba(0, 0, 0, .45); }
+.guest-qr-modal::backdrop { background: rgba(23, 29, 20, .74); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.guest-qr-modal__close { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%; cursor: pointer; color: var(--moss); background: var(--sage-soft); }
+.guest-qr-modal__eyebrow { margin: 0; font: 400 .62rem/1.4 var(--caps); letter-spacing: .24em; text-transform: uppercase; color: var(--gold-ink); }
+.guest-qr-modal__name { margin: 6px 0 0; font-family: var(--script); font-size: clamp(2.6rem, 12vw, 3.2rem); line-height: 1.1; color: var(--moss); }
+.guest-qr-modal__code { width: min(68vw, 240px); margin: 18px auto 16px; padding: 12px; border-radius: 6px; background: #fff; box-shadow: inset 0 0 0 1px var(--line), 0 12px 28px -14px rgba(37, 46, 32, .6); }
+.guest-qr-modal__code img { display: block; width: 100%; aspect-ratio: 1; }
+.guest-qr-modal__help { max-width: 30ch; margin: 0 auto; font-style: italic; color: var(--ink-soft); }

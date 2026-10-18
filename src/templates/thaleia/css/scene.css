@@ -1,0 +1,20 @@
+.backdrop { z-index: 0; overflow: hidden; pointer-events: none; background: var(--ivory); }
+.backdrop img { position: absolute; inset: -4%; width: 108%; height: 108%; max-width: none; object-fit: cover; opacity: 0; filter: blur(14px) saturate(.8); transform: scale(1.08) translateX(-2%); transition: opacity 1.6s var(--ease-silk), filter 1.8s var(--ease-silk), transform 6s var(--ease-out); }
+.backdrop img.is-active { opacity: .36; filter: blur(0) saturate(.8); transform: scale(1) translateX(0); }
+.backdrop::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse 92% 64% at 50% 50%, rgba(245, 242, 233, .93), rgba(245, 242, 233, .66)), linear-gradient(to bottom, rgba(221, 228, 211, .3), rgba(245, 242, 233, 0) 45%, rgba(221, 228, 211, .35)); }
+
+.content { position: relative; z-index: 2; margin-top: -45vh; margin-top: -45svh; }
+.section { position: relative; padding: 5.4rem 1.5rem; text-align: center; }
+.head { position: relative; z-index: 2; }
+.edge { position: absolute; top: 0; z-index: 1; width: 40%; pointer-events: none; }
+.edge img { width: 100%; }
+.edge--tl { left: 0; }
+.edge--tl img { transform-origin: 0 0; }
+.edge--tr { right: 0; }
+.edge--tr img { transform-origin: 100% 0; }
+.edge--couple { width: 46%; right: -8%; top: -.6rem; }
+.edge--story { width: 46%; }
+.edge--event { width: 44%; }
+.edge--gallery { width: 19%; }
+.edge--rsvp { width: 13%; right: 5%; }
+.edge--gift { width: 38%; left: -11%; top: -1.6rem; }

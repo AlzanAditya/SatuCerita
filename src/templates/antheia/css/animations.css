@@ -1,0 +1,26 @@
+.is-offscreen, .is-offscreen * { animation-play-state: paused !important; }
+@media (max-width: 440px) { body::before { display: none; } }
+@media (hover: none), (pointer: coarse) {
+  .backdrop img, .backdrop img.is-active { clip-path: none; transform: none; }
+  .backdrop img { transition: opacity .9s ease; }
+  .backdrop img.is-active { transition: opacity .9s ease; }
+  .bloom, .hero__side { will-change: auto; }
+}
+
+@media (max-height: 720px) {
+  .cover__content { padding: 3.6rem 1.4rem 2.2rem; }
+  .cover__arch { width: min(36vw, 136px, 22svh); }
+  .cover__names { font-size: clamp(2.5rem, 12vw, 3rem); }
+  .cover__date { margin-bottom: .7rem; }
+  .place { width: min(72vw, 270px); }
+  .cover__open { margin-top: 1.2rem; }
+  .hero__arch { width: min(42%, 176px, 26svh); }
+  .hero__tagline { display: none; }
+  .hero__garden { height: 24%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blossoms { display: none; }
+  .cover__corner img, .cover__open, .hero__penjor img, .hero__cue-line::after, .bloom img, .accent img, .opening__drop img, .person__bloom img, .lantern img, .lantern::after, .stream__badge-live::before, .gift__tag-swing, .farewell__garland img, .farewell__lantern img, .farewell__lantern::after, .showcase__photo, .guest-qr-trigger__button::after, .guest-qr-trigger__label { animation: none; }
+  .menu__panel, .menu a, .backdrop img { transition: none; }
+}

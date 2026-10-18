@@ -1,0 +1,54 @@
+.opening { padding-top: 3.4rem; }
+.opening__drop { width: 40px; margin: 0 auto 1.4rem; }
+.opening__drop img { transform-origin: 50% 0; animation: swing 3.6s ease-in-out infinite alternate; }
+.opening__title { margin: .6rem 0 0; font-family: var(--script); font-size: clamp(2.2rem, 10vw, 2.7rem); font-weight: 400; line-height: 1.15; color: var(--navy); }
+.verse { margin: 2.4rem .2rem 0; padding: 3rem 1.7rem 2.6rem; border-radius: 4px; background: linear-gradient(var(--gold), var(--gold)) left 14px top 14px / 26px 1px no-repeat, linear-gradient(var(--gold), var(--gold)) left 14px top 14px / 1px 26px no-repeat, linear-gradient(var(--gold), var(--gold)) right 14px top 14px / 26px 1px no-repeat, linear-gradient(var(--gold), var(--gold)) right 14px top 14px / 1px 26px no-repeat, linear-gradient(var(--gold), var(--gold)) left 14px bottom 14px / 26px 1px no-repeat, linear-gradient(var(--gold), var(--gold)) left 14px bottom 14px / 1px 26px no-repeat, linear-gradient(var(--gold), var(--gold)) right 14px bottom 14px / 26px 1px no-repeat, linear-gradient(var(--gold), var(--gold)) right 14px bottom 14px / 1px 26px no-repeat, linear-gradient(180deg, rgba(250, 249, 244, .97), rgba(242, 240, 232, .97)); }
+.verse__ornament { display: flex; align-items: center; justify-content: center; gap: .5rem; margin: 0 auto 1.2rem; color: var(--gold); }
+.verse__ornament::before, .verse__ornament::after { content: ""; width: 34px; height: 1px; background: currentColor; opacity: .7; }
+.verse__ornament span { width: 7px; height: 7px; border: 1px solid currentColor; transform: rotate(45deg); }
+.verse__text { position: relative; margin: 0 0 1.1rem; font-size: 1.16rem; font-style: italic; line-height: 1.7; color: var(--ink); }
+.verse__source { position: relative; margin: 0; font-family: var(--caps); font-size: .66rem; letter-spacing: .3em; color: var(--gold); }
+.opening__text { margin: 2rem auto 0; max-width: 32ch; color: var(--ink-soft); }
+
+.couple .lead { margin-bottom: .4rem; }
+.person { position: relative; display: grid; justify-items: center; margin-top: 3.2rem; }
+.person__media { position: relative; width: 72%; }
+.person__visual { position: relative; aspect-ratio: 640 / 934; }
+.person__photo { position: absolute; inset: 0; clip-path: var(--oval-pearl); background: var(--paper-deep); overflow: hidden; }
+.person__photo img { position: absolute; left: 7%; top: 9%; width: 86%; height: 83%; object-fit: cover; object-position: 50% 16%; }
+.person__frame { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.person__tag { position: absolute; top: 22%; margin: 0; font-family: var(--caps); font-size: .6rem; letter-spacing: .42em; color: var(--gold); text-transform: uppercase; writing-mode: vertical-rl; white-space: nowrap; }
+.person--start .person__tag { left: -15%; transform: rotate(180deg); }
+.person--end .person__tag { right: -15%; }
+.person__bloom { position: absolute; bottom: -5%; z-index: 2; width: 50%; pointer-events: none; }
+.person__bloom img { animation: drift 6.6s ease-in-out infinite alternate; }
+.person--start .person__bloom { left: -12%; }
+.person--end .person__bloom { right: -12%; }
+.person--end .person__bloom img { scale: -1 1; animation-delay: -3s; }
+.person__nick { margin: 1rem 0 0; font-family: var(--script); font-size: clamp(2.9rem, 13vw, 3.4rem); font-weight: 400; line-height: 1.1; color: var(--navy); }
+.person__full { margin: .1rem 0 .7rem; font-family: var(--caps); font-size: .9rem; font-weight: 400; letter-spacing: .16em; color: var(--gold); text-transform: uppercase; }
+.person__parents { margin: 0 auto 1.1rem; max-width: 34ch; font-size: 1rem; line-height: 1.5; color: var(--ink-soft); text-wrap: balance; }
+.person__parents b { color: var(--navy); font-size: .96rem; font-weight: 600; letter-spacing: .01em; }
+.ig { display: inline-flex; align-items: center; gap: .5rem; padding: .55rem 1.1rem; border-radius: 999px; color: var(--navy); font-family: var(--caps); font-size: .6rem; letter-spacing: .14em; text-decoration: none; box-shadow: inset 0 0 0 1px var(--line); background: rgba(250, 249, 244, .7); transition: background .35s, color .35s; }
+.ig:hover { background: var(--navy); color: var(--paper-soft); }
+.ig svg { width: 16px; height: 16px; }
+.union { display: flex; align-items: center; justify-content: center; gap: 1.1rem; width: 72%; margin: 2.8rem auto 0; }
+.union::before, .union::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+.union::after { transform: scaleX(-1); }
+.union__amp { font-family: var(--script); font-size: 4.4rem; line-height: 1.1; color: var(--gold); }
+
+.stack { position: relative; margin-top: 2.6rem; padding-bottom: 2rem; }
+.story-card { position: sticky; top: calc(4.4rem + var(--i, 0) * 16px); margin-bottom: 9vh; }
+.story-card:last-child { margin-bottom: 0; }
+.story-card__inner { position: relative; padding: .7rem .7rem 1.7rem; border-radius: 12px; text-align: left; transform-origin: 50% 0; will-change: transform; }
+.story-card__inner::before { border-radius: 8px; }
+.story-card__media { position: relative; aspect-ratio: 16 / 11; border-radius: 6px; overflow: hidden; }
+.story-card__media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 28%; }
+.story-card__badge { position: absolute; left: 50%; bottom: -20px; z-index: 2; display: grid; place-items: center; width: 40px; height: 40px; margin-left: -20px; border-radius: 50%; background: var(--navy); color: var(--gold-soft); font-family: var(--caps); font-size: .7rem; letter-spacing: .06em; box-shadow: 0 0 0 4px var(--paper-soft), 0 0 0 5px var(--gold); }
+.story-card__frame { position: relative; }
+.story-card__meta { display: flex; align-items: center; justify-content: center; gap: .7rem; margin: 2rem .8rem 0; font-family: var(--caps); font-size: .62rem; letter-spacing: .32em; color: var(--gold); }
+.story-card__meta::before, .story-card__meta::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--line)); }
+.story-card__meta::after { transform: scaleX(-1); }
+.story-card__title { margin: .3rem .8rem .35rem; font-family: var(--script); font-size: clamp(1.9rem, 8.6vw, 2.25rem); font-weight: 400; line-height: 1.15; color: var(--navy); text-align: center; }
+.story-card__text { margin: 0 .9rem; font-size: .98rem; line-height: 1.58; color: var(--ink-soft); text-align: center; }
+.story-card__shade { position: absolute; inset: 0; border-radius: inherit; background: rgba(17, 26, 55, .38); opacity: 0; pointer-events: none; }
