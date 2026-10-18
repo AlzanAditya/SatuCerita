@@ -39,6 +39,9 @@ interface KatalogDetailPageProps {
   onNavigate?: (path: string) => void;
 }
 
+// Template asli yang siap ditampilkan via iframe
+const AVAILABLE_TEMPLATES = ["aglaia", "antheia", "thaleia"];
+
 export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
   currentPath,
   onNavigate = (_path: string) => {},
@@ -311,61 +314,73 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                       <span className="w-2 h-2 rounded-full bg-neutral-800" />
                     </div>
 
-                    {/* Template iframe — tampil jika folder ada, fallback ke screenshot */}
-                    <iframe
-                      key={template.slug}
-                      src={`/templates/${template.slug}/index.html`}
-                      title={`Preview ${template.title}`}
-                      className="absolute inset-0 w-full h-full border-0 pointer-events-none"
-                      sandbox="allow-scripts allow-same-origin"
-                      loading="lazy"
-                      onError={(e) => {
-                        // Jika template belum ada, sembunyikan iframe dan tampilkan fallback
-                        (e.currentTarget as HTMLIFrameElement).style.display = "none";
-                      }}
-                    />
-
-                    {/* Fallback overlay (hanya muncul jika iframe gagal) */}
-                    <div className="absolute inset-0 z-10 pointer-events-none">
-                      <img
-                        src={template.image}
-                        alt={template.title}
-                        className="w-full h-full object-cover opacity-60"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30" />
-                      <div className="relative z-20 w-full h-full p-6 flex flex-col justify-between text-white text-center">
-                        <div className="pt-4">
-                          <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[9px] uppercase tracking-widest font-bold">
-                            {template.category} Wedding Invitation
-                          </span>
-                        </div>
-                        <div className="my-auto space-y-2 py-4">
-                          <p className="text-[11px] font-serif uppercase tracking-widest text-purple-200">
-                            The Wedding Celebration Of
-                          </p>
-                          <h2 className="text-2xl sm:text-3xl font-serif font-black tracking-wide leading-tight drop-shadow-md">
-                            {template.coupleName}
-                          </h2>
-                          <div className="flex items-center justify-center gap-2 pt-1">
-                            <span className="h-[1px] w-6 bg-white/50" />
-                            <p className="text-xs font-mono font-bold tracking-widest text-amber-300">
-                              {template.date}
-                            </p>
-                            <span className="h-[1px] w-6 bg-white/50" />
-                          </div>
-                        </div>
-                        <div className="pb-8">
+                    {/* Template iframe — tampil interaktif jika template tersedia */}
+                    {AVAILABLE_TEMPLATES.includes(template.slug.toLowerCase()) ? (
+                      <div className="relative w-full h-full">
+                        <iframe
+                          key={`${template.slug}-${previewMode}`}
+                          src={`/templates/${template.slug}/index.html`}
+                          title={`Preview ${template.title}`}
+                          className="w-full h-full border-0 bg-white"
+                          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                          loading="lazy"
+                        />
+                        {/* Floating quick action to fullscreen preview */}
+                        <div className="absolute bottom-3 right-3 z-30 pointer-events-auto">
                           <button
                             type="button"
                             onClick={() => onNavigate(`/preview/${template.slug}`)}
-                            className="px-5 py-2 rounded-xl bg-white text-neutral-900 font-bold text-xs shadow-md hover:bg-neutral-100 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                            title="Buka pratinjau layar penuh"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-900 text-white text-[11px] font-bold backdrop-blur-md shadow-lg border border-white/20 transition-all cursor-pointer hover:scale-105"
                           >
-                            <span>Buka Preview Penuh</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
+                            <Maximize2 className="w-3 h-3 text-purple-300" />
+                            <span>Layar Penuh</span>
                           </button>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      /* Fallback mockup cover jika template belum tersedia */
+                      <div className="relative w-full h-full">
+                        <img
+                          src={template.image}
+                          alt={template.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30" />
+                        <div className="relative z-20 w-full h-full p-6 flex flex-col justify-between text-white text-center">
+                          <div className="pt-4">
+                            <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[9px] uppercase tracking-widest font-bold">
+                              {template.category} Wedding Invitation
+                            </span>
+                          </div>
+                          <div className="my-auto space-y-2 py-4">
+                            <p className="text-[11px] font-serif uppercase tracking-widest text-purple-200">
+                              The Wedding Celebration Of
+                            </p>
+                            <h2 className="text-2xl sm:text-3xl font-serif font-black tracking-wide leading-tight drop-shadow-md">
+                              {template.coupleName}
+                            </h2>
+                            <div className="flex items-center justify-center gap-2 pt-1">
+                              <span className="h-[1px] w-6 bg-white/50" />
+                              <p className="text-xs font-mono font-bold tracking-widest text-amber-300">
+                                {template.date}
+                              </p>
+                              <span className="h-[1px] w-6 bg-white/50" />
+                            </div>
+                          </div>
+                          <div className="pb-8">
+                            <button
+                              type="button"
+                              onClick={() => onNavigate(`/preview/${template.slug}`)}
+                              className="px-5 py-2 rounded-xl bg-white text-neutral-900 font-bold text-xs shadow-md hover:bg-neutral-100 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <span>Buka Preview Penuh</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

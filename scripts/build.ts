@@ -67,6 +67,13 @@ async function buildAll() {
   });
   normalizeHtmlOutput(landingOutDir, "src/entries/landing/index.html");
 
+  // Salin folder templates dari src/templates ke dist/landing-page/templates
+  const templatesSrc = path.resolve(ROOT, "src/templates");
+  if (fs.existsSync(templatesSrc)) {
+    copyDirRecursive(templatesSrc, path.join(landingOutDir, "templates"));
+    console.log("   ✓ Template statis disalin ke dist/landing-page/templates/");
+  }
+
   // 3. Build App -> dist/app
   console.log("\n📦 [2/3] Building app...");
   const appOutDir = path.resolve(DIST, "app");
