@@ -20,20 +20,23 @@ export interface OrderAddon {
 }
 
 export type PaymentMethodId =
-  | "qris"
-  | "bca_va"
   | "bni_va"
   | "bri_va"
-  | "mandiri_va"
   | "permata_va"
+  | "mandiri_bill"
+  | "qris"
   | "gopay";
 
+export type OrderStatus = "pending" | "paid" | "expired" | "cancelled" | "failed" | "needs_review";
+
+/** Data pesanan dari server (Worker). Tanggal berupa ISO string; format tampilannya dilakukan di UI. */
 export interface OrderItem {
   id: string;
   invoiceNo: string;
   date: string;
   dueDate: string;
-  status: "pending" | "paid" | "cancelled";
+  paidAt?: string | null;
+  status: OrderStatus;
   templateName: string;
   templateCategory: string;
   templateCover: string;
@@ -45,11 +48,20 @@ export interface OrderItem {
   uniqueCode: number;
   total: number;
   paymentMethod: PaymentMethodId;
+  paymentLabel?: string;
   vaNumber?: string;
+  bank?: string;
+  billerCode?: string;
+  billKey?: string;
+  qrUrl?: string;
+  deeplinkUrl?: string;
   slug: string;
   customerName: string;
   customerPhone: string;
   customerEmail: string;
+  /** Hanya ada untuk pesanan pending; dipakai membuka kembali popup pembayaran. */
+  snapToken?: string | null;
+  environment?: "sandbox" | "production";
 }
 
 export type UserAppTab =

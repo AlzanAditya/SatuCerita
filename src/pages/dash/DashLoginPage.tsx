@@ -18,10 +18,17 @@ export const DashLoginPage: React.FC<DashLoginPageProps> = ({
   const [notice, setNotice] = useState<{ type: "error"; text: string } | null>(null);
 
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get("error");
-    if (code === "forbidden")
+    if (typeof window !== "undefined" && window.location.search) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("code")) {
+        window.location.replace(`/api/auth/callback${window.location.search}`);
+        return;
+      }
+    }
+    const err = new URLSearchParams(window.location.search).get("error");
+    if (err === "forbidden")
       setNotice({ type: "error", text: "Akun Google ini tidak diizinkan mengakses dashboard admin." });
-    else if (code) setNotice({ type: "error", text: "Login gagal. Silakan coba lagi." });
+    else if (err) setNotice({ type: "error", text: "Login gagal. Silakan coba lagi." });
     // Sudah login sebagai admin -> langsung ke dashboard
     fetchSession().then((u) => u?.role === "admin" && window.location.replace(urls.dashHome()));
   }, []);

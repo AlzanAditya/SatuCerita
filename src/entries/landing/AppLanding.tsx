@@ -31,6 +31,15 @@ function LandingRouter() {
   }, [route, path]);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("code")) {
+        window.location.replace(`/api/auth/callback${window.location.search}`);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
     }
@@ -51,10 +60,10 @@ function LandingRouter() {
       if (to.startsWith("/app") || to.startsWith("/checkout") || to.startsWith("/order")) {
         const host = window.location.hostname;
         const isLocalHost = host === "localhost" || /^[\d.]+$/.test(host) || host.endsWith(".local");
-        if (!isLocalHost && !host.startsWith("app.")) {
-          // Jika berada di domain utama (mis. satucerita.zanxa.studio), arahkan ke app.satucerita.zanxa.studio
+        if (!isLocalHost && !host.startsWith("app.") && !host.startsWith("studio.")) {
+          // Jika berada di domain utama (mis. satucerita.app), arahkan ke studio.satucerita.app
           const rootDomain = host.replace(/^www\./, "");
-          const appDomain = `${window.location.protocol}//app.${rootDomain}${window.location.port ? ":" + window.location.port : ""}`;
+          const appDomain = `${window.location.protocol}//studio.${rootDomain}${window.location.port ? ":" + window.location.port : ""}`;
           const targetPath = to.replace(/^\/app/, "") || "/home";
           window.location.href = `${appDomain}${targetPath}`;
           return;

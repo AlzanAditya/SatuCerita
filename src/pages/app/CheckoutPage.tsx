@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   ArrowLeft,
   ExternalLink,
@@ -8,11 +8,15 @@ import {
   CreditCard,
   CheckCircle2,
   Building2,
+  Wallet,
+  QrCode,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PATHS } from "@/routes";
 import { getTemplateBySlug, formatRupiah } from "@/data/templates";
-import { OrderItem } from "@/pages/app/types";
+import { OrderItem, PaymentMethodId } from "@/pages/app/types";
+import { createOrder, newIdempotencyKey, openSnap, quoteOrder } from "@/lib/payments";
 
 interface CheckoutPageProps {
   currentPath: string;
@@ -20,35 +24,30 @@ interface CheckoutPageProps {
   onCreateOrder?: (order: OrderItem) => void;
 }
 
-type PaymentMethod = "bni_va" | "bri_va" | "mandiri_va" | "permata_va";
+type PaymentMethod = PaymentMethodId;
 
-const PAYMENT_METHODS: {
-  id: PaymentMethod;
-  label: string;
-  description: string;
+const PAYMENT_GROUPS: {
+  title: string;
+  methods: { id: PaymentMethod; label: string; description: string; icon: "bank" | "wallet" | "qr" }[];
 }[] = [
-  { id: "bni_va", label: "BNI", description: "Virtual Account" },
-  { id: "bri_va", label: "BRI", description: "Virtual Account" },
-  { id: "mandiri_va", label: "Mandiri", description: "Virtual Account" },
-  { id: "permata_va", label: "Permata", description: "Virtual Account" },
+  {
+    title: "TRANSFER VIRTUAL ACCOUNT",
+    methods: [
+      { id: "bni_va", label: "BNI", description: "Virtual Account", icon: "bank" },
+      { id: "bri_va", label: "BRI", description: "Virtual Account", icon: "bank" },
+      { id: "permata_va", label: "Permata", description: "Virtual Account", icon: "bank" },
+      { id: "mandiri_bill", label: "Mandiri", description: "Mandiri Bill Payment", icon: "bank" },
+    ],
+  },
+  {
+    title: "E-WALLET & QRIS",
+    methods: [
+      { id: "gopay", label: "GoPay", description: "Bayar lewat aplikasi GoPay", icon: "wallet" },
+      { id: "qris", label: "QRIS", description: "Scan dari semua e-wallet & m-banking", icon: "qr" },
+    ],
+  },
 ];
-
-function generateInvoiceNo(): string {
-  const now = new Date();
-  const d = now.getDate().toString().padStart(2, "0");
-  const m = (now.getMonth() + 1).toString().padStart(2, "0");
-  const y = now.getFullYear().toString().slice(2);
-  const rand = Math.random().toString(36).toUpperCase().slice(2, 7);
-  return `PS${d}${m}${y}${rand}`;
-}
-
-function generateVaNumber(): string {
-  return "13" + Math.floor(Math.random() * 1e14).toString().padStart(14, "0");
-}
-
-function formatDate(d: Date): string {
-  return `${d.getDate()} ${["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"][d.getMonth()]} ${d.getFullYear()}, ${d.getHours().toString().padStart(2,"0")}.${d.getMinutes().toString().padStart(2,"0")}`;
-}
+const ALL_METHODS = PAYMENT_GROUPS.flatMap((g) => g.methods);
 
 export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   currentPath,
@@ -63,6 +62,14 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const [voucherCode, setVoucherCode] = useState("");
   const [voucherApplied, setVoucherApplied] = useState(false);
   const [voucherError, setVoucherError] = useState("");
+  const [voucherChecking, setVoucherChecking] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [payError, setPayError] = useState("");
+  // Anti klik ganda: satu permintaan dalam satu waktu + kunci idempoten per "niat bayar".
+  const inFlight = useRef(false);
+  const lastClickAt = useRef(0);
+  const idem = useRef<{ sig: string; key: string } | null>(null);
 
   if (!template) {
     return (
@@ -82,57 +89,79 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
   const originalPrice = template.originalPrice;
   const discountPrice = template.discountPrice;
-  const discountAmount = voucherApplied ? Math.round(discountPrice * 0.1) : 0;
+  // Angka di layar hanya PERKIRAAN tampilan; total sebenarnya selalu dihitung ulang server.
+  const discountAmount = voucherApplied && appliedDiscount ? appliedDiscount.amount : 0;
   const finalTotal = discountPrice - discountAmount;
 
-  const handleApplyVoucher = () => {
-    if (voucherCode.trim().toUpperCase() === "HEMAT10") {
+  const handleApplyVoucher = async () => {
+    const code = voucherCode.trim();
+    if (!code || voucherChecking) return;
+    setVoucherChecking(true);
+    const res = await quoteOrder(template.slug, code);
+    setVoucherChecking(false);
+    if (res.ok && res.data.discountCode) {
       setVoucherApplied(true);
+      setAppliedDiscount({ code: res.data.discountCode, amount: res.data.discountAmount });
       setVoucherError("");
     } else {
       setVoucherApplied(false);
-      setVoucherError("Kode voucher tidak valid atau sudah kadaluarsa.");
+      setAppliedDiscount(null);
+      setVoucherError(res.data.error || "Kode voucher tidak valid atau sudah kadaluarsa.");
     }
   };
 
-  const handleBayar = () => {
-    if (!selectedMethod) return;
-
-    const now = new Date();
-    const dueDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const invoiceNo = generateInvoiceNo();
-
-    const order: OrderItem = {
-      id: invoiceNo,
-      invoiceNo,
-      date: formatDate(now),
-      dueDate: formatDate(dueDate),
-      status: "pending",
-      templateName: template.title,
-      templateCategory: template.category,
-      templateCover: template.image,
-      packageTier: template.badge,
-      basePrice: discountPrice,
-      addons: [],
-      discountCode: voucherApplied ? voucherCode : undefined,
-      discountAmount: voucherApplied ? discountAmount : 0,
-      uniqueCode: Math.floor(Math.random() * 900) + 100,
-      total: finalTotal,
-      paymentMethod: "bca_va",
-      vaNumber: generateVaNumber(),
-      slug: template.slug,
-      customerName: "",
-      customerEmail: "",
-      customerPhone: "",
-    };
-
-    if (onCreateOrder) {
-      onCreateOrder(order);
-    }
-
+  const goToOrder = (invoiceNo: string) => {
     const isStandalone = typeof window !== "undefined" && window.location.hostname.startsWith("app.");
     const prefix = isStandalone ? "" : "/app";
     onNavigate(`${prefix}/order/${invoiceNo}`);
+  };
+
+  const handleBayar = async () => {
+    if (!selectedMethod || inFlight.current) return;
+    // Debounce: abaikan klik beruntun yang terlalu cepat.
+    if (Date.now() - lastClickAt.current < 1200) return;
+    lastClickAt.current = Date.now();
+    inFlight.current = true;
+    setSubmitting(true);
+    setPayError("");
+
+    const code = voucherApplied && appliedDiscount ? appliedDiscount.code : undefined;
+    const sig = `${template.slug}|${selectedMethod}|${code ?? ""}`;
+    if (!idem.current || idem.current.sig !== sig) idem.current = { sig, key: newIdempotencyKey() };
+
+    try {
+      const res = await createOrder({ templateSlug: template.slug, method: selectedMethod, voucherCode: code, idempotencyKey: idem.current.key });
+      const order = res.data.order;
+      if (!res.ok || !order) {
+        idem.current = null; // percobaan baru boleh memakai kunci baru
+        if (res.status === 409 && order) {
+          if (onCreateOrder) onCreateOrder(order);
+          goToOrder(order.invoiceNo);
+          return;
+        }
+        setPayError(res.status === 429 ? "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi." : res.data.error || "Gagal memulai pembayaran. Coba lagi.");
+        return;
+      }
+
+      if (onCreateOrder) onCreateOrder(order);
+      if (!order.snapToken) {
+        goToOrder(order.invoiceNo);
+        return;
+      }
+
+      let moved = false;
+      const next = () => {
+        if (moved) return;
+        moved = true;
+        goToOrder(order.invoiceNo);
+      };
+      await openSnap(order.snapToken, { onSuccess: next, onPending: next, onClose: next, onError: () => setPayError("Pembayaran gagal diproses. Silakan coba lagi atau pilih metode lain.") });
+    } catch (e) {
+      setPayError(e instanceof Error && e.message ? e.message : "Gagal membuka halaman pembayaran.");
+    } finally {
+      inFlight.current = false;
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -236,42 +265,51 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
               <h3 className="text-base sm:text-lg font-black text-neutral-900 mb-4">
                 Pilih metode pembayaran
               </h3>
-              <p className="text-[11px] font-extrabold uppercase tracking-wider text-neutral-400 mb-3">
-                TRANSFER VIRTUAL ACCOUNT
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {PAYMENT_METHODS.map((method) => (
-                  <button
-                    key={method.id}
-                    type="button"
-                    onClick={() => setSelectedMethod(method.id)}
-                    className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all cursor-pointer text-left ${
-                      selectedMethod === method.id
-                        ? "border-[#7d6aee] bg-purple-50/50 shadow-xs"
-                        : "border-neutral-200 hover:border-neutral-300 bg-white"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-xl bg-neutral-100 flex items-center justify-center shrink-0">
-                        <Building2 className="w-5 h-5 text-neutral-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-extrabold text-neutral-900">{method.label}</p>
-                        <p className="text-xs text-neutral-500 font-medium">{method.description}</p>
-                      </div>
+              <div className="space-y-5">
+                {PAYMENT_GROUPS.map((group) => (
+                  <div key={group.title}>
+                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-neutral-400 mb-3">
+                      {group.title}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {group.methods.map((method) => (
+                        <button
+                          key={method.id}
+                          type="button"
+                          disabled={submitting}
+                          onClick={() => setSelectedMethod(method.id)}
+                          className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all cursor-pointer text-left disabled:opacity-60 disabled:cursor-not-allowed ${
+                            selectedMethod === method.id
+                              ? "border-[#7d6aee] bg-purple-50/50 shadow-xs"
+                              : "border-neutral-200 hover:border-neutral-300 bg-white"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="size-10 rounded-xl bg-neutral-100 flex items-center justify-center shrink-0">
+                              {method.icon === "wallet" ? (
+                                <Wallet className="w-5 h-5 text-neutral-600" />
+                              ) : method.icon === "qr" ? (
+                                <QrCode className="w-5 h-5 text-neutral-600" />
+                              ) : (
+                                <Building2 className="w-5 h-5 text-neutral-600" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-extrabold text-neutral-900">{method.label}</p>
+                              <p className="text-xs text-neutral-500 font-medium">{method.description}</p>
+                            </div>
+                          </div>
+                          <div
+                            className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              selectedMethod === method.id ? "border-[#7d6aee] bg-[#7d6aee]" : "border-neutral-300"
+                            }`}
+                          >
+                            {selectedMethod === method.id && <div className="size-2 rounded-full bg-white" />}
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                    <div
-                      className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        selectedMethod === method.id
-                          ? "border-[#7d6aee] bg-[#7d6aee]"
-                          : "border-neutral-300"
-                      }`}
-                    >
-                      {selectedMethod === method.id && (
-                        <div className="size-2 rounded-full bg-white" />
-                      )}
-                    </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -312,6 +350,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                     onChange={(e) => {
                       setVoucherCode(e.target.value);
                       setVoucherError("");
+                      setVoucherApplied(false); // kode diubah -> harus divalidasi ulang
+                      setAppliedDiscount(null);
                     }}
                     placeholder="KODE VOUCHER"
                     className="flex-1 border border-neutral-200 rounded-xl px-3 py-2 text-xs font-semibold placeholder:text-neutral-300 focus:outline-none focus:border-[#7d6aee] transition-colors"
@@ -319,9 +359,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                   <button
                     type="button"
                     onClick={handleApplyVoucher}
+                    disabled={voucherChecking || submitting}
                     className="px-3 py-2 rounded-xl border border-neutral-200 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition-colors cursor-pointer shrink-0"
                   >
-                    Pakai
+                    {voucherChecking ? "Cek..." : "Pakai"}
                   </button>
                 </div>
                 {voucherError && (
@@ -345,7 +386,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                   <span className="text-xs text-neutral-400 font-medium">Metode</span>
                   <span className="text-xs font-bold text-neutral-600">
                     {selectedMethod
-                      ? PAYMENT_METHODS.find((m) => m.id === selectedMethod)?.label + " Virtual Account"
+                      ? (() => {
+                          const m = ALL_METHODS.find((x) => x.id === selectedMethod);
+                          return m ? `${m.label} · ${m.description}` : "";
+                        })()
                       : "Belum dipilih"}
                   </span>
                 </div>
@@ -356,16 +400,21 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                 variant="primary"
                 size="lg"
                 onClick={handleBayar}
-                disabled={!selectedMethod}
+                disabled={!selectedMethod || submitting}
                 className={`w-full !py-3.5 !text-base !font-extrabold flex items-center justify-center gap-2 ${
-                  !selectedMethod ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                  !selectedMethod || submitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                 }`}
               >
-                <CreditCard className="w-4.5 h-4.5" />
-                Bayar sekarang
+                {submitting ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : <CreditCard className="w-4.5 h-4.5" />}
+                {submitting ? "Memproses..." : "Bayar sekarang"}
               </Button>
+              {payError && (
+                <p role="alert" className="text-rose-500 text-xs font-semibold text-center mt-2.5 leading-relaxed">
+                  {payError}
+                </p>
+              )}
               <p className="text-[11px] text-neutral-400 text-center mt-2.5 leading-relaxed">
-                Kode pembayaran langsung tampil di halaman berikutnya. Status diperbarui otomatis setelah Anda membayar.
+                Halaman pembayaran aman Midtrans akan terbuka. Status diperbarui otomatis setelah Anda membayar. Total akhir dihitung ulang oleh server.
               </p>
             </div>
 

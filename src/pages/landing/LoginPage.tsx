@@ -27,8 +27,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [notice, setNotice] = useState<{ type: "error"; text: string } | null>(null);
 
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get("error");
-    if (code) setNotice({ type: "error", text: ERRORS[code] || "Terjadi kesalahan. Coba lagi." });
+    if (typeof window !== "undefined" && window.location.search) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("code")) {
+        window.location.replace(`/api/auth/callback${window.location.search}`);
+        return;
+      }
+    }
+    const err = new URLSearchParams(window.location.search).get("error");
+    if (err) setNotice({ type: "error", text: ERRORS[err] || "Terjadi kesalahan. Coba lagi." });
     // Sudah login -> langsung ke dashboard user
     fetchSession().then((u) => u && window.location.replace(urls.appHome()));
   }, []);

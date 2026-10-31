@@ -18,7 +18,7 @@ const envUrl: string | undefined =
 
 export const SITE = {
   name: "Satu Cerita",
-  url: (envUrl || "https://satucerita.zanxa.studio").replace(/\/+$/, ""),
+  url: (envUrl || "https://satucerita.app").replace(/\/+$/, ""),
   lang: "id",
   locale: "id_ID",
   themeColor: "#7d6aee",

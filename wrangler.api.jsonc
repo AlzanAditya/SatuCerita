@@ -1,0 +1,73 @@
+{
+	// Worker API: HANYA server (tanpa frontend). Kode bersumber di worker/ dan di-bundle ke dist/server/.
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "satucerita-worker",
+	"compatibility_date": "2026-08-25",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": "dist/server/server.js",
+	"workers_dev": false,
+	"preview_urls": false,
+	// Dipasang sebagai route di depan Pages publik & aplikasi (zona harus ada di akun Cloudflare yang sama).
+	"routes": [
+		{
+			"pattern": "satucerita.app/api/*",
+			"zone_name": "satucerita.app"
+		},
+		{
+			"pattern": "satucerita.app/login*",
+			"zone_name": "satucerita.app"
+		},
+		{
+			"pattern": "studio.satucerita.app/*",
+			"zone_name": "satucerita.app"
+		},
+		{
+			"pattern": "dash.satucerita.app/*",
+			"zone_name": "satucerita.app"
+		}
+	],
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"ENVIRONMENT": "production",
+		"SUPABASE_URL": "https://onkbikaiklboiayijsmz.supabase.co",
+		"SUPABASE_ANON_KEY": "sb_publishable_r_5sDJzdh7c8hR64rCo2mw_Ykc8gflA",
+		"ADMIN_EMAIL": "satuceritadotid@gmail.com",
+		"COOKIE_DOMAIN": "satucerita.app",
+		"ALLOWED_ORIGINS": "https://satucerita.app,https://studio.satucerita.app,https://dash.satucerita.app",
+		"LOGIN_URL": "https://satucerita.app/login",
+		"APP_HOME_URL": "https://studio.satucerita.app/home",
+		"STUDIO_HOME_URL": "https://studio.satucerita.app/home",
+		"DASH_LOGIN_URL": "https://dash.satucerita.app/login",
+		"DASH_HOME_URL": "https://dash.satucerita.app/overview",
+		// ---- Midtrans ----
+		// "sandbox" untuk uji coba; ganti ke "production" HANYA saat go-live (beserta key production).
+		"MIDTRANS_ENV": "sandbox",
+		// Client Key itu PUBLIK (boleh di sini). Isi dengan Client Key Sandbox kamu (awalan SB-Mid-client-).
+		// Server Key & Service Role Key JANGAN di sini -> `wrangler secret put` (lihat docs/SETUP-MIDTRANS.md).
+		"MIDTRANS_CLIENT_KEY": "SB-Mid-client-q~-DSKXyoLfU_NRfg18angzP"
+	},
+	// Rate limit (Workers Rate Limiting). namespace_id bebas, tapi harus unik di akun Cloudflare kamu.
+	// period hanya boleh 10 atau 60 detik.
+	"ratelimits": [
+		{
+			"name": "RL_ORDERS",
+			"namespace_id": "7101",
+			"simple": {
+				"limit": 10,
+				"period": 60
+			}
+		},
+		{
+			"name": "RL_SYNC",
+			"namespace_id": "7102",
+			"simple": {
+				"limit": 20,
+				"period": 60
+			}
+		}
+	]
+}

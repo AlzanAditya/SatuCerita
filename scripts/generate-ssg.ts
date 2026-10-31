@@ -179,13 +179,15 @@ function generateRobotsTxt(targetDir: string) {
 export function runLandingSSG(distDir?: string) {
   const targetDir =
     distDir ||
-    (fs.existsSync(path.resolve(process.cwd(), "dist/landing-page/index.html"))
-      ? path.resolve(process.cwd(), "dist/landing-page")
-      : path.resolve(process.cwd(), "dist"));
+    (fs.existsSync(path.resolve(process.cwd(), "dist/landing/index.html"))
+      ? path.resolve(process.cwd(), "dist/landing")
+      : (fs.existsSync(path.resolve(process.cwd(), "dist/landing-page/index.html"))
+        ? path.resolve(process.cwd(), "dist/landing-page")
+        : path.resolve(process.cwd(), "dist")));
 
   const templatePath = path.join(targetDir, "index.html");
 
-  console.log(`⚡ Generating static pages for Satu Cerita landing-page at ${targetDir}...`);
+  console.log(`⚡ Generating static pages for Satu Cerita landing at ${targetDir}...`);
 
   if (!fs.existsSync(templatePath)) {
     console.error(`❌ ${templatePath} tidak ditemukan.`);

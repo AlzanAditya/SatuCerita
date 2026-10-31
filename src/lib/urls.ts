@@ -10,10 +10,10 @@ export function isLocal(): boolean {
   return !!l && (l.hostname === "localhost" || /^[\d.]+$/.test(l.hostname) || l.hostname.endsWith(".local"));
 }
 
-export function origin(sub: "" | "app" | "dash"): string {
+export function origin(sub: "" | "app" | "studio" | "dash"): string {
   const l = loc();
   if (!l) return "";
-  const root = l.hostname.replace(/^(app|dash)\./, "");
+  const root = l.hostname.replace(/^(app|studio|dash)\./, "");
   return `${l.protocol}//${sub ? sub + "." : ""}${root}${l.port ? ":" + l.port : ""}`;
 }
 
@@ -23,12 +23,12 @@ export const urls = {
   katalogDetail: (slug: string) => (isLocal() ? `/katalog/${slug}` : `${origin("")}/katalog/${slug}`),
   login: () => (isLocal() ? "/login" : `${origin("")}/login`),
   signup: () => (isLocal() ? "/signup" : `${origin("")}/signup`),
-  appHome: () => (isLocal() ? "/app/home" : `${origin("app")}/home`),
-  appPesanan: () => (isLocal() ? "/app/pesanan" : `${origin("app")}/pesanan`),
-  appProses: () => (isLocal() ? "/app/pesanan" : `${origin("app")}/pesanan`),
-  appProfile: () => (isLocal() ? "/app/profile" : `${origin("app")}/profile`),
-  appCheckout: (slug: string) => (isLocal() ? `/app/checkout/${slug}` : `${origin("app")}/checkout/${slug}`),
-  appOrder: (invoice: string) => (isLocal() ? `/app/order/${invoice}` : `${origin("app")}/order/${invoice}`),
+  appHome: () => (isLocal() ? "/app/home" : `${origin("studio")}/home`),
+  appPesanan: () => (isLocal() ? "/app/pesanan" : `${origin("studio")}/pesanan`),
+  appProses: () => (isLocal() ? "/app/pesanan" : `${origin("studio")}/pesanan`),
+  appProfile: () => (isLocal() ? "/app/profile" : `${origin("studio")}/profile`),
+  appCheckout: (slug: string) => (isLocal() ? `/app/checkout/${slug}` : `${origin("studio")}/checkout/${slug}`),
+  appOrder: (invoice: string) => (isLocal() ? `/app/order/${invoice}` : `${origin("studio")}/order/${invoice}`),
   dashLogin: () => (isLocal() ? "/dash/login" : `${origin("dash")}/login`),
   dashHome: () => (isLocal() ? "/dash" : `${origin("dash")}/overview`),
 };

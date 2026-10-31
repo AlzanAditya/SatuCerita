@@ -1,3 +1,4 @@
+import { listOrders } from "@/lib/payments";
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { PATHS } from "@/routes";
 import {
@@ -131,24 +132,29 @@ export const UserApp: React.FC<UserAppProps> = ({
     }
   }, [invitations]);
 
-  // Orders State
-  const [orders, setOrders] = useState<OrderItem[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("satucerita_orders_v2");
-        if (saved) return JSON.parse(saved);
-      } catch (_e) {}
-    }
-    return [];
-  });
+  // Orders State — sumber kebenaran = server (Supabase lewat Worker). Tidak lagi disimpan di localStorage,
+  // jadi status "lunas" tidak bisa dipalsukan dari browser.
+  const [orders, setOrders] = useState<OrderItem[]>([]);
+
+  const upsertOrder = (order: OrderItem) => {
+    setOrders((prev) => {
+      const i = prev.findIndex((o) => o.invoiceNo === order.invoiceNo);
+      if (i === -1) return [order, ...prev];
+      const next = prev.slice();
+      next[i] = order;
+      return next;
+    });
+  };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("satucerita_orders_v2", JSON.stringify(orders));
-      } catch (_e) {}
-    }
-  }, [orders]);
+    let alive = true;
+    // Hapus sisa data pesanan tiruan dari versi lama (tidak dipakai lagi).
+    try { localStorage.removeItem("satucerita_orders_v2"); } catch (_e) {}
+    listOrders().then((res) => {
+      if (alive && res.ok && Array.isArray(res.data.orders)) setOrders(res.data.orders);
+    });
+    return () => { alive = false; };
+  }, []);
 
   // Save profile changes
   const saveTimer = useRef<number>(0);
@@ -197,25 +203,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     e.target.value = "";
   };
 
-  const handleConfirmPaid = (orderId: string) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: "paid" as const } : o))
-    );
-  };
-
-  const handleCreateOrder = (order: OrderItem) => {
-    setOrders((prev) => {
-      const exists = prev.find((o) => o.id === order.id);
-      if (exists) return prev;
-      return [order, ...prev];
-    });
-  };
-
-  const handleUpdateOrderStatus = (id: string, status: "pending" | "paid" | "cancelled") => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, status } : o))
-    );
-  };
+  const handleCreateOrder = (order: OrderItem) => upsertOrder(order);
 
   // Determine App Bar Title
   const getAppNavbarTitle = () => {
@@ -367,7 +355,6 @@ export const UserApp: React.FC<UserAppProps> = ({
               selectedOrderId={selectedOrderId}
               setSelectedOrderId={setSelectedOrderId}
               onNavigate={onNavigate}
-              onConfirmPaid={handleConfirmPaid}
               showToast={showToast}
             />
           )}
@@ -403,7 +390,7 @@ export const UserApp: React.FC<UserAppProps> = ({
               currentPath={currentPath}
               onNavigate={onNavigate}
               orders={orders}
-              onUpdateOrderStatus={handleUpdateOrderStatus}
+              onOrderUpdate={upsertOrder}
               showToast={showToast}
             />
           )}

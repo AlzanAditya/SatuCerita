@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   Clock,
@@ -8,16 +8,21 @@ import {
   CheckCircle2,
   XCircle,
   Building2,
+  CreditCard,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { OrderItem } from "@/pages/app/types";
 import { formatRupiah } from "@/data/templates";
+import { formatOrderDate, getOrder, openSnap, syncOrder } from "@/lib/payments";
 
 interface OrderDetailPageProps {
   currentPath: string;
   onNavigate: (path: string) => void;
   orders: OrderItem[];
-  onUpdateOrderStatus?: (id: string, status: "pending" | "paid" | "cancelled") => void;
+  /** Menyimpan pesanan terbaru dari server ke state aplikasi. */
+  onOrderUpdate?: (order: OrderItem) => void;
   showToast?: (msg: string) => void;
 }
 
@@ -30,52 +35,90 @@ function formatCountdown(ms: number): string {
   return `${h}:${m}:${s}`;
 }
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  bni_va: "BNI Virtual Account",
-  bri_va: "BRI Virtual Account",
-  mandiri_va: "Mandiri Virtual Account",
-  permata_va: "Permata Virtual Account",
-  bca_va: "BCA Virtual Account",
-  qris: "QRIS",
-  gopay: "GoPay",
+const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
+  paid: { label: "Lunas", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  pending: { label: "Menunggu bayar", cls: "bg-amber-50 text-amber-700 border-amber-200" },
+  expired: { label: "Kedaluwarsa", cls: "bg-neutral-100 text-neutral-600 border-neutral-200" },
+  cancelled: { label: "Dibatalkan", cls: "bg-neutral-100 text-neutral-600 border-neutral-200" },
+  failed: { label: "Gagal", cls: "bg-rose-50 text-rose-700 border-rose-200" },
+  needs_review: { label: "Perlu ditinjau", cls: "bg-sky-50 text-sky-700 border-sky-200" },
 };
+
+const POLL_MS = 5000;
 
 export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
   currentPath,
   onNavigate,
   orders,
-  onUpdateOrderStatus,
+  onOrderUpdate,
   showToast,
 }) => {
   // Extract invoice from /app/order/:invoiceNo or /order/:invoiceNo
   const invoiceNo = currentPath.replace(/^(?:\/app)?\/order\/?/, "").split("?")[0].split("#")[0];
-  const order = orders.find((o) => o.id === invoiceNo || o.invoiceNo === invoiceNo);
 
   const isStandalone = typeof window !== "undefined" && window.location.hostname.startsWith("app.");
   const prefix = isStandalone ? "" : "/app";
 
+  // Sumber kebenaran = server. State lokal hanya cache tampilan.
+  const [remote, setRemote] = useState<OrderItem | null>(null);
+  const [notFound, setNotFound] = useState(false);
+  const [apiError, setApiError] = useState<{ status: number; message: string; path: string } | null>(null);
+  const order = remote && remote.invoiceNo === invoiceNo ? remote : orders.find((o) => o.invoiceNo === invoiceNo) ?? null;
+
   const [timeLeft, setTimeLeft] = useState(0);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
+  const busy = useRef(false);
+
+  const applyOrder = (o: OrderItem) => {
+    setRemote(o);
+    if (onOrderUpdate) onOrderUpdate(o);
+  };
+
+  // Muat dari server + polling saat masih pending (membaca database kita, BUKAN memanggil Midtrans).
+  const status = order?.status;
+  useEffect(() => {
+    if (!invoiceNo) return;
+    let alive = true;
+    const load = async () => {
+      const path = `/api/orders/${invoiceNo}`;
+      const res = await getOrder(invoiceNo);
+      if (!alive) return;
+      if (res.ok && res.data.order) {
+        setNotFound(false);
+        setApiError(null);
+        applyOrder(res.data.order);
+      } else if (res.status === 404) {
+        setNotFound(true);
+        setApiError({ status: 404, message: res.data.error || "Pesanan tidak ditemukan di database.", path });
+      } else {
+        setApiError({
+          status: res.status,
+          message: res.data.error || `HTTP ${res.status} — tidak ada pesan error dari server.`,
+          path,
+        });
+      }
+    };
+    load();
+    if (status && status !== "pending") return () => { alive = false; };
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, POLL_MS);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [invoiceNo, status]);
 
   useEffect(() => {
     if (!order || order.status !== "pending") return;
-    // 24 hours from creation
-    const due = new Date(order.dueDate.replace(
-      /(\d+) (Jan|Feb|Mar|Apr|Mei|Jun|Jul|Agu|Sep|Okt|Nov|Des) (\d{4}), (\d{2})\.(\d{2})/,
-      (_, d, m, y, h, min) => {
-        const months: Record<string, string> = { Jan:"01",Feb:"02",Mar:"03",Apr:"04",Mei:"05",Jun:"06",Jul:"07",Agu:"08",Sep:"09",Okt:"10",Nov:"11",Des:"12" };
-        return `${y}-${months[m]}-${d.padStart(2,"0")}T${h}:${min}:00`;
-      }
-    )).getTime();
-
-    const update = () => {
-      const diff = due - Date.now();
-      setTimeLeft(Math.max(0, diff));
-    };
+    const due = new Date(order.dueDate).getTime();
+    const update = () => setTimeLeft(Math.max(0, due - Date.now()));
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [order]);
+  }, [order?.dueDate, order?.status]);
 
   const handleCopy = (text: string, label: string) => {
     try {
@@ -84,40 +127,113 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
     } catch (_e) {}
   };
 
-  const handleVerify = () => {
-    if (!order) return;
+  // "Cek status" = server bertanya ke Midtrans. Browser TIDAK bisa menandai lunas.
+  const handleVerify = async () => {
+    if (!order || busy.current) return;
+    busy.current = true;
     setIsVerifying(true);
-    setTimeout(() => {
-      setIsVerifying(false);
-      if (onUpdateOrderStatus) {
-        onUpdateOrderStatus(order.id, "paid");
-      }
-      if (showToast) showToast("Selamat! Pembayaran berhasil diverifikasi.");
-    }, 1500);
+    const res = await syncOrder(order.invoiceNo);
+    busy.current = false;
+    setIsVerifying(false);
+    if (!res.ok || !res.data.order) {
+      if (showToast) showToast(res.data.error || "Gagal memeriksa status. Coba lagi.");
+      return;
+    }
+    applyOrder(res.data.order);
+    if (!showToast) return;
+    if (res.data.order.status === "paid") showToast("Pembayaran diterima. Terima kasih!");
+    else if (res.data.throttled) showToast("Status baru saja diperiksa. Coba lagi beberapa detik lagi.");
+    else showToast("Pembayaran belum kami terima.");
   };
 
+  // Buka lagi popup Midtrans (menampilkan VA / QR yang sama).
+  const handleContinuePay = async () => {
+    if (!order?.snapToken || busy.current) return;
+    busy.current = true;
+    setIsOpening(true);
+    try {
+      await openSnap(order.snapToken, {
+        onSuccess: () => handleVerifyQuiet(),
+        onPending: () => handleVerifyQuiet(),
+      });
+    } catch (e) {
+      if (showToast) showToast(e instanceof Error ? e.message : "Gagal membuka halaman pembayaran.");
+    } finally {
+      busy.current = false;
+      setIsOpening(false);
+    }
+  };
+
+  const handleVerifyQuiet = async () => {
+    const res = await getOrder(invoiceNo);
+    if (res.ok && res.data.order) applyOrder(res.data.order);
+  };
+
+  // Ganti metode: membuat pesanan baru; server otomatis membatalkan pesanan pending yang lama.
   const handleChangeMethod = () => {
     if (!order) return;
     onNavigate(`${prefix}/checkout/${order.slug}`);
   };
 
+  if (!order && !notFound && !apiError) {
+    return (
+      <div className="min-h-screen bg-[#faf9ff] flex items-center justify-center p-6">
+        <Loader2 className="w-6 h-6 text-[#7d6aee] animate-spin" aria-label="Memuat pesanan" />
+      </div>
+    );
+  }
+
   if (!order) {
     return (
       <div className="min-h-screen bg-[#faf9ff] flex items-center justify-center p-6">
-        <div className="text-center">
-          <h2 className="text-lg font-black text-neutral-800">Pesanan tidak ditemukan</h2>
-          <button
-            onClick={() => onNavigate(`${prefix}/pesanan`)}
-            className="mt-3 text-[#7d6aee] font-bold text-sm underline cursor-pointer"
-          >
-            Kembali ke Pesanan
-          </button>
+        <div className="w-full max-w-md">
+          <div className="bg-rose-50 border border-rose-200 border-b-[3px] border-b-rose-300 rounded-2xl p-5 mb-4">
+            <div className="flex items-start gap-3">
+              <XCircle className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <h2 className="text-base font-black text-rose-800">
+                  {notFound ? "Pesanan tidak ditemukan" : "Gagal memuat pesanan"}
+                </h2>
+                <p className="text-xs text-rose-700 font-medium mt-1 leading-snug">
+                  {apiError?.message || "Terjadi kesalahan saat memuat data pesanan."}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* DEBUG PANEL — selalu tampil agar bisa diagnosa masalah */}
+          <div className="bg-neutral-900 rounded-2xl p-4 mb-4 font-mono text-xs text-left overflow-auto">
+            <p className="text-amber-400 font-bold mb-2">🔍 DEBUG INFO</p>
+            <div className="space-y-1 text-neutral-300">
+              <p><span className="text-neutral-500">invoice:</span> <span className="text-white">{invoiceNo || "(kosong!)"}</span></p>
+              <p><span className="text-neutral-500">path:</span> <span className="text-white">{apiError?.path || "—"}</span></p>
+              <p><span className="text-neutral-500">http_status:</span> <span className={`font-bold ${apiError && apiError.status >= 400 ? "text-rose-400" : "text-emerald-400"}`}>{apiError?.status ?? "—"}</span></p>
+              <p><span className="text-neutral-500">error:</span> <span className="text-rose-300 break-all">{apiError?.message || "—"}</span></p>
+              <p><span className="text-neutral-500">notFound:</span> <span className="text-white">{String(notFound)}</span></p>
+              <p><span className="text-neutral-500">url:</span> <span className="text-neutral-400 break-all">{typeof window !== "undefined" ? window.location.href : "—"}</span></p>
+              <p><span className="text-neutral-500">hostname:</span> <span className="text-neutral-400">{typeof window !== "undefined" ? window.location.hostname : "—"}</span></p>
+              <p><span className="text-neutral-500">parsed_path:</span> <span className="text-neutral-400">{currentPath}</span></p>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <button
+              onClick={() => onNavigate(`${prefix}/pesanan`)}
+              className="text-[#7d6aee] font-bold text-sm underline cursor-pointer"
+            >
+              Kembali ke Pesanan
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  const methodLabel = PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod;
+  const methodLabel = order.paymentLabel || order.paymentMethod;
+  const badge = STATUS_BADGE[order.status] ?? STATUS_BADGE.pending;
+  const isVa = order.paymentMethod === "bni_va" || order.paymentMethod === "bri_va" || order.paymentMethod === "permata_va";
+  const isBill = order.paymentMethod === "mandiri_bill";
+  const safeHttps = (u?: string) => (u && /^https:\/\//.test(u) ? u : undefined);
 
   return (
     <div className="min-h-screen bg-[#faf9ff] font-sans text-neutral-800">
@@ -143,15 +259,9 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
             </h1>
           </div>
           <span
-            className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wide border shrink-0 ${
-              order.status === "paid"
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : order.status === "pending"
-                ? "bg-amber-50 text-amber-700 border-amber-200"
-                : "bg-neutral-100 text-neutral-600 border-neutral-200"
-            }`}
+            className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wide border shrink-0 ${badge.cls}`}
           >
-            {order.status === "paid" ? "Lunas" : order.status === "pending" ? "Menunggu bayar" : "Dibatalkan"}
+            {badge.label}
           </span>
         </div>
 
@@ -182,31 +292,91 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                 </p>
               </div>
 
-              {/* Bank Name */}
+              {/* Instruksi pembayaran sesuai metode */}
               <div className="flex items-center gap-2 mb-3">
                 <Building2 className="w-5 h-5 shrink-0" />
-                <h3 className="text-base font-black">Transfer ke {methodLabel.replace(" Virtual Account", "")}</h3>
+                <h3 className="text-base font-black">Bayar dengan {methodLabel}</h3>
               </div>
 
-              {/* VA Number */}
-              <div className="bg-white/30 rounded-xl p-4 mb-3">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800/70 mb-1">
-                  NOMOR VIRTUAL ACCOUNT
-                </p>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xl sm:text-2xl font-black font-mono tracking-wide text-neutral-900 break-all">
-                    {order.vaNumber || "1308300944491659"}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(order.vaNumber || "1308300944491659", "Nomor VA disalin!")}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-neutral-900/30 bg-white/40 font-bold text-xs shrink-0 cursor-pointer hover:bg-white/60 transition-colors"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    Salin
-                  </button>
+              {isVa && order.vaNumber && (
+                <div className="bg-white/30 rounded-xl p-4 mb-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800/70 mb-1">
+                    NOMOR VIRTUAL ACCOUNT{order.bank ? ` · ${order.bank.toUpperCase()}` : ""}
+                  </p>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xl sm:text-2xl font-black font-mono tracking-wide text-neutral-900 break-all">
+                      {order.vaNumber}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(order.vaNumber!, "Nomor VA disalin!")}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-neutral-900/30 bg-white/40 font-bold text-xs shrink-0 cursor-pointer hover:bg-white/60 transition-colors"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      Salin
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {isBill && order.billKey && (
+                <div className="bg-white/30 rounded-xl p-4 mb-3 space-y-3">
+                  {order.billerCode && (
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800/70 mb-1">KODE PERUSAHAAN</p>
+                      <span className="text-lg font-black font-mono">{order.billerCode}</span>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800/70 mb-1">KODE PEMBAYARAN</p>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xl font-black font-mono break-all">{order.billKey}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(order.billKey!, "Kode pembayaran disalin!")}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-neutral-900/30 bg-white/40 font-bold text-xs shrink-0 cursor-pointer hover:bg-white/60 transition-colors"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        Salin
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {safeHttps(order.qrUrl) && (
+                <div className="bg-white rounded-xl p-3 mb-3 flex justify-center">
+                  <img src={safeHttps(order.qrUrl)} alt="Kode QR pembayaran" className="size-44 object-contain" />
+                </div>
+              )}
+
+              {safeHttps(order.deeplinkUrl) && (
+                <a
+                  href={safeHttps(order.deeplinkUrl)}
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 mb-3 rounded-xl border-2 border-neutral-900/30 bg-white/40 font-bold text-sm hover:bg-white/60 transition-colors"
+                >
+                  Buka aplikasi {methodLabel}
+                </a>
+              )}
+
+              {!order.vaNumber && !order.billKey && !safeHttps(order.qrUrl) && (
+                <p className="text-xs font-semibold text-neutral-800/80 bg-white/30 rounded-xl p-3 mb-3 leading-relaxed">
+                  Kode pembayaran akan muncul setelah kamu melanjutkan di halaman pembayaran Midtrans.
+                </p>
+              )}
+
+              {order.snapToken && (
+                <button
+                  type="button"
+                  onClick={handleContinuePay}
+                  disabled={isOpening}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-3 rounded-xl bg-neutral-900 text-white font-extrabold text-sm cursor-pointer hover:bg-neutral-800 transition-colors disabled:opacity-60"
+                >
+                  {isOpening ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                  {isOpening ? "Membuka..." : "Lanjutkan pembayaran"}
+                </button>
+              )}
 
               {/* Total */}
               <div className="bg-white/30 rounded-xl px-4 py-3 mb-4 flex items-center justify-between">
@@ -224,7 +394,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
               </div>
 
               <p className="text-xs font-medium text-neutral-800/70 leading-relaxed mb-4">
-                Bayar lewat m-banking, internet banking, atau ATM dengan menu Transfer ke Virtual Account. Nominal harus persis sama.
+                Nominal harus persis sama dengan total di atas. Status berubah otomatis setelah pembayaran kami terima.
               </p>
 
               {/* Actions */}
@@ -236,7 +406,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                   className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-neutral-900/30 bg-white/40 font-bold text-sm cursor-pointer hover:bg-white/60 transition-colors disabled:opacity-50"
                 >
                   <RefreshCw className={`w-4 h-4 ${isVerifying ? "animate-spin" : ""}`} />
-                  Cek status
+                  {isVerifying ? "Memeriksa..." : "Cek status"}
                 </button>
                 <button
                   type="button"
@@ -266,15 +436,61 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
             </div>
           )}
 
-          {/* Cancelled Status Card */}
-          {order.status === "cancelled" && (
+          {/* Cancelled / Expired / Failed */}
+          {(order.status === "cancelled" || order.status === "expired" || order.status === "failed") && (
             <div className="bg-rose-50 border border-rose-200 border-b-[3px] border-b-rose-300 rounded-2xl p-5 flex items-start gap-3">
               <XCircle className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
               <div>
-                <h2 className="text-base font-black text-rose-800">Pesanan Dibatalkan</h2>
+                <h2 className="text-base font-black text-rose-800">
+                  {order.status === "expired" ? "Pesanan Kedaluwarsa" : order.status === "failed" ? "Pembayaran Gagal" : "Pesanan Dibatalkan"}
+                </h2>
                 <p className="text-xs text-rose-700 font-medium mt-1 leading-snug">
-                  Pesanan ini telah dibatalkan. Silakan buat pesanan baru jika masih ingin melanjutkan.
+                  Silakan buat pesanan baru jika masih ingin melanjutkan.
                 </p>
+                <button
+                  type="button"
+                  onClick={handleChangeMethod}
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-rose-200 text-rose-700 text-xs font-bold cursor-pointer hover:bg-rose-100 transition-colors"
+                >
+                  <ArrowLeftRight className="w-3.5 h-3.5" />
+                  Pesan lagi
+                </button>
+              </div>
+            </div>
+          )}
+
+          {order.status === "needs_review" && (
+            <div className="bg-sky-50 border border-sky-200 border-b-[3px] border-b-sky-300 rounded-2xl p-5 flex items-start gap-3">
+              <AlertTriangle className="w-6 h-6 text-sky-600 shrink-0 mt-0.5" />
+              <div>
+                <h2 className="text-base font-black text-sky-800">Sedang Ditinjau</h2>
+                <p className="text-xs text-sky-700 font-medium mt-1 leading-snug">
+                  Ada pembayaran yang perlu kami cek manual. Hubungi admin dengan menyebut kode {order.invoiceNo}.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {order.environment === "sandbox" && (
+            <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-2.5 text-[11px] font-bold text-amber-800">
+              Mode uji coba (Sandbox): tidak ada uang sungguhan yang berpindah.
+            </div>
+          )}
+
+          {/* DEBUG PANEL untuk sandbox — tampil saat masih pending dan belum ada VA/QR */}
+          {order.environment === "sandbox" && order.status === "pending" && !order.vaNumber && !order.billKey && !order.qrUrl && (
+            <div className="bg-neutral-900 rounded-2xl p-4 font-mono text-xs overflow-auto">
+              <p className="text-amber-400 font-bold mb-2">🔍 DEBUG — Payment Info</p>
+              <div className="space-y-1 text-neutral-300">
+                <p><span className="text-neutral-500">invoiceNo:</span> <span className="text-white">{order.invoiceNo}</span></p>
+                <p><span className="text-neutral-500">status:</span> <span className="text-emerald-400">{order.status}</span></p>
+                <p><span className="text-neutral-500">paymentMethod:</span> <span className="text-white">{order.paymentMethod}</span></p>
+                <p><span className="text-neutral-500">snapToken:</span> <span className={order.snapToken ? "text-emerald-400" : "text-rose-400"}>{order.snapToken ? `${order.snapToken.slice(0, 12)}…` : "(null)"}</span></p>
+                <p><span className="text-neutral-500">vaNumber:</span> <span className={order.vaNumber ? "text-emerald-400" : "text-rose-400"}>{order.vaNumber || "(null — belum ada dari Midtrans)"}</span></p>
+                <p><span className="text-neutral-500">qrUrl:</span> <span className={order.qrUrl ? "text-emerald-400" : "text-rose-400"}>{order.qrUrl || "(null — belum ada dari Midtrans)"}</span></p>
+                <p><span className="text-neutral-500">billKey:</span> <span className={order.billKey ? "text-emerald-400" : "text-rose-400"}>{order.billKey || "(null)"}</span></p>
+                <p><span className="text-neutral-500">environment:</span> <span className="text-amber-400">{order.environment}</span></p>
+                <p className="text-neutral-500 mt-2 leading-relaxed">Jika vaNumber/qrUrl null setelah bayar di Snap → cek "Cek status" atau webhook Midtrans belum terpasang.</p>
               </div>
             </div>
           )}
@@ -287,14 +503,14 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                 { label: "Kode", value: order.invoiceNo, mono: true },
                 { label: "Template", value: `${order.templateName} · ${order.templateCategory}` },
                 { label: "Jumlah", value: formatRupiah(order.total) },
-                { label: "Pembayaran", value: "Duitku", badge: "PRODUCTION" },
+                { label: "Pembayaran", value: "Midtrans", badge: order.environment === "production" ? "PRODUCTION" : "SANDBOX" },
                 { label: "Metode", value: methodLabel },
-                { label: "Dibuat", value: order.date },
+                { label: "Dibuat", value: formatOrderDate(order.date) },
                 {
                   label: "Dibayar",
-                  value: order.status === "paid" ? order.date : "—",
+                  value: order.status === "paid" && order.paidAt ? formatOrderDate(order.paidAt) : "—",
                 },
-                { label: "Batas bayar", value: order.dueDate },
+                { label: "Batas bayar", value: formatOrderDate(order.dueDate) },
               ].map((row, i) => (
                 <div key={i} className="flex items-start justify-between gap-4 py-3">
                   <span className="text-xs font-semibold text-neutral-500 shrink-0">{row.label}</span>
@@ -315,34 +531,6 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
             </div>
           </div>
 
-          {/* Demo: Change Status (for testing) */}
-          {onUpdateOrderStatus && (
-            <div className="bg-white rounded-2xl border border-dashed border-neutral-200 p-4">
-              <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-3">
-                DEV: Ubah Status (Demo)
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onUpdateOrderStatus(order.id, "pending")}
-                  className="flex-1 py-2 text-xs font-bold rounded-xl border border-amber-200 bg-amber-50 text-amber-700 cursor-pointer hover:bg-amber-100 transition-colors"
-                >
-                  Pending
-                </button>
-                <button
-                  onClick={() => onUpdateOrderStatus(order.id, "paid")}
-                  className="flex-1 py-2 text-xs font-bold rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 cursor-pointer hover:bg-emerald-100 transition-colors"
-                >
-                  Lunas
-                </button>
-                <button
-                  onClick={() => onUpdateOrderStatus(order.id, "cancelled")}
-                  className="flex-1 py-2 text-xs font-bold rounded-xl border border-rose-200 bg-rose-50 text-rose-700 cursor-pointer hover:bg-rose-100 transition-colors"
-                >
-                  Batal
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

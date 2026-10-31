@@ -43,16 +43,33 @@ dari default (`https://satucerita.zanxa.studio`).
     └─ lib/supabase.ts        # helper client Supabase
 ```
 
-## Cloudflare Pages (Build Mandiri)
+## Cloudflare Pages & Workers (Build & Deploy)
 
-Saat menjalankan `npm run build`, folder `dist/` menghasilkan 3 aplikasi mandiri:
+Saat menjalankan `pnpm run build`, folder `dist/` menghasilkan 4 direktori:
 
-1. **`dist/landing-page/`**  
-   Untuk Cloudflare Pages proyek Landing Page (mis. `satucerita.zanxa.studio`). Dilengkapi seluruh halaman SSG statis, meta SEO lengkap, sitemap.xml, robots.txt, dan `_redirects`.
-2. **`dist/app/`**  
-   Untuk Cloudflare Pages proyek User Dashboard (mis. `app.satucerita.zanxa.studio`). Memiliki bundle SPA sendiri, routing mandiri, aset lengkap, dan `_redirects` (`/* /index.html 200`).
+1. **`dist/landing/`**  
+   Untuk Cloudflare Pages proyek Landing Page (`satucerita.app`). Dilengkapi seluruh halaman SSG statis, meta SEO lengkap, sitemap.xml, robots.txt, dan `_redirects`.
+2. **`dist/studio/`**  
+   Untuk Cloudflare Pages proyek Studio / User Dashboard (`studio.satucerita.app`). Memiliki bundle SPA sendiri, routing mandiri, aset lengkap, dan `_redirects` (`/* /index.html 200`).
 3. **`dist/dash/`**  
-   Untuk Cloudflare Pages proyek Admin Dashboard (mis. `dash.satucerita.zanxa.studio` / `admin.satucerita.zanxa.studio`). Mandiri dengan SPA rewrite `_redirects`.
+   Untuk Cloudflare Pages proyek Admin Dashboard (`dash.satucerita.app`). Mandiri dengan SPA rewrite `_redirects`.
+4. **`dist/server/`**  
+   Bundle Worker server (`server.js` & `index.js`) yang dideploy via Wrangler API.
+
+### Deployment ke Cloudflare (Wrangler)
+
+Mirip seperti arsitektur proyek `@sch`, deployment dapat dilakukan langsung menggunakan Wrangler:
+
+```bash
+# Deploy semua layanan sekaligus (API + Landing + Studio + Dash)
+pnpm run deploy
+
+# Atau deploy per layanan
+pnpm run deploy:api      # Deploy worker/server via wrangler.api.jsonc
+pnpm run deploy:landing  # Deploy dist/landing ke Cloudflare Pages
+pnpm run deploy:studio   # Deploy dist/studio ke Cloudflare Pages
+pnpm run deploy:dash     # Deploy dist/dash ke Cloudflare Pages
+```
 
 ## Route
 
@@ -88,3 +105,7 @@ otomatis diarahkan ke path kanonik oleh router.
 
 Login email/Google, guard dashboard, dan migration database ada di folder `worker/` dan `supabase/`.
 Panduan konfigurasi lengkap: [`docs/SETUP-AUTH.md`](docs/SETUP-AUTH.md).
+
+## Pembayaran (Midtrans)
+
+Pembayaran di Studio memakai Midtrans Snap lewat Cloudflare Worker. Panduan setup lengkap: [docs/SETUP-MIDTRANS.md](docs/SETUP-MIDTRANS.md).

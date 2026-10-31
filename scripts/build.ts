@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { build } from "vite";
+import { build as esbuild } from "esbuild";
 import { runLandingSSG } from "./generate-ssg";
 
 const ROOT = process.cwd();
@@ -42,19 +43,12 @@ function normalizeHtmlOutput(targetDir: string, nestedHtmlRelative: string) {
   copyDirRecursive(PUBLIC_DIR, targetDir);
 }
 
-async function buildAll() {
-  console.log("🚀 Memulai build mandiri untuk Cloudflare Pages...");
-  console.log("   Output: dist/landing-page/, dist/app/, dist/dash/\n");
-
-  // 1. Bersihkan dist
-  if (fs.existsSync(DIST)) {
-    fs.rmSync(DIST, { recursive: true, force: true });
+async function buildLanding() {
+  console.log("📦 Building landing -> dist/landing...");
+  const landingOutDir = path.resolve(DIST, "landing");
+  if (fs.existsSync(landingOutDir)) {
+    fs.rmSync(landingOutDir, { recursive: true, force: true });
   }
-  fs.mkdirSync(DIST, { recursive: true });
-
-  // 2. Build Landing Page -> dist/landing-page
-  console.log("📦 [1/3] Building landing-page...");
-  const landingOutDir = path.resolve(DIST, "landing-page");
   await build({
     configFile: path.resolve(ROOT, "vite.config.ts"),
     build: {
@@ -67,31 +61,59 @@ async function buildAll() {
   });
   normalizeHtmlOutput(landingOutDir, "src/entries/landing/index.html");
 
-  // Salin folder templates dari src/templates ke dist/landing-page/templates
+  // Salin folder templates dari src/templates ke dist/landing/templates
   const templatesSrc = path.resolve(ROOT, "src/templates");
   if (fs.existsSync(templatesSrc)) {
     copyDirRecursive(templatesSrc, path.join(landingOutDir, "templates"));
-    console.log("   ✓ Template statis disalin ke dist/landing-page/templates/");
+    console.log("   ✓ Template statis disalin ke dist/landing/templates/");
   }
 
-  // 3. Build App -> dist/app
-  console.log("\n📦 [2/3] Building app...");
-  const appOutDir = path.resolve(DIST, "app");
+  // Jalankan SSG untuk Landing Page
+  console.log("   📄 Menjalankan SSG untuk landing...");
+  runLandingSSG(landingOutDir);
+
+  // Landing redirects (SPA fallback)
+  fs.writeFileSync(
+    path.join(landingOutDir, "_redirects"),
+    "/*  /index.html  200\n",
+    "utf-8"
+  );
+  fs.rmSync(path.join(landingOutDir, "admin"), { recursive: true, force: true });
+}
+
+async function buildStudio() {
+  console.log("\n📦 Building studio -> dist/studio...");
+  const studioOutDir = path.resolve(DIST, "studio");
+  if (fs.existsSync(studioOutDir)) {
+    fs.rmSync(studioOutDir, { recursive: true, force: true });
+  }
   await build({
     configFile: path.resolve(ROOT, "vite.config.ts"),
     build: {
-      outDir: appOutDir,
+      outDir: studioOutDir,
       emptyOutDir: true,
       rollupOptions: {
         input: path.resolve(ROOT, "src/entries/app/index.html"),
       },
     },
   });
-  normalizeHtmlOutput(appOutDir, "src/entries/app/index.html");
+  normalizeHtmlOutput(studioOutDir, "src/entries/app/index.html");
 
-  // 4. Build Dash -> dist/dash
-  console.log("\n📦 [3/3] Building dash...");
+  // Studio redirects (SPA rewrite) & fallback 404
+  fs.writeFileSync(path.join(studioOutDir, "_redirects"), "/*  /index.html  200\n", "utf-8");
+  if (!fs.existsSync(path.join(studioOutDir, "404.html"))) {
+    fs.copyFileSync(path.join(studioOutDir, "index.html"), path.join(studioOutDir, "404.html"));
+  }
+  fs.rmSync(path.join(studioOutDir, "admin"), { recursive: true, force: true });
+  fs.rmSync(path.join(studioOutDir, "logos"), { recursive: true, force: true });
+}
+
+async function buildDash() {
+  console.log("\n📦 Building dash -> dist/dash...");
   const dashOutDir = path.resolve(DIST, "dash");
+  if (fs.existsSync(dashOutDir)) {
+    fs.rmSync(dashOutDir, { recursive: true, force: true });
+  }
   await build({
     configFile: path.resolve(ROOT, "vite.config.ts"),
     build: {
@@ -104,36 +126,79 @@ async function buildAll() {
   });
   normalizeHtmlOutput(dashOutDir, "src/entries/dash/index.html");
 
-  // 5. Jalankan SSG untuk Landing Page
-  console.log("\n📄 Menjalankan SSG untuk landing-page...");
-  runLandingSSG(landingOutDir);
-
-  // 6. Buat fallback 404 & Cloudflare Pages _redirects untuk App & Dash
-  console.log("\n⚙️  Menyiapkan Cloudflare Pages _redirects & fallbacks...");
-
-  // App redirects (SPA rewrite)
-  fs.writeFileSync(path.join(appOutDir, "_redirects"), "/*  /index.html  200\n", "utf-8");
-  if (!fs.existsSync(path.join(appOutDir, "404.html"))) {
-    fs.copyFileSync(path.join(appOutDir, "index.html"), path.join(appOutDir, "404.html"));
-  }
-
-  // Dash redirects (SPA rewrite)
+  // Dash redirects (SPA rewrite) & fallback 404
   fs.writeFileSync(path.join(dashOutDir, "_redirects"), "/*  /index.html  200\n", "utf-8");
   if (!fs.existsSync(path.join(dashOutDir, "404.html"))) {
     fs.copyFileSync(path.join(dashOutDir, "index.html"), path.join(dashOutDir, "404.html"));
   }
+  fs.rmSync(path.join(dashOutDir, "logos"), { recursive: true, force: true });
+}
 
-  // Landing redirects (SPA fallback, tanpa me-rewrite /login ke /login.html karena Cloudflare Pages akan 308 redirect loop)
-  fs.writeFileSync(
-    path.join(landingOutDir, "_redirects"),
-    "/*  /index.html  200\n",
-    "utf-8"
+async function buildServer() {
+  console.log("\n📦 Building server / worker -> dist/server...");
+  const serverOutDir = path.resolve(DIST, "server");
+  if (fs.existsSync(serverOutDir)) {
+    fs.rmSync(serverOutDir, { recursive: true, force: true });
+  }
+  fs.mkdirSync(serverOutDir, { recursive: true });
+
+  const workerEntry = path.resolve(ROOT, "worker/src/index.ts");
+  if (!fs.existsSync(workerEntry)) {
+    console.warn("⚠️ Worker entry point tidak ditemukan di", workerEntry);
+    return;
+  }
+
+  await esbuild({
+    entryPoints: [workerEntry],
+    outfile: path.resolve(serverOutDir, "server.js"),
+    bundle: true,
+    platform: "neutral",
+    target: "es2022",
+    format: "esm",
+    sourcemap: true,
+  });
+
+  // Buat index.js yang identik untuk fleksibilitas deploy Wrangler / Node
+  fs.copyFileSync(
+    path.resolve(serverOutDir, "server.js"),
+    path.resolve(serverOutDir, "index.js")
   );
+  if (fs.existsSync(path.resolve(serverOutDir, "server.js.map"))) {
+    fs.copyFileSync(
+      path.resolve(serverOutDir, "server.js.map"),
+      path.resolve(serverOutDir, "index.js.map")
+    );
+  }
 
-  // 7. Bersihkan file/folder tak perlu di root dist/
+  console.log("   ✓ Server berhasil di-build ke dist/server/ (server.js & index.js)");
+}
+
+async function buildAll() {
+  console.log("🚀 Memulai build mandiri untuk Cloudflare Pages & Workers...");
+  console.log("   Output: dist/landing/, dist/studio/, dist/dash/, dist/server/\n");
+
+  // 1. Bersihkan dist
+  if (fs.existsSync(DIST)) {
+    fs.rmSync(DIST, { recursive: true, force: true });
+  }
+  fs.mkdirSync(DIST, { recursive: true });
+
+  // 2. Build Landing Page -> dist/landing
+  await buildLanding();
+
+  // 3. Build Studio -> dist/studio
+  await buildStudio();
+
+  // 4. Build Dash -> dist/dash
+  await buildDash();
+
+  // 5. Build Server Worker -> dist/server
+  await buildServer();
+
+  // 6. Bersihkan file/folder tak perlu di root dist/
   const distEntries = fs.readdirSync(DIST);
   for (const entry of distEntries) {
-    if (!["landing-page", "app", "dash"].includes(entry)) {
+    if (!["landing", "studio", "dash", "server"].includes(entry)) {
       const p = path.join(DIST, entry);
       fs.rmSync(p, { recursive: true, force: true });
     }
@@ -142,11 +207,30 @@ async function buildAll() {
   console.log("\n✅ Build Selesai!");
   console.log("   Daftar folder di dist/:");
   fs.readdirSync(DIST).forEach((d) => {
-    console.log(`   - dist/${d}/ (Mandiri & Siap deploy ke Cloudflare Pages)`);
+    console.log(`   - dist/${d}/`);
   });
 }
 
-buildAll().catch((err) => {
+async function main() {
+  const target = process.argv[2]?.toLowerCase();
+  if (target === "landing") {
+    if (!fs.existsSync(DIST)) fs.mkdirSync(DIST, { recursive: true });
+    await buildLanding();
+  } else if (target === "studio" || target === "app") {
+    if (!fs.existsSync(DIST)) fs.mkdirSync(DIST, { recursive: true });
+    await buildStudio();
+  } else if (target === "dash") {
+    if (!fs.existsSync(DIST)) fs.mkdirSync(DIST, { recursive: true });
+    await buildDash();
+  } else if (target === "server" || target === "api" || target === "worker") {
+    if (!fs.existsSync(DIST)) fs.mkdirSync(DIST, { recursive: true });
+    await buildServer();
+  } else {
+    await buildAll();
+  }
+}
+
+main().catch((err) => {
   console.error("❌ Build gagal:", err);
   process.exit(1);
 });

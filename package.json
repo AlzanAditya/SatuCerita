@@ -5,16 +5,27 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "wrangler dev --config wrangler.api.jsonc",
+    "build:landing": "tsx scripts/build.ts landing",
+    "build:studio": "tsx scripts/build.ts studio",
+    "build:dash": "tsx scripts/build.ts dash",
+    "build:server": "tsx scripts/build.ts server",
     "build": "tsx scripts/build.ts",
+    "deploy:landing": "pnpm run build:landing && wrangler pages deploy dist/landing --project-name satucerita",
+    "deploy:studio": "pnpm run build:studio && wrangler pages deploy dist/studio --project-name satucerita-studio",
+    "deploy:dash": "pnpm run build:dash && wrangler pages deploy dist/dash --project-name satucerita-dash",
+    "deploy:api": "pnpm run build:server && wrangler deploy --config wrangler.api.jsonc",
+    "deploy": "pnpm run deploy:api && pnpm run deploy:landing && pnpm run deploy:studio && pnpm run deploy:dash",
     "ssg": "tsx scripts/generate-ssg.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "worker:dev": "wrangler dev --config worker/wrangler.toml",
     "worker:deploy": "wrangler deploy --config worker/wrangler.toml",
-    "worker:secret": "wrangler secret put SUPABASE_ANON_KEY --config worker/wrangler.toml",
-    "worker:tail": "wrangler tail --config worker/wrangler.toml",
-    "worker:lint": "tsc -p worker/tsconfig.json"
+    "worker:secret": "wrangler secret put SUPABASE_ANON_KEY --config wrangler.api.jsonc",
+    "worker:tail": "wrangler tail --config wrangler.api.jsonc",
+    "worker:lint": "tsc -p worker/tsconfig.json",
+    "worker:test": "tsx --test worker/test/*.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.546.0",
@@ -22,15 +33,18 @@
     "react-dom": "^19.0.1"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "5.20261016.1",
     "@tailwindcss/vite": "^4.1.14",
     "@types/node": "^22.14.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "esbuild": "^0.25.0",
     "supabase": "^2.121.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3"
+    "vite": "^6.2.3",
+    "wrangler": "4.151.0"
   }
 }

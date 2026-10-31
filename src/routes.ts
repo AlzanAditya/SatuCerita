@@ -310,5 +310,16 @@ export function resolveRoute(input: string): RouteMeta | null {
     };
   }
 
+  // Alias tanpa prefix /app: /order/:invoiceNo (redirect dari Midtrans finish callback)
+  if (path.startsWith("/order/") && path.length > 7) {
+    return {
+      id: "appOrder",
+      path: path,
+      title: "Detail Pesanan — Satu Cerita",
+      description: "Detail dan status pembayaran pesanan undangan digital Anda.",
+      indexable: false,
+    };
+  }
+
   return null;
 }

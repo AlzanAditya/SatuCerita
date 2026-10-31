@@ -85,9 +85,9 @@ export function AppUser() {
         const isLocal =
           host === "localhost" || /^[\d.]+$/.test(host) || host.endsWith(".local");
 
-        if (!isLocal && host.startsWith("app.")) {
-          // Produksi: arahkan ke domain utama satucerita.zanxa.studio / satucerita.id
-          const rootDomain = host.replace(/^app\./, "");
+        if (!isLocal && (host.startsWith("app.") || host.startsWith("studio."))) {
+          // Produksi: arahkan ke domain utama satucerita.app
+          const rootDomain = host.replace(/^(app|studio)\./, "");
           const landingDomain = `${window.location.protocol}//${rootDomain}${
             window.location.port ? ":" + window.location.port : ""
           }`;
