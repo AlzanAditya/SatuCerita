@@ -14,11 +14,13 @@ export interface Env {
 
   // ---- Pembayaran (Midtrans) ----
   MIDTRANS_ENV: string;             // "sandbox" | "production"
-  MIDTRANS_CLIENT_KEY: string;      // publik (dipakai snap.js di browser)
+  MIDTRANS_CLIENT_KEY: string;      // publik; dipakai Core API hanya jika metode butuh (tokenisasi kartu). Tidak dikirim ke browser.
   MIDTRANS_SERVER_KEY: string;      // SECRET -> wrangler secret put MIDTRANS_SERVER_KEY
   SUPABASE_SERVICE_ROLE_KEY: string; // SECRET -> wrangler secret put SUPABASE_SERVICE_ROLE_KEY
   RL_ORDERS?: RateLimit;            // binding rate limit (opsional; lihat wrangler config)
   RL_SYNC?: RateLimit;
+  RL_STREAM?: RateLimit;            // batas pembukaan koneksi SSE per user
+  PAYMENT_HUB?: DurableObjectNamespace; // hub realtime (Durable Object). Tanpa binding -> klien memakai fallback polling DB.
 }
 
 export interface SbUser {

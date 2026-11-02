@@ -1,6 +1,7 @@
 /**
- * Client pembayaran (Midtrans Snap). Browser TIDAK pernah menentukan harga/status:
- * ia hanya meminta pesanan ke Worker, membuka popup Snap, lalu membaca status dari server.
+ * Client pembayaran. Browser TIDAK pernah menentukan harga/status/masa berlaku dan tidak memegang kunci Midtrans:
+ * ia hanya meminta pesanan ke Worker, menampilkan instruksi bayar dari server, lalu menerima perubahan status
+ * (SSE, fallback polling DB; lihat orderStream.ts).
  */
 import type { OrderItem, PaymentMethodId } from "@/pages/app/types";
 
@@ -51,64 +52,8 @@ export function newIdempotencyKey(): string {
   return crypto.randomUUID().replace(/-/g, "");
 }
 
-// ------------------------------------------------------------------ Snap (popup Midtrans)
-export interface SnapResultHandlers {
-  onSuccess?: () => void;
-  onPending?: () => void;
-  onError?: () => void;
-  onClose?: () => void;
-}
-
-interface SnapGlobal {
-  pay: (token: string, cb?: { onSuccess?: (r: unknown) => void; onPending?: (r: unknown) => void; onError?: (r: unknown) => void; onClose?: () => void }) => void;
-}
-declare global {
-  interface Window {
-    snap?: SnapGlobal;
-  }
-}
-
-let snapLoading: Promise<void> | null = null;
-
-/** Muat snap.js sekali saja, dengan Client Key + URL (sandbox/production) yang diberikan server. */
-export function loadSnap(): Promise<void> {
-  if (typeof window === "undefined") return Promise.reject(new Error("no window"));
-  if (window.snap) return Promise.resolve();
-  if (snapLoading) return snapLoading;
-
-  snapLoading = (async () => {
-    const cfg = await api<{ clientKey: string; snapUrl: string }>("/api/payments/config");
-    if (!cfg.ok || !cfg.data.clientKey || !cfg.data.snapUrl) throw new Error(cfg.data.error || "Pembayaran belum dikonfigurasi.");
-    // Hanya izinkan skrip dari domain Midtrans, apa pun yang dibalas server.
-    const u = new URL(cfg.data.snapUrl);
-    if (u.protocol !== "https:" || !/^app(\.sandbox)?\.midtrans\.com$/.test(u.hostname)) throw new Error("URL Snap tidak valid.");
-
-    await new Promise<void>((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = u.href;
-      s.async = true;
-      s.setAttribute("data-client-key", cfg.data.clientKey);
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error("Gagal memuat halaman pembayaran Midtrans."));
-      document.head.appendChild(s);
-    });
-    if (!window.snap) throw new Error("Snap tidak tersedia.");
-  })().catch((e) => {
-    snapLoading = null; // boleh dicoba lagi
-    throw e;
-  });
-  return snapLoading;
-}
-
-export async function openSnap(token: string, h: SnapResultHandlers = {}): Promise<void> {
-  await loadSnap();
-  window.snap!.pay(token, {
-    onSuccess: () => h.onSuccess?.(),
-    onPending: () => h.onPending?.(),
-    onError: () => h.onError?.(),
-    onClose: () => h.onClose?.(),
-  });
-}
+/** URL aliran SSE status pesanan (same-origin, cookie sesi ikut terkirim). */
+export const orderEventsUrl = (invoice: string) => `${BASE}/api/orders/${encodeURIComponent(invoice)}/events`;
 
 /** Tanggal ISO dari server -> teks WIB yang rapi. */
 export function formatOrderDate(iso: string): string {

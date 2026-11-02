@@ -8,14 +8,15 @@ import {
   CheckCircle2,
   XCircle,
   Building2,
-  CreditCard,
   AlertTriangle,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { OrderItem } from "@/pages/app/types";
 import { formatRupiah } from "@/data/templates";
-import { formatOrderDate, getOrder, openSnap, syncOrder } from "@/lib/payments";
+import { formatOrderDate, getOrder, orderEventsUrl, syncOrder } from "@/lib/payments";
+import { createOrderWatcher, type WatcherMode } from "@/lib/orderStream";
+import { PAYMENT_INSTRUCTIONS } from "@/lib/paymentInstructions";
 
 interface OrderDetailPageProps {
   currentPath: string;
@@ -44,8 +45,6 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   needs_review: { label: "Perlu ditinjau", cls: "bg-sky-50 text-sky-700 border-sky-200" },
 };
 
-const POLL_MS = 5000;
-
 export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
   currentPath,
   onNavigate,
@@ -67,49 +66,82 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
 
   const [timeLeft, setTimeLeft] = useState(0);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [isOpening, setIsOpening] = useState(false);
+  const [mode, setMode] = useState<WatcherMode>("idle");
   const busy = useRef(false);
 
   const applyOrder = (o: OrderItem) => {
     setRemote(o);
     if (onOrderUpdate) onOrderUpdate(o);
   };
+  // Ref agar efek di bawah tidak dibuat ulang setiap render (satu koneksi SSE per halaman).
+  const applyRef = useRef(applyOrder);
+  applyRef.current = applyOrder;
+  const orderRef = useRef<OrderItem | null>(null);
 
-  // Muat dari server + polling saat masih pending (membaca database kita, BUKAN memanggil Midtrans).
   const status = order?.status;
+  orderRef.current = order;
+
+  // Satu pembacaan awal dari server (database kita).
   useEffect(() => {
     if (!invoiceNo) return;
     let alive = true;
-    const load = async () => {
+    (async () => {
       const path = `/api/orders/${invoiceNo}`;
       const res = await getOrder(invoiceNo);
       if (!alive) return;
       if (res.ok && res.data.order) {
         setNotFound(false);
         setApiError(null);
-        applyOrder(res.data.order);
+        applyRef.current(res.data.order);
       } else if (res.status === 404) {
         setNotFound(true);
-        setApiError({ status: 404, message: res.data.error || "Pesanan tidak ditemukan di database.", path });
+        setApiError({ status: 404, message: res.data.error || "Pesanan tidak ditemukan.", path });
       } else {
-        setApiError({
-          status: res.status,
-          message: res.data.error || `HTTP ${res.status} — tidak ada pesan error dari server.`,
-          path,
-        });
+        setApiError({ status: res.status, message: res.data.error || "Gagal memuat pesanan.", path });
       }
+    })();
+    return () => { alive = false; };
+  }, [invoiceNo]);
+
+  // Pembaruan status otomatis tanpa refresh: SSE (backend -> browser). Fallback: polling database internal yang
+  // berbatas waktu. TIDAK PERNAH memanggil Midtrans. Dihentikan saat status final / halaman ditutup.
+  const isPending = status === "pending";
+  useEffect(() => {
+    if (!invoiceNo || !isPending) return;
+    let alive = true;
+    const refetch = async () => {
+      const res = await getOrder(invoiceNo);
+      if (!alive) return;
+      if (res.ok && res.data.order) applyRef.current(res.data.order);
     };
-    load();
-    if (status && status !== "pending") return () => { alive = false; };
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible") load();
-    }, POLL_MS);
+    const watcher = createOrderWatcher(
+      {
+        createEventSource: (url) => new EventSource(url, { withCredentials: true }) as never,
+        fetchOrder: refetch,
+        setInterval: (fn, ms) => window.setInterval(fn, ms),
+        clearInterval: (h) => window.clearInterval(h as number),
+        now: () => Date.now(),
+        isVisible: () => document.visibilityState === "visible",
+      },
+      {
+        url: orderEventsUrl(invoiceNo),
+        onModeChange: (m) => { if (alive) setMode(m); },
+        // Event hanya memberi tahu "ada yang berubah"; data lengkap dibaca dari endpoint terautentikasi (satu kali).
+        onEvent: (ev) => {
+          const cur = orderRef.current;
+          if (!cur || ev.status !== cur.status || (ev.paymentReady && !cur.paymentReady)) void refetch();
+        },
+      },
+    );
+    const onVis = () => (document.visibilityState === "visible" ? watcher.resume() : watcher.pause());
+    document.addEventListener("visibilitychange", onVis);
+    watcher.start();
     return () => {
       alive = false;
-      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVis);
+      watcher.stop(); // menutup SSE & timer saat unmount / status berubah final
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [invoiceNo, status]);
+  }, [invoiceNo, isPending]);
 
   useEffect(() => {
     if (!order || order.status !== "pending") return;
@@ -146,29 +178,6 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
     else showToast("Pembayaran belum kami terima.");
   };
 
-  // Buka lagi popup Midtrans (menampilkan VA / QR yang sama).
-  const handleContinuePay = async () => {
-    if (!order?.snapToken || busy.current) return;
-    busy.current = true;
-    setIsOpening(true);
-    try {
-      await openSnap(order.snapToken, {
-        onSuccess: () => handleVerifyQuiet(),
-        onPending: () => handleVerifyQuiet(),
-      });
-    } catch (e) {
-      if (showToast) showToast(e instanceof Error ? e.message : "Gagal membuka halaman pembayaran.");
-    } finally {
-      busy.current = false;
-      setIsOpening(false);
-    }
-  };
-
-  const handleVerifyQuiet = async () => {
-    const res = await getOrder(invoiceNo);
-    if (res.ok && res.data.order) applyOrder(res.data.order);
-  };
-
   // Ganti metode: membuat pesanan baru; server otomatis membatalkan pesanan pending yang lama.
   const handleChangeMethod = () => {
     if (!order) return;
@@ -198,21 +207,6 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                   {apiError?.message || "Terjadi kesalahan saat memuat data pesanan."}
                 </p>
               </div>
-            </div>
-          </div>
-
-          {/* DEBUG PANEL — selalu tampil agar bisa diagnosa masalah */}
-          <div className="bg-neutral-900 rounded-2xl p-4 mb-4 font-mono text-xs text-left overflow-auto">
-            <p className="text-amber-400 font-bold mb-2">🔍 DEBUG INFO</p>
-            <div className="space-y-1 text-neutral-300">
-              <p><span className="text-neutral-500">invoice:</span> <span className="text-white">{invoiceNo || "(kosong!)"}</span></p>
-              <p><span className="text-neutral-500">path:</span> <span className="text-white">{apiError?.path || "—"}</span></p>
-              <p><span className="text-neutral-500">http_status:</span> <span className={`font-bold ${apiError && apiError.status >= 400 ? "text-rose-400" : "text-emerald-400"}`}>{apiError?.status ?? "—"}</span></p>
-              <p><span className="text-neutral-500">error:</span> <span className="text-rose-300 break-all">{apiError?.message || "—"}</span></p>
-              <p><span className="text-neutral-500">notFound:</span> <span className="text-white">{String(notFound)}</span></p>
-              <p><span className="text-neutral-500">url:</span> <span className="text-neutral-400 break-all">{typeof window !== "undefined" ? window.location.href : "—"}</span></p>
-              <p><span className="text-neutral-500">hostname:</span> <span className="text-neutral-400">{typeof window !== "undefined" ? window.location.hostname : "—"}</span></p>
-              <p><span className="text-neutral-500">parsed_path:</span> <span className="text-neutral-400">{currentPath}</span></p>
             </div>
           </div>
 
@@ -360,22 +354,31 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                 </a>
               )}
 
-              {!order.vaNumber && !order.billKey && !safeHttps(order.qrUrl) && (
-                <p className="text-xs font-semibold text-neutral-800/80 bg-white/30 rounded-xl p-3 mb-3 leading-relaxed">
-                  Kode pembayaran akan muncul setelah kamu melanjutkan di halaman pembayaran Midtrans.
-                </p>
+              {!order.paymentReady && (
+                <div className="bg-white/30 rounded-xl p-4 mb-3 flex items-center gap-3" role="status">
+                  <Loader2 className="w-5 h-5 animate-spin shrink-0" />
+                  <p className="text-xs font-semibold text-neutral-800/80 leading-relaxed">
+                    Menyiapkan instruksi pembayaran. Halaman ini otomatis menampilkan nomor pembayaran begitu siap.
+                    Jika tak kunjung muncul, pilih Ganti metode pembayaran.
+                  </p>
+                </div>
               )}
 
-              {order.snapToken && (
-                <button
-                  type="button"
-                  onClick={handleContinuePay}
-                  disabled={isOpening}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-3 rounded-xl bg-neutral-900 text-white font-extrabold text-sm cursor-pointer hover:bg-neutral-800 transition-colors disabled:opacity-60"
-                >
-                  {isOpening ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                  {isOpening ? "Membuka..." : "Lanjutkan pembayaran"}
-                </button>
+              {/* Instruksi pembayaran (statis, per metode) */}
+              {order.paymentReady && (
+                <div className="space-y-2 mb-3">
+                  {PAYMENT_INSTRUCTIONS[order.paymentMethod]?.map((g) => (
+                    <details key={g.title} className="group bg-white/30 rounded-xl px-4 py-2.5">
+                      <summary className="cursor-pointer text-sm font-extrabold list-none flex items-center justify-between">
+                        {g.title}
+                        <span className="text-xs font-bold text-neutral-800/60 group-open:rotate-180 transition-transform">▾</span>
+                      </summary>
+                      <ol className="list-decimal pl-5 mt-2 space-y-1 text-xs font-medium text-neutral-800/90 leading-relaxed">
+                        {g.steps.map((st, i) => <li key={i}>{st}</li>)}
+                      </ol>
+                    </details>
+                  ))}
+                </div>
               )}
 
               {/* Total */}
@@ -417,8 +420,13 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                   Ganti metode pembayaran
                 </button>
               </div>
-              <p className="text-[11px] text-neutral-800/60 font-medium mt-2 text-center">
-                Memeriksa status pembayaran otomatis setiap 5 detik...
+              <p className="text-[11px] text-neutral-800/70 font-semibold mt-3 text-center flex items-center justify-center gap-1.5" role="status" aria-live="polite">
+                <span className={`inline-block size-2 rounded-full ${mode === "sse" ? "bg-emerald-600 animate-pulse" : "bg-neutral-800/40"}`} />
+                {mode === "sse"
+                  ? "Terhubung. Status berubah otomatis begitu pembayaran diterima."
+                  : mode === "poll"
+                    ? "Memantau pembayaran otomatis (mode cadangan)."
+                    : "Menghubungkan pemantauan status..."}
               </p>
             </div>
           )}
@@ -430,7 +438,8 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
               <div>
                 <h2 className="text-base font-black text-emerald-800">Pembayaran Berhasil!</h2>
                 <p className="text-xs text-emerald-700 font-medium mt-1 leading-snug">
-                  Pesanan Anda telah dikonfirmasi. Tim kami akan segera memproses undangan Anda.
+                  Pembayaran {formatRupiah(order.total)} via {methodLabel}
+                  {order.paidAt ? ` diterima pada ${formatOrderDate(order.paidAt)}` : " telah diterima"}. Tim kami akan segera memproses undangan Anda.
                 </p>
               </div>
             </div>
@@ -474,24 +483,6 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
           {order.environment === "sandbox" && (
             <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-2.5 text-[11px] font-bold text-amber-800">
               Mode uji coba (Sandbox): tidak ada uang sungguhan yang berpindah.
-            </div>
-          )}
-
-          {/* DEBUG PANEL untuk sandbox — tampil saat masih pending dan belum ada VA/QR */}
-          {order.environment === "sandbox" && order.status === "pending" && !order.vaNumber && !order.billKey && !order.qrUrl && (
-            <div className="bg-neutral-900 rounded-2xl p-4 font-mono text-xs overflow-auto">
-              <p className="text-amber-400 font-bold mb-2">🔍 DEBUG — Payment Info</p>
-              <div className="space-y-1 text-neutral-300">
-                <p><span className="text-neutral-500">invoiceNo:</span> <span className="text-white">{order.invoiceNo}</span></p>
-                <p><span className="text-neutral-500">status:</span> <span className="text-emerald-400">{order.status}</span></p>
-                <p><span className="text-neutral-500">paymentMethod:</span> <span className="text-white">{order.paymentMethod}</span></p>
-                <p><span className="text-neutral-500">snapToken:</span> <span className={order.snapToken ? "text-emerald-400" : "text-rose-400"}>{order.snapToken ? `${order.snapToken.slice(0, 12)}…` : "(null)"}</span></p>
-                <p><span className="text-neutral-500">vaNumber:</span> <span className={order.vaNumber ? "text-emerald-400" : "text-rose-400"}>{order.vaNumber || "(null — belum ada dari Midtrans)"}</span></p>
-                <p><span className="text-neutral-500">qrUrl:</span> <span className={order.qrUrl ? "text-emerald-400" : "text-rose-400"}>{order.qrUrl || "(null — belum ada dari Midtrans)"}</span></p>
-                <p><span className="text-neutral-500">billKey:</span> <span className={order.billKey ? "text-emerald-400" : "text-rose-400"}>{order.billKey || "(null)"}</span></p>
-                <p><span className="text-neutral-500">environment:</span> <span className="text-amber-400">{order.environment}</span></p>
-                <p className="text-neutral-500 mt-2 leading-relaxed">Jika vaNumber/qrUrl null setelah bayar di Snap → cek "Cek status" atau webhook Midtrans belum terpasang.</p>
-              </div>
             </div>
           )}
 

@@ -59,8 +59,8 @@ export interface OrderItem {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
-  /** Hanya ada untuk pesanan pending; dipakai membuka kembali popup pembayaran. */
-  snapToken?: string | null;
+  /** Instruksi bayar (VA / bill key / QR) dari Midtrans sudah tersimpan di server. */
+  paymentReady?: boolean;
   environment?: "sandbox" | "production";
 }
 

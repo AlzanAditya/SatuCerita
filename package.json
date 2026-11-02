@@ -25,7 +25,8 @@
     "worker:secret": "wrangler secret put SUPABASE_ANON_KEY --config wrangler.api.jsonc",
     "worker:tail": "wrangler tail --config wrangler.api.jsonc",
     "worker:lint": "tsc -p worker/tsconfig.json",
-    "worker:test": "tsx --test worker/test/*.test.ts"
+    "worker:test": "tsx --test worker/test/*.test.ts test/frontend/*.test.ts",
+    "test": "npm run worker:test"
   },
   "dependencies": {
     "lucide-react": "^0.546.0",

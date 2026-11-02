@@ -1,7 +1,9 @@
 /**
- * Klien Midtrans (Snap + Core API status/cancel) untuk Cloudflare Worker.
- * - Hanya Worker yang boleh memegang Server Key. Browser hanya menerima Client Key + Snap token.
+ * Klien Midtrans Core API (charge / status / cancel) untuk Cloudflare Worker.
+ * - UI pembayaran dibuat sendiri: TIDAK memakai Snap. Transaksi dibuat lewat POST /v2/charge.
+ * - Hanya Worker yang boleh memegang Server Key. Browser tidak menerima kunci apa pun dari Midtrans.
  * - Signature notifikasi: SHA512(order_id + status_code + gross_amount + ServerKey).
+ * Referensi: https://docs.midtrans.com/reference/charge-api , /reference/handle-notifications
  */
 import type { Env } from "./types";
 
@@ -21,16 +23,13 @@ export interface MidtransNotification {
 }
 
 const HOSTS = {
-  sandbox: { snap: "https://app.sandbox.midtrans.com", api: "https://api.sandbox.midtrans.com" },
-  production: { snap: "https://app.midtrans.com", api: "https://api.midtrans.com" },
+  sandbox: { api: "https://api.sandbox.midtrans.com" },
+  production: { api: "https://api.midtrans.com" },
 } as const;
 
 export function midtransMode(env: Env): MidtransEnv {
   return env.MIDTRANS_ENV === "production" ? "production" : "sandbox";
 }
-
-/** Skrip snap.js sesuai mode (dipakai frontend). */
-export const snapScriptUrl = (env: Env) => `${HOSTS[midtransMode(env)].snap}/snap/snap.js`;
 
 /**
  * Pengaman salah-environment: Server Key sandbox berawalan "SB-Mid-server-".
@@ -48,47 +47,100 @@ export function assertMidtransConfig(env: Env): string | null {
 
 const authHeader = (env: Env) => "Basic " + btoa(env.MIDTRANS_SERVER_KEY.trim() + ":");
 
-async function mtFetch(env: Env, url: string, init: RequestInit = {}): Promise<Response> {
+async function mtFetch(env: Env, url: string, init: RequestInit = {}, timeoutMs = 12_000): Promise<Response> {
   const headers = new Headers(init.headers);
   headers.set("Accept", "application/json");
   headers.set("Authorization", authHeader(env));
   if (init.body) headers.set("Content-Type", "application/json");
-  return fetch(url, { ...init, headers, signal: AbortSignal.timeout(12_000) });
+  try {
+    return await fetch(url, { ...init, headers, signal: AbortSignal.timeout(timeoutMs) });
+  } catch (e) {
+    // Timeout / jaringan putus: jadikan MidtransError agar pemanggil menanganinya sebagai gangguan sementara (bukan crash).
+    throw new MidtransError(e instanceof Error && e.name === "TimeoutError" ? "Midtrans tidak merespons (timeout)." : "Tidak dapat menghubungi Midtrans.", 503);
+  }
 }
 
-// ---------------------------------------------------------------- Snap
-export interface SnapParams {
+// ---------------------------------------------------------------- Core API charge
+export type ChargeMethod = "bni_va" | "bri_va" | "permata_va" | "mandiri_bill" | "qris" | "gopay";
+
+export interface ChargeParams {
   orderId: string;
   grossAmount: number;
+  method: ChargeMethod;
   items: { id: string; price: number; quantity: number; name: string }[];
   customer: { first_name: string; email: string; phone?: string };
-  enabledPayments: string[];
-  expiryStartWib: string; // "YYYY-MM-DD HH:MM:SS +0700"
+  /** Awal hitungan kedaluwarsa, format "YYYY-MM-DD HH:MM:SS +0700" (lihat formatWib). */
+  expiryStartWib: string;
   expiryMinutes: number;
-  finishUrl?: string;
+  /** Tujuan kembali dari aplikasi GoPay (hanya dipakai metode gopay). Harus https. */
+  gopayCallbackUrl?: string;
+  /** Teks pada tagihan Mandiri Bill (bill_info2, maks. 30 karakter). */
+  billLabel?: string;
 }
 
-export async function createSnapTransaction(env: Env, p: SnapParams): Promise<{ token: string; redirect_url?: string }> {
+/**
+ * Susun body /v2/charge per metode. Format mengikuti dokumentasi resmi:
+ *  - VA BNI/BRI/Permata : payment_type=bank_transfer + bank_transfer.bank
+ *  - Mandiri Bill       : payment_type=echannel + echannel.bill_info1/2
+ *  - GoPay              : payment_type=gopay (+ gopay.enable_callback/callback_url)
+ *  - QRIS               : payment_type=qris + qris.acquirer=gopay
+ * custom_expiry: { order_time, expiry_duration, unit } -> masa berlaku ditentukan SERVER, bukan browser.
+ */
+export function buildChargeBody(p: ChargeParams): Record<string, unknown> {
   const body: Record<string, unknown> = {
     transaction_details: { order_id: p.orderId, gross_amount: p.grossAmount },
     item_details: p.items,
     customer_details: p.customer,
-    enabled_payments: p.enabledPayments,
-    expiry: { start_time: p.expiryStartWib, unit: "minutes", duration: p.expiryMinutes },
+    custom_expiry: { order_time: p.expiryStartWib, expiry_duration: p.expiryMinutes, unit: "minute" },
   };
-  if (p.finishUrl) body.callbacks = { finish: p.finishUrl };
-
-  const r = await mtFetch(env, `${HOSTS[midtransMode(env)].snap}/snap/v1/transactions`, {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-  const data = (await r.json().catch(() => ({}))) as { token?: string; redirect_url?: string; error_messages?: string[] };
-  if (!r.ok || !data.token) {
-    // Jangan bocorkan detail ke user; cukup ke log server (tanpa data pribadi).
-    console.error("midtrans.snap_failed", { status: r.status, errors: data.error_messages });
-    throw new MidtransError("Gagal membuat transaksi di Midtrans.", r.status);
+  switch (p.method) {
+    case "bni_va":
+    case "bri_va":
+    case "permata_va":
+      body.payment_type = "bank_transfer";
+      body.bank_transfer = { bank: p.method.slice(0, -3) }; // bni_va -> bni
+      break;
+    case "mandiri_bill":
+      body.payment_type = "echannel";
+      body.echannel = { bill_info1: "Pembayaran", bill_info2: (p.billLabel || "Template undangan").slice(0, 30) };
+      break;
+    case "gopay":
+      body.payment_type = "gopay";
+      body.gopay = p.gopayCallbackUrl ? { enable_callback: true, callback_url: p.gopayCallbackUrl } : {};
+      break;
+    case "qris":
+      body.payment_type = "qris";
+      body.qris = { acquirer: "gopay" };
+      break;
   }
-  return { token: data.token, redirect_url: data.redirect_url };
+  return body;
+}
+
+/**
+ * Buat transaksi di Midtrans. Mengembalikan response charge apa adanya (VA / bill key / actions QR).
+ * Midtrans membalas HTTP 200 dengan status_code di body: "201" = transaksi pending dibuat, "406" = order_id sudah dipakai.
+ * Idempotency-Key (maks. 46 karakter, berlaku 5 menit, tidak didukung semua metode) HANYA lapisan tambahan:
+ * perlindungan utama tetap klaim di database + order_id yang unik.
+ */
+export async function chargeTransaction(env: Env, p: ChargeParams): Promise<MidtransStatus> {
+  const r = await mtFetch(env, `${HOSTS[midtransMode(env)].api}/v2/charge`, {
+    method: "POST",
+    headers: { "Idempotency-Key": `${p.orderId}-charge`.slice(0, 46) },
+    body: JSON.stringify(buildChargeBody(p)),
+  });
+  if (r.status >= 500) throw new MidtransError("Midtrans sedang bermasalah.", 503);
+  const data = (await r.json().catch(() => null)) as MidtransStatus | null;
+  if (!data) throw new MidtransError("Respons Midtrans tidak valid.", 502);
+  return data;
+}
+
+/** "2026-10-31 14:05:09" (WIB, GMT+7) -> Date. null jika format tidak dikenal. */
+export function parseMidtransTime(v: unknown): Date | null {
+  if (typeof v !== "string") return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(v.trim());
+  if (!m) return null;
+  const t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4] - 7, +m[5], +m[6]);
+  return Number.isFinite(t) ? new Date(t) : null;
 }
 
 // ---------------------------------------------------------------- Status & cancel
@@ -105,6 +157,8 @@ export interface MidtransStatus {
   biller_code?: string;
   bill_key?: string;
   actions?: { name: string; method?: string; url: string }[];
+  expiry_time?: string;          // "YYYY-MM-DD HH:MM:SS" WIB
+  status_message?: string;
   [k: string]: unknown;
 }
 
@@ -115,8 +169,8 @@ export class MidtransError extends Error {
 }
 
 /** Status API = sumber kebenaran. Midtrans membalas HTTP 200 dengan status_code "404" jika transaksi belum ada. */
-export async function getStatus(env: Env, orderId: string): Promise<MidtransStatus> {
-  const r = await mtFetch(env, `${HOSTS[midtransMode(env)].api}/v2/${encodeURIComponent(orderId)}/status`);
+export async function getStatus(env: Env, orderId: string, timeoutMs = 12_000): Promise<MidtransStatus> {
+  const r = await mtFetch(env, `${HOSTS[midtransMode(env)].api}/v2/${encodeURIComponent(orderId)}/status`, {}, timeoutMs);
   if (r.status >= 500) throw new MidtransError("Midtrans sedang bermasalah.", 503);
   const data = (await r.json().catch(() => null)) as MidtransStatus | null;
   if (!data) throw new MidtransError("Respons Midtrans tidak valid.", 502);

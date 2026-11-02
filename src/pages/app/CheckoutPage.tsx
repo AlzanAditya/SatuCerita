@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/Button";
 import { PATHS } from "@/routes";
 import { getTemplateBySlug, formatRupiah } from "@/data/templates";
 import { OrderItem, PaymentMethodId } from "@/pages/app/types";
-import { createOrder, newIdempotencyKey, openSnap, quoteOrder } from "@/lib/payments";
+import { createOrder, newIdempotencyKey, quoteOrder } from "@/lib/payments";
 
 interface CheckoutPageProps {
   currentPath: string;
@@ -143,21 +143,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
         return;
       }
 
+      // Transaksi sudah dibuat server (Midtrans Core API). Customer tetap di website ini: instruksi bayar tampil di halaman pesanan.
       if (onCreateOrder) onCreateOrder(order);
-      if (!order.snapToken) {
-        goToOrder(order.invoiceNo);
-        return;
-      }
-
-      let moved = false;
-      const next = () => {
-        if (moved) return;
-        moved = true;
-        goToOrder(order.invoiceNo);
-      };
-      await openSnap(order.snapToken, { onSuccess: next, onPending: next, onClose: next, onError: () => setPayError("Pembayaran gagal diproses. Silakan coba lagi atau pilih metode lain.") });
+      goToOrder(order.invoiceNo);
     } catch (e) {
-      setPayError(e instanceof Error && e.message ? e.message : "Gagal membuka halaman pembayaran.");
+      setPayError(e instanceof Error && e.message ? e.message : "Gagal memulai pembayaran. Coba lagi.");
     } finally {
       inFlight.current = false;
       setSubmitting(false);
@@ -414,7 +404,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                 </p>
               )}
               <p className="text-[11px] text-neutral-400 text-center mt-2.5 leading-relaxed">
-                Halaman pembayaran aman Midtrans akan terbuka. Status diperbarui otomatis setelah Anda membayar. Total akhir dihitung ulang oleh server.
+                Instruksi pembayaran tampil di halaman berikutnya. Status berubah otomatis setelah Anda membayar. Total akhir dihitung ulang oleh server.
               </p>
             </div>
 

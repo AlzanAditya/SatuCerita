@@ -48,8 +48,25 @@
 		"MIDTRANS_ENV": "sandbox",
 		// Client Key itu PUBLIK (boleh di sini). Isi dengan Client Key Sandbox kamu (awalan SB-Mid-client-).
 		// Server Key & Service Role Key JANGAN di sini -> `wrangler secret put` (lihat docs/SETUP-MIDTRANS.md).
-		"MIDTRANS_CLIENT_KEY": "SB-Mid-client-q~-DSKXyoLfU_NRfg18angzP"
+		"MIDTRANS_CLIENT_KEY": "SB-Mid-client-7odcntjN2r~toCTCs-NHe9qE"
 	},
+	// Hub realtime status pembayaran (SSE). Satu Durable Object per invoice; tanpa layanan eksternal.
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "PAYMENT_HUB",
+				"class_name": "PaymentHub"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1-payment-hub",
+			"new_sqlite_classes": [
+				"PaymentHub"
+			]
+		}
+	],
 	// Rate limit (Workers Rate Limiting). namespace_id bebas, tapi harus unik di akun Cloudflare kamu.
 	// period hanya boleh 10 atau 60 detik.
 	"ratelimits": [
@@ -66,6 +83,14 @@
 			"namespace_id": "7102",
 			"simple": {
 				"limit": 20,
+				"period": 60
+			}
+		},
+		{
+			"name": "RL_STREAM",
+			"namespace_id": "7103",
+			"simple": {
+				"limit": 30,
 				"period": 60
 			}
 		}

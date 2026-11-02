@@ -108,4 +108,4 @@ Panduan konfigurasi lengkap: [`docs/SETUP-AUTH.md`](docs/SETUP-AUTH.md).
 
 ## Pembayaran (Midtrans)
 
-Pembayaran di Studio memakai Midtrans Snap lewat Cloudflare Worker. Panduan setup lengkap: [docs/SETUP-MIDTRANS.md](docs/SETUP-MIDTRANS.md).
+Pembayaran di Studio memakai Midtrans Core API (UI sendiri, tanpa Snap) lewat Cloudflare Worker; status realtime via SSE. Panduan setup lengkap: [docs/SETUP-MIDTRANS.md](docs/SETUP-MIDTRANS.md).

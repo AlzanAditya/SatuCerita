@@ -69,3 +69,13 @@ export function extractPaymentInfo(s: MidtransStatus): Record<string, string> {
   if (s.payment_type) info.paymentType = String(s.payment_type);
   return info;
 }
+
+/** Status yang tidak akan berubah lagi oleh alur normal -> stream realtime & countdown boleh berhenti. */
+export const FINAL_STATUSES: readonly OrderStatus[] = ["paid", "expired", "cancelled", "failed", "needs_review"];
+export const isFinalStatus = (s: string): boolean => (FINAL_STATUSES as readonly string[]).includes(s);
+
+/** Sudah ada instruksi bayar yang konkret (VA / bill key / QR / deeplink) dari Midtrans? */
+export function hasPaymentInfo(info: Record<string, string> | null | undefined): boolean {
+  if (!info) return false;
+  return !!(info.vaNumber || info.billKey || info.qrUrl || info.deeplinkUrl);
+}

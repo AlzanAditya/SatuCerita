@@ -5,6 +5,10 @@ import { googleCallback, googleStart, login, logout, me, signup, updateMe } from
 import { redirect } from "./http";
 import { cancelOrder, createOrder, getOrder, listOrders, paymentsConfig, quoteOrder, syncOrder } from "./orders";
 import { midtransWebhook } from "./webhook";
+import { streamOrder } from "./stream";
+
+// Durable Object hub realtime: HARUS diekspor dari modul entry agar Cloudflare dapat meng-instansiasinya.
+export { PaymentHub } from "./hub";
 
 const isAsset = (p: string) => p.startsWith("/assets/") || (/\.[a-z0-9]{2,5}$/i.test(p) && !p.endsWith(".html"));
 
@@ -21,12 +25,18 @@ async function handleApi(env: Env, req: Request, url: URL): Promise<Response> {
   // ---- Pembayaran: rute baca (GET) ----
   if (m === "GET" && p === "/api/payments/config") return paymentsConfig(env);
   if (m === "GET" && p === "/api/orders") return listOrders(env, req);
-  const orderPath = /^\/api\/orders\/([^/]+)(?:\/(sync|cancel))?$/.exec(p);
+  const orderPath = /^\/api\/orders\/([^/]+)(?:\/(sync|cancel|events))?$/.exec(p);
   if (m === "GET" && orderPath && !orderPath[2]) return getOrder(env, req, orderPath[1]);
+  if (m === "GET" && orderPath?.[2] === "events") return streamOrder(env, req, orderPath[1]);
 
   // Webhook Midtrans: server-ke-server, TIDAK punya header Origin -> dikecualikan dari cek Origin di bawah.
   // Keamanannya ada di signature SHA512 + konfirmasi Status API (lihat webhook.ts).
-  if (m === "POST" && p === "/api/payments/midtrans/webhook") return midtransWebhook(env, req);
+  if (p === "/api/payments/midtrans/webhook") {
+    if (m === "POST") return midtransWebhook(env, req);
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405, headers: { "Content-Type": "application/json", Allow: "POST", "Cache-Control": "no-store" },
+    });
+  }
 
   // Semua request yang mengubah data wajib lolos cek Origin (anti-CSRF)
   if (m !== "GET" && !originAllowed(env, req)) return json({ error: "Origin tidak diizinkan." }, 403);
