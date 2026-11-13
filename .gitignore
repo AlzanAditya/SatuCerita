@@ -42,3 +42,5 @@ reference/
 # (worker/ dan supabase/ sengaja TIDAK di-ignore: kode Worker & migrasi harus ikut Git)
 old/
 .wrangler/
+
+*.zip
