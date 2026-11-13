@@ -54,7 +54,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
   const [previewMode, setPreviewMode] = useState<"phone" | "desktop">("phone");
 
   const handleOrderTemplate = () => {
-    const checkoutUrl = `/app/checkout/${template.slug}`;
+    const checkoutUrl = `/studio/checkout/${template.slug}`;
     if (onNavigate) {
       onNavigate(checkoutUrl);
     } else {

@@ -141,7 +141,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => onNavigate(`/app/checkout/${item.slug}`)}
+                      onClick={() => onNavigate(`/studio/checkout/${item.slug}`)}
                       className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                     >
                       <span>Pilih Template</span>
@@ -217,7 +217,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                 variant="primary"
                 size="md"
                 onClick={() => {
-                  onNavigate(`/app/checkout/${selectedDemo.slug}`);
+                  onNavigate(`/studio/checkout/${selectedDemo.slug}`);
                   setSelectedDemo(null);
                 }}
                 className="w-full"

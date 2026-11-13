@@ -149,7 +149,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const katalogPath = PATHS.katalog;
   const caraPesanPath = PATHS.caraPesan;
-  const appPath = PATHS.appHome;
+  const appPath = PATHS.studioHome;
 
   const handleOrderTemplate = (templateTitle: string) => {
     const waText = encodeURIComponent(
@@ -584,7 +584,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => onNavigate(`/app/checkout/${item.id}`)}
+                        onClick={() => onNavigate(`/studio/checkout/${item.id}`)}
                         className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                       >
                         <span>Pilih Template</span>
@@ -799,7 +799,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 variant="primary"
                 size="md"
                 onClick={() => {
-                  onNavigate(`/app/checkout/${selectedDemo.id}`);
+                  onNavigate(`/studio/checkout/${selectedDemo.id}`);
                   setSelectedDemo(null);
                 }}
                 className="w-full"

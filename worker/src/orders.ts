@@ -7,8 +7,8 @@ import { isDev, json } from "./http";
 import { resolveSession, sb, toPublicUser } from "./session";
 import { DbError, dbInsert, dbPatch, dbSelect } from "./db";
 import {
-  MidtransError, assertMidtransConfig, cancelTransaction, chargeTransaction, formatWib, getStatus,
-  parseGrossAmount, parseMidtransTime, midtransMode, type MidtransStatus,
+  MidtransError, assertMidtransConfig, cancelTransaction, chargeTransaction, createSnapTransaction, formatWib, getStatus,
+  parseGrossAmount, parseMidtransTime, midtransMode, paymentMode, snapScriptUrl, type MidtransStatus,
 } from "./midtrans";
 import { PAYMENT_METHODS, computeQuote, isPaymentMethod, type PaymentMethodId } from "./pricing";
 import { extractPaymentInfo, hasPaymentInfo, mapMidtransStatus, nextStatus, type OrderStatus } from "./state";
@@ -78,7 +78,8 @@ function log(evt: string, data: Record<string, unknown> = {}) {
 /** Bentuk data yang dikirim ke browser (tanpa kolom internal, tanpa token/kunci apa pun). */
 export function toView(env: Env, o: OrderRow) {
   const info = o.payment_info || {};
-  return {
+  const isSnapMode = paymentMode(env) === "snap";
+  const view: Record<string, unknown> = {
     id: o.invoice_no,
     invoiceNo: o.invoice_no,
     date: o.created_at,
@@ -110,6 +111,10 @@ export function toView(env: Env, o: OrderRow) {
     paymentReady: hasPaymentInfo(info),
     environment: midtransMode(env),
   };
+  if (isSnapMode && o.status === "pending" && !isExpiredByTime(o)) {
+    view.snapToken = o.snap_token;
+  }
+  return view;
 }
 
 export type Authed = { user: SbUser; token: string; cookies: string[] };
@@ -237,10 +242,14 @@ function failResponse(e: unknown, cookies: string[] = []): Response {
 }
 
 // ------------------------------------------------------------------ GET /api/payments/config
-/** Hanya info non-rahasia. Core API tidak membutuhkan Client Key di browser, jadi TIDAK dikirim. */
+/** Hanya info non-rahasia. Snap mode butuh Client Key + snapUrl untuk load snap.js. Core API tidak butuh. */
 export function paymentsConfig(env: Env): Response {
   const problem = assertMidtransConfig(env);
   if (problem) return json({ error: "Pembayaran belum dikonfigurasi." }, 503);
+  const mode = paymentMode(env);
+  if (mode === "snap") {
+    return json({ clientKey: env.MIDTRANS_CLIENT_KEY.trim(), snapUrl: snapScriptUrl(env), environment: midtransMode(env) });
+  }
   return json({ environment: midtransMode(env) });
 }
 
@@ -369,23 +378,73 @@ export async function createOrder(env: Env, req: Request, body: Record<string, u
  *  3. order_id Midtrans = invoice unik -> charge kedua ditolak Midtrans (406) dan dipulihkan lewat Status API.
  *  4. Header Idempotency-Key ke Midtrans (tambahan; tidak semua metode mendukung).
  */
+
 async function respondWithPayment(env: Env, a: Authed, order: OrderRow, okStatus: number, waitOnly = false): Promise<Response> {
-  if (order.status !== "pending" || isCharged(order) || isExpiredByTime(order)) {
+  const mode = paymentMode(env);
+  if (order.status !== "pending" || isExpiredByTime(order)) {
+    return json({ order: toView(env, order) }, okStatus, a.cookies);
+  }
+
+  // Sudah punya yang dibutuhkan mode saat ini?
+  if (mode === "snap" && order.snap_token) {
+    return json({ order: toView(env, order) }, okStatus, a.cookies);
+  }
+  if (mode === "core_api" && isCharged(order)) {
     return json({ order: toView(env, order) }, okStatus, a.cookies);
   }
 
   if (!waitOnly) {
-    const [claimed] = await dbPatch<OrderRow>(
-      env, "orders",
-      `invoice_no=eq.${order.invoice_no}&status=eq.pending&charge_claimed_at=is.null&midtrans_trx_id=is.null`,
-      { charge_claimed_at: new Date().toISOString() },
-    );
-    if (claimed) {
-      try {
-        const done = await chargeOrder(env, claimed);
-        return json({ order: toView(env, done) }, okStatus, a.cookies);
-      } catch (e) {
-        return handleChargeFailure(env, a, claimed, e);
+    if (mode === "snap") {
+      // Snap mode: ambil token via /v2/token
+      const [claimed] = await dbPatch<OrderRow>(
+        env, "orders",
+        `invoice_no=eq.${order.invoice_no}&status=eq.pending&snap_token=is.null`,
+        { snap_token: "CLAIMING" } // placeholder sementara
+      );
+      if (claimed) {
+        try {
+          const snap = await createSnapTransaction(env, {
+            orderId: order.invoice_no,
+            grossAmount: order.gross_amount,
+            items: [{ id: order.template_slug.slice(0, 50), price: order.base_price, quantity: 1, name: `Template ${order.template_title}`.slice(0, 50) }],
+            customer: {
+              first_name: (order.customer_name || "Pelanggan").slice(0, 255),
+              email: order.customer_email || "",
+              ...(order.customer_phone ? { phone: order.customer_phone } : {}),
+            },
+            enabledPayments: PAYMENT_METHODS[order.payment_method].enabled,
+            expiryStartWib: formatWib(new Date(order.created_at)),
+            expiryMinutes: EXPIRY_MINUTES,
+            finishUrl: `${new URL(env.STUDIO_HOME_URL || env.APP_HOME_URL).origin}${isDev(env) ? "/studio" : ""}/order/${order.invoice_no}`,
+          });
+          // Simpan token asli
+          const [saved] = await dbPatch<OrderRow>(
+            env, "orders",
+            `invoice_no=eq.${order.invoice_no}&snap_token=eq.CLAIMING`,
+            { snap_token: snap.token }
+          );
+          const final = saved ?? { ...claimed, snap_token: snap.token };
+          return json({ order: toView(env, final) }, okStatus, a.cookies);
+        } catch (e) {
+          // Gagal: hapus placeholder, biarkan pesanan pending untuk dicoba lagi
+          await dbPatch(env, "orders", `invoice_no=eq.${order.invoice_no}&snap_token=eq.CLAIMING`, { snap_token: null }).catch(() => null);
+          return failResponse(e, a.cookies);
+        }
+      }
+    } else {
+      // Core API mode: klaim atomik + /v2/charge
+      const [claimed] = await dbPatch<OrderRow>(
+        env, "orders",
+        `invoice_no=eq.${order.invoice_no}&status=eq.pending&charge_claimed_at=is.null&midtrans_trx_id=is.null`,
+        { charge_claimed_at: new Date().toISOString() }
+      );
+      if (claimed) {
+        try {
+          const done = await chargeOrder(env, claimed);
+          return json({ order: toView(env, done) }, okStatus, a.cookies);
+        } catch (e) {
+          return handleChargeFailure(env, a, claimed, e);
+        }
       }
     }
   }
@@ -393,17 +452,23 @@ async function respondWithPayment(env: Env, a: Authed, order: OrderRow, okStatus
   // Kalah balapan (klik ganda / tab lain): tunggu pemenang menyimpan hasil. Dibatasi ~6 detik, hanya membaca DB.
   for (let i = 0; i < 24; i++) {
     const [cur] = await dbSelect<OrderRow>(env, "orders", `invoice_no=eq.${order.invoice_no}&select=*&limit=1`);
-    if (cur && (cur.status !== "pending" || isCharged(cur))) return json({ order: toView(env, cur) }, okStatus, a.cookies);
+    if (cur) {
+      const ready = mode === "snap" ? !!cur.snap_token : (cur.status !== "pending" || isCharged(cur));
+      if (ready) return json({ order: toView(env, cur) }, okStatus, a.cookies);
+    }
     await sleep(250);
   }
   const [last] = await dbSelect<OrderRow>(env, "orders", `invoice_no=eq.${order.invoice_no}&select=*&limit=1`);
   return json({ order: toView(env, last ?? order) }, okStatus, a.cookies);
 }
 
+
+
+
 /** Panggil Midtrans /v2/charge untuk pesanan yang sudah kita klaim, lalu simpan hasilnya. */
 async function chargeOrder(env: Env, order: OrderRow): Promise<OrderRow> {
   const finishBase = new URL(env.STUDIO_HOME_URL || env.APP_HOME_URL).origin;
-  const finishUrl = `${finishBase}${isDev(env) ? "/app" : ""}/order/${order.invoice_no}`;
+  const finishUrl = `${finishBase}${isDev(env) ? "/studio" : ""}/order/${order.invoice_no}`;
   const items = [{ id: order.template_slug.slice(0, 50), price: order.base_price, quantity: 1, name: `Template ${order.template_title}`.slice(0, 50) }];
   if (order.discount_amount > 0) {
     items.push({ id: "DISCOUNT", price: -order.discount_amount, quantity: 1, name: `Voucher ${order.discount_code ?? ""}`.trim().slice(0, 50) });

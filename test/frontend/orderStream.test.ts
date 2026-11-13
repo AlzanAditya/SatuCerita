@@ -172,9 +172,10 @@ function walk(dir: string, out: string[] = []): string[] {
 }
 const frontendFiles = walk(path.join(ROOT, "src"));
 
-test("tidak ada Server Key / service key / referensi Snap di kode frontend", () => {
+test("tidak ada Server Key / Service Role Key di kode frontend (Snap diizinkan karena dual-mode)", () => {
   assert.ok(frontendFiles.length > 20);
-  const bad = /MIDTRANS_SERVER_KEY|SB-Mid-server|Mid-server-|SERVICE_ROLE|service_role|snap\.js|window\.snap|snapToken|app\.(sandbox\.)?midtrans\.com/;
+  // Hanya Server Key & Service Role Key dilarang di frontend. Snap (snap.js, window.snap, snapToken) diizinkan karena mode dual.
+  const bad = /MIDTRANS_SERVER_KEY|SB-Mid-server|Mid-server-|SERVICE_ROLE|service_role/;
   const hits = frontendFiles.filter((f) => bad.test(fs.readFileSync(f, "utf8"))).map((f) => path.relative(ROOT, f));
   assert.deepEqual(hits, []);
 });
@@ -192,8 +193,8 @@ test("tidak ada setInterval/EventSource di luar watcher (halaman order memakai c
     .filter((f) => /setInterval\(|new EventSource\(/.test(fs.readFileSync(f, "utf8")))
     .map((f) => path.relative(ROOT, f));
   // OrderDetailPage: satu setInterval = countdown 1 detik (dihentikan saat bukan pending) + EventSource lewat injeksi watcher.
-  assert.deepEqual(offenders.sort(), ["src/pages/app/OrderDetailPage.tsx"]);
-  const od = fs.readFileSync(path.join(ROOT, "src/pages/app/OrderDetailPage.tsx"), "utf8");
+  assert.deepEqual(offenders.sort(), ["src/pages/studio/OrderDetailPage.tsx"]);
+  const od = fs.readFileSync(path.join(ROOT, "src/pages/studio/OrderDetailPage.tsx"), "utf8");
   assert.equal((od.match(/setInterval\(/g) ?? []).length, 2); // countdown + injeksi watcher
   assert.equal((od.match(/new EventSource\(/g) ?? []).length, 1);
   assert.match(od, /watcher\.stop\(\)/);

@@ -121,12 +121,12 @@ export function useSeo({
     setMeta(
       "name",
       "apple-mobile-web-app-title",
-      isDash ? "Satu Cerita Dash" : path.startsWith("/app") ? "Satu Cerita App" : "Satu Cerita"
+      isDash ? "Satu Cerita Dash" : path.startsWith("/studio") ? "Satu Cerita Studio" : "Satu Cerita"
     );
     setMeta(
       "name",
       "application-name",
-      isDash ? "Satu Cerita Dash" : path.startsWith("/app") ? "Satu Cerita App" : "Satu Cerita"
+      isDash ? "Satu Cerita Dash" : path.startsWith("/studio") ? "Satu Cerita Studio" : "Satu Cerita"
     );
   }, [title, description, path, image, imageWidth, imageHeight, imageAlt, noindex]);
 }

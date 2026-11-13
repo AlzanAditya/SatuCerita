@@ -12,7 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { OrderItem } from "@/pages/app/types";
+import { OrderItem } from "@/pages/studio/types";
 import { formatRupiah } from "@/data/templates";
 import { formatOrderDate, getOrder, orderEventsUrl, syncOrder } from "@/lib/payments";
 import { createOrderWatcher, type WatcherMode } from "@/lib/orderStream";
@@ -52,11 +52,11 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
   onOrderUpdate,
   showToast,
 }) => {
-  // Extract invoice from /app/order/:invoiceNo or /order/:invoiceNo
-  const invoiceNo = currentPath.replace(/^(?:\/app)?\/order\/?/, "").split("?")[0].split("#")[0];
+  // Extract invoice from /studio/order/:invoiceNo or /order/:invoiceNo
+  const invoiceNo = currentPath.replace(/^(?:\/(?:app|studio))?\/order\/?/, "").split("?")[0].split("#")[0];
 
   const isStandalone = typeof window !== "undefined" && window.location.hostname.startsWith("app.");
-  const prefix = isStandalone ? "" : "/app";
+  const prefix = isStandalone ? "" : "/studio";
 
   // Sumber kebenaran = server. State lokal hanya cache tampilan.
   const [remote, setRemote] = useState<OrderItem | null>(null);

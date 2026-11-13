@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { LanguageProvider } from "@/context/LanguageContext";
-import { UserApp } from "@/pages/app/UserApp";
+import { UserApp } from "@/pages/studio/UserApp";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { SITE } from "@/config/site";
 
-export type TabType = "home" | "proses" | "profile" | "checkout" | "order";
+export type TabType = "home" | "proses" | "bagikan" | "ucapan" | "profile" | "checkout" | "order";
 
 function isLandingPath(path: string): boolean {
   const p = (path || "/").toLowerCase().split("?")[0].split("#")[0];
@@ -28,6 +28,12 @@ function pathToTab(pathname: string): TabType {
   if (p.includes("/order")) {
     return "order";
   }
+  if (p.includes("/bagikan")) {
+    return "bagikan";
+  }
+  if (p.includes("/ucapan")) {
+    return "ucapan";
+  }
   if (p.includes("pesanan") || p.includes("proses") || p.includes("bayar") || p.includes("task")) {
     return "proses";
   }
@@ -40,11 +46,15 @@ function pathToTab(pathname: string): TabType {
 function tabToPath(tab: TabType, fullPath = ""): string {
   switch (tab) {
     case "checkout":
-      return fullPath.replace(/^\/app/, "") || "/checkout";
+      return fullPath.replace(/^\/(?:app|studio)/, "") || "/checkout";
     case "order":
-      return fullPath.replace(/^\/app/, "") || "/order";
+      return fullPath.replace(/^\/(?:app|studio)/, "") || "/order";
     case "proses":
       return "/pesanan";
+    case "bagikan":
+      return "/bagikan";
+    case "ucapan":
+      return "/ucapan";
     case "profile":
       return "/profile";
     case "home":
@@ -101,9 +111,9 @@ export function AppUser() {
         }
       }
 
-      // 2. Navigasi internal di app (home, pesanan, profile, checkout, order)
+      // 2. Navigasi internal di studio (home, pesanan, profile, checkout, order)
       const nextTab = pathToTab(to);
-      const cleanPath = to.replace(/^\/app/, "") || "/home";
+      const cleanPath = to.replace(/^\/(?:app|studio)/, "") || "/home";
       const targetPath =
         nextTab === "checkout" || nextTab === "order"
           ? cleanPath

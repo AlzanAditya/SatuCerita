@@ -4,6 +4,9 @@
  * - Hanya Worker yang boleh memegang Server Key. Browser tidak menerima kunci apa pun dari Midtrans.
  * - Signature notifikasi: SHA512(order_id + status_code + gross_amount + ServerKey).
  * Referensi: https://docs.midtrans.com/reference/charge-api , /reference/handle-notifications
+ *
+ * Catatan: Fungsi Snap (popup) dipertahankan di file ini untuk kompatibilitas / rollback.
+ * Mode dipilih via env `MIDTRANS_PAYMENT_MODE` = "snap" | "core_api" (default: "core_api").
  */
 import type { Env } from "./types";
 
@@ -23,12 +26,20 @@ export interface MidtransNotification {
 }
 
 const HOSTS = {
-  sandbox: { api: "https://api.sandbox.midtrans.com" },
-  production: { api: "https://api.midtrans.com" },
+  sandbox: { snap: "https://app.sandbox.midtrans.com", api: "https://api.sandbox.midtrans.com" },
+  production: { snap: "https://app.midtrans.com", api: "https://api.midtrans.com" },
 } as const;
 
 export function midtransMode(env: Env): MidtransEnv {
   return env.MIDTRANS_ENV === "production" ? "production" : "sandbox";
+}
+
+/** Skrip snap.js sesuai mode (dipakai frontend mode Snap). */
+export const snapScriptUrl = (env: Env) => `${HOSTS[midtransMode(env)].snap}/snap/snap.js`;
+
+/** Mode pembayaran: "snap" (popup Midtrans) atau "core_api" (UI sendiri + /v2/charge). Default: core_api. */
+export function paymentMode(env: Env): "snap" | "core_api" {
+  return (env.MIDTRANS_PAYMENT_MODE || "core_api").toLowerCase() === "snap" ? "snap" : "core_api";
 }
 
 /**
@@ -55,9 +66,46 @@ async function mtFetch(env: Env, url: string, init: RequestInit = {}, timeoutMs 
   try {
     return await fetch(url, { ...init, headers, signal: AbortSignal.timeout(timeoutMs) });
   } catch (e) {
-    // Timeout / jaringan putus: jadikan MidtransError agar pemanggil menanganinya sebagai gangguan sementara (bukan crash).
     throw new MidtransError(e instanceof Error && e.name === "TimeoutError" ? "Midtrans tidak merespons (timeout)." : "Tidak dapat menghubungi Midtrans.", 503);
   }
+}
+
+// ---------------------------------------------------------------- Snap (popup Midtrans)
+export interface SnapParams {
+  orderId: string;
+  grossAmount: number;
+  items: { id: string; price: number; quantity: number; name: string }[];
+  customer: { first_name: string; email: string; phone?: string };
+  enabledPayments: string[];
+  expiryStartWib: string;
+  expiryMinutes: number;
+  finishUrl?: string;
+}
+
+/**
+ * Buat transaksi Snap (popup). Mengembalikan { token, redirect_url? }.
+ * Token ini dikirim ke browser untuk dibuka via `window.snap.pay(token)`.
+ * Referensi: https://docs.midtrans.com/reference/snap-transaction
+ */
+export async function createSnapTransaction(env: Env, p: SnapParams): Promise<{ token: string; redirect_url?: string }> {
+  const body: Record<string, unknown> = {
+    transaction_details: { order_id: p.orderId, gross_amount: p.grossAmount },
+    item_details: p.items,
+    customer_details: p.customer,
+    enabled_payments: p.enabledPayments,
+    expiry: { start_time: p.expiryStartWib, unit: "minutes", duration: p.expiryMinutes },
+  };
+  if (p.finishUrl) body.callbacks = { finish: p.finishUrl };
+
+  const r = await mtFetch(env, `${HOSTS[midtransMode(env)].api}/v2/token`, {
+    method: "POST",
+    headers: { "Idempotency-Key": `${p.orderId}-snap`.slice(0, 46) },
+    body: JSON.stringify(body),
+  });
+  if (r.status >= 500) throw new MidtransError("Midtrans sedang bermasalah.", 503);
+  const data = (await r.json().catch(() => null)) as { token?: string; redirect_url?: string; status_code?: string } | null;
+  if (!data?.token) throw new MidtransError("Gagal membuat transaksi Snap.", 502);
+  return { token: data.token, redirect_url: data.redirect_url };
 }
 
 // ---------------------------------------------------------------- Core API charge
@@ -69,12 +117,9 @@ export interface ChargeParams {
   method: ChargeMethod;
   items: { id: string; price: number; quantity: number; name: string }[];
   customer: { first_name: string; email: string; phone?: string };
-  /** Awal hitungan kedaluwarsa, format "YYYY-MM-DD HH:MM:SS +0700" (lihat formatWib). */
   expiryStartWib: string;
   expiryMinutes: number;
-  /** Tujuan kembali dari aplikasi GoPay (hanya dipakai metode gopay). Harus https. */
   gopayCallbackUrl?: string;
-  /** Teks pada tagihan Mandiri Bill (bill_info2, maks. 30 karakter). */
   billLabel?: string;
 }
 
@@ -117,7 +162,7 @@ export function buildChargeBody(p: ChargeParams): Record<string, unknown> {
 }
 
 /**
- * Buat transaksi di Midtrans. Mengembalikan response charge apa adanya (VA / bill key / actions QR).
+ * Buat transaksi di Midtrans Core API. Mengembalikan response charge apa adanya (VA / bill key / actions QR).
  * Midtrans membalas HTTP 200 dengan status_code di body: "201" = transaksi pending dibuat, "406" = order_id sudah dipakai.
  * Idempotency-Key (maks. 46 karakter, berlaku 5 menit, tidak didukung semua metode) HANYA lapisan tambahan:
  * perlindungan utama tetap klaim di database + order_id yang unik.

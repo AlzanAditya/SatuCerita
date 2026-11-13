@@ -1,4 +1,4 @@
-import type { PaymentMethodId } from "@/pages/app/types";
+import type { PaymentMethodId } from "@/pages/studio/types";
 
 /** Panduan bayar per metode (teks statis, tidak berasal dari input pengguna). */
 export interface InstructionGroup { title: string; steps: string[] }

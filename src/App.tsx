@@ -13,9 +13,9 @@ import {
   NotFoundPage,
   TemplatePreviewPage,
 } from "@/pages/landing";
-import { UserApp } from "@/pages/app";
-import { CheckoutPage } from "@/pages/app/CheckoutPage";
-import { OrderDetailPage } from "@/pages/app/OrderDetailPage";
+import { UserApp } from "@/pages/studio";
+import { CheckoutPage } from "@/pages/studio/CheckoutPage";
+import { OrderDetailPage } from "@/pages/studio/OrderDetailPage";
 import { AdminDash, DashLoginPage } from "@/pages/dash";
 import { AuthGate } from "@/components/auth/AuthGate";
 
@@ -28,7 +28,7 @@ function AppRouter() {
   const [path, setPath] = useState<string>(getInitialPath);
   const route = resolveRoute(path);
 
-  // Alias (mis. /carapesan, /app) -> ganti URL ke path kanonik.
+  // Alias (mis. /carapesan, /studio) -> ganti URL ke path kanonik.
   useEffect(() => {
     if (route && route.path !== path) {
       window.history.replaceState(null, "", route.path);
@@ -111,16 +111,20 @@ function AppRouter() {
       return <KontakPage currentPath={path} onNavigate={navigate} />;
     case "kebijakan":
       return <KebijakanPage currentPath={path} onNavigate={navigate} />;
-    case "appHome":
+    case "studioHome":
       return <AuthGate require="user"><UserApp activeTab="home" currentPath={path} onNavigate={navigate} /></AuthGate>;
-    case "appPesanan":
-    case "appProses":
+    case "studioPesanan":
+    case "studioProses":
       return <AuthGate require="user"><UserApp activeTab="proses" currentPath={path} onNavigate={navigate} /></AuthGate>;
-    case "appProfile":
+    case "studioBagikan":
+      return <AuthGate require="user"><UserApp activeTab="bagikan" currentPath={path} onNavigate={navigate} /></AuthGate>;
+    case "studioUcapan":
+      return <AuthGate require="user"><UserApp activeTab="ucapan" currentPath={path} onNavigate={navigate} /></AuthGate>;
+    case "studioProfile":
       return <AuthGate require="user"><UserApp activeTab="profile" currentPath={path} onNavigate={navigate} /></AuthGate>;
-    case "appCheckout":
+    case "studioCheckout":
       return <AuthGate require="user"><UserApp activeTab="checkout" currentPath={path} onNavigate={navigate} /></AuthGate>;
-    case "appOrder":
+    case "studioOrder":
       return <AuthGate require="user"><UserApp activeTab="order" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dashLogin":
       return <DashLoginPage currentPath={path} onNavigate={navigate} />;

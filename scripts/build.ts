@@ -93,11 +93,11 @@ async function buildStudio() {
       outDir: studioOutDir,
       emptyOutDir: true,
       rollupOptions: {
-        input: path.resolve(ROOT, "src/entries/app/index.html"),
+        input: path.resolve(ROOT, "src/entries/studio/index.html"),
       },
     },
   });
-  normalizeHtmlOutput(studioOutDir, "src/entries/app/index.html");
+  normalizeHtmlOutput(studioOutDir, "src/entries/studio/index.html");
 
   // Studio redirects (SPA rewrite) & fallback 404
   fs.writeFileSync(path.join(studioOutDir, "_redirects"), "/*  /index.html  200\n", "utf-8");

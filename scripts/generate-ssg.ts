@@ -204,7 +204,7 @@ export function runLandingSSG(distDir?: string) {
 
   // Filter hanya route landing page (bukan route app atau dash)
   const landingRoutes: RouteMeta[] = ROUTES.filter(
-    (r) => !r.path.startsWith("/app") && !r.path.startsWith("/dash")
+    (r) => !r.path.startsWith("/app") && !r.path.startsWith("/studio") && !r.path.startsWith("/dash")
   );
 
   // Masukkan halaman detail katalog & preview template ke dalam SSG

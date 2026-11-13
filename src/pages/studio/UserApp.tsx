@@ -5,7 +5,8 @@ import {
   Home,
   ShoppingBag,
   UserRound,
-  SquareArrowOutUpRight,
+  Send,
+  MessageSquare,
   Plus,
   LogOut,
   X,
@@ -21,6 +22,8 @@ import { getCache, setCache, convertFileToDataUrl, UserProfileData } from "@/lib
 import { useAuth } from "@/context/AuthContext";
 import { avatarFallback, formatMemberSince, updateProfile } from "@/lib/auth";
 import { UndanganPage } from "./UndanganPage";
+import { BagikanPage } from "./BagikanPage";
+import { UcapanPage } from "./UcapanPage";
 import { PesananPage } from "./PesananPage";
 import { ProfilePage } from "./ProfilePage";
 import { CheckoutPage } from "./CheckoutPage";
@@ -32,13 +35,16 @@ export * from "./types";
 export const UserApp: React.FC<UserAppProps> = ({
   activeTab: propActiveTab = "home",
   onNavigate,
-  currentPath = "/app/home",
+  currentPath = "/studio/home",
 }) => {
   const isStandalone = useMemo(
-    () => typeof window !== "undefined" && window.location.hostname.startsWith("app."),
+    () =>
+      typeof window !== "undefined" &&
+      (window.location.hostname.startsWith("studio.") ||
+        window.location.hostname.startsWith("app.")),
     []
   );
-  const prefix = isStandalone ? "" : "/app";
+  const prefix = isStandalone ? "" : "/studio";
 
   // Determine current active tab
   const activeTab = useMemo(() => {
@@ -63,6 +69,8 @@ export const UserApp: React.FC<UserAppProps> = ({
     if (currentPath.includes("/profile") || currentPath.includes("/profil")) {
       return "profile";
     }
+    if (currentPath.includes("/bagikan")) return "bagikan";
+    if (currentPath.includes("/ucapan")) return "ucapan";
     if (currentPath.includes("/checkout")) return "checkout";
     if (currentPath.includes("/order")) return "order";
     return "home";
@@ -212,8 +220,10 @@ export const UserApp: React.FC<UserAppProps> = ({
     if (selectedOrderId) return "Detail Pesanan";
     if (activeTab === "home") return "Undangan";
     if (activeTab === "proses") return "Pesanan";
+    if (activeTab === "bagikan") return "Bagikan";
+    if (activeTab === "ucapan") return "Ucapan";
     if (activeTab === "profile") return "Profil Saya";
-    return "Satu Cerita App";
+    return "Satu Cerita Studio";
   };
 
   // Pending orders count for notification
@@ -233,6 +243,16 @@ export const UserApp: React.FC<UserAppProps> = ({
       },
     },
     {
+      id: "ucapan",
+      label: "Ucapan",
+      icon: MessageSquare,
+      isActive: !selectedOrderId && activeTab === "ucapan",
+      onClick: () => {
+        setSelectedOrderId(null);
+        onNavigate(`${prefix}/ucapan`);
+      },
+    },
+    {
       id: "proses",
       label: "Pesanan & Tagihan",
       icon: ShoppingBag,
@@ -241,6 +261,16 @@ export const UserApp: React.FC<UserAppProps> = ({
       onClick: () => {
         setSelectedOrderId(null);
         onNavigate(`${prefix}/pesanan`);
+      },
+    },
+    {
+      id: "bagikan",
+      label: "Bagikan",
+      icon: Send,
+      isActive: !selectedOrderId && activeTab === "bagikan",
+      onClick: () => {
+        setSelectedOrderId(null);
+        onNavigate(`${prefix}/bagikan`);
       },
     },
     {
@@ -299,6 +329,10 @@ export const UserApp: React.FC<UserAppProps> = ({
               onNavigate={onNavigate}
               activeTab={activeTab}
               title={getAppNavbarTitle()}
+              onBack={() => {
+                onNavigate(PATHS.home);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
               userProfile={{
                 name: userProfile.name,
                 email: userProfile.email,
@@ -318,6 +352,8 @@ export const UserApp: React.FC<UserAppProps> = ({
               <p className="text-xs text-neutral-400">
                 {activeTab === "home" && "Kelola dan pantau undangan digital yang telah Anda buat."}
                 {activeTab === "proses" && "Daftar pesanan aktif dan status proses verifikasi pembayaran."}
+                {activeTab === "bagikan" && "Bagikan undangan Anda kepada tamu tercinta."}
+                {activeTab === "ucapan" && "Baca ucapan dan doa dari tamu undangan Anda."}
                 {activeTab === "profile" && "Informasi akun dan pengaturan data kontak Satu Cerita."}
               </p>
             </div>
@@ -358,6 +394,10 @@ export const UserApp: React.FC<UserAppProps> = ({
               showToast={showToast}
             />
           )}
+
+          {activeTab === "bagikan" && <BagikanPage />}
+
+          {activeTab === "ucapan" && <UcapanPage />}
 
           {activeTab === "profile" && (
             <ProfilePage
@@ -408,9 +448,10 @@ export const UserApp: React.FC<UserAppProps> = ({
           <nav
             id="satucerita-app-bottom-navbar"
             className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
-            aria-label="Satu Cerita App Navigation"
+            aria-label="Satu Cerita Studio Navigation"
           >
-            <div className="max-w-md mx-auto grid grid-cols-4 h-16 px-1">
+            <div className="max-w-md mx-auto grid grid-cols-5 h-16 px-1">
+              {/* 1. Beranda */}
               <button
                 type="button"
                 onClick={() => {
@@ -422,7 +463,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label="Undangan"
+                aria-label="Beranda"
               >
                 <Home className="w-5 h-5" />
                 <span
@@ -432,10 +473,37 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  Undangan
+                  Beranda
                 </span>
               </button>
 
+              {/* 2. Ucapan (icon message-square) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedOrderId(null);
+                  onNavigate(`${prefix}/ucapan`);
+                }}
+                className={`flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer ${
+                  !selectedOrderId && activeTab === "ucapan"
+                    ? "text-[#7d6aee] font-bold"
+                    : "text-neutral-500 hover:text-neutral-900 font-semibold"
+                }`}
+                aria-label="Ucapan"
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span
+                  className={`text-[11px] leading-tight ${
+                    !selectedOrderId && activeTab === "ucapan"
+                      ? "font-bold text-[#7d6aee]"
+                      : "font-semibold"
+                  }`}
+                >
+                  Ucapan
+                </span>
+              </button>
+
+              {/* 3. Pesanan */}
               <button
                 type="button"
                 onClick={() => {
@@ -461,6 +529,33 @@ export const UserApp: React.FC<UserAppProps> = ({
                 </span>
               </button>
 
+              {/* 4. Bagikan (icon send) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedOrderId(null);
+                  onNavigate(`${prefix}/bagikan`);
+                }}
+                className={`flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer ${
+                  !selectedOrderId && activeTab === "bagikan"
+                    ? "text-[#7d6aee] font-bold"
+                    : "text-neutral-500 hover:text-neutral-900 font-semibold"
+                }`}
+                aria-label="Bagikan"
+              >
+                <Send className="w-5 h-5" />
+                <span
+                  className={`text-[11px] leading-tight ${
+                    !selectedOrderId && activeTab === "bagikan"
+                      ? "font-bold text-[#7d6aee]"
+                      : "font-semibold"
+                  }`}
+                >
+                  Bagikan
+                </span>
+              </button>
+
+              {/* 5. Profil */}
               <button
                 type="button"
                 onClick={() => {
@@ -483,21 +578,6 @@ export const UserApp: React.FC<UserAppProps> = ({
                   }`}
                 >
                   Profil
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  onNavigate(PATHS.home);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                className="flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer text-neutral-500 hover:text-neutral-900 font-semibold"
-                aria-label="Kembali ke Landing Page"
-              >
-                <SquareArrowOutUpRight className="w-5 h-5" />
-                <span className="text-[11px] leading-tight font-semibold">
-                  Kembali
                 </span>
               </button>
             </div>

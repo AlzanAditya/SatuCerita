@@ -34,7 +34,7 @@ export const PesananPage: React.FC<PesananPageProps> = ({
 
   // Detail pesanan ditampilkan oleh OrderDetailPage (data & status dari server), bukan di sini.
   const isStandalone = typeof window !== "undefined" && window.location.hostname.startsWith("app.");
-  const prefix = isStandalone ? "" : "/app";
+  const prefix = isStandalone ? "" : "/studio";
 
   // -------------------------------------------------------------
   // VIEW: LIST PESANAN

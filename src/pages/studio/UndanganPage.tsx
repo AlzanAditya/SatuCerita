@@ -52,7 +52,7 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
           </div>
           <button
             type="button"
-            onClick={() => onNavigate(`/app/order/${pendingOrders[0].invoiceNo}`)}
+            onClick={() => onNavigate(`/studio/order/${pendingOrders[0].invoiceNo}`)}
             className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-neutral-900 font-bold text-xs cursor-pointer transition-colors shrink-0"
           >
             Bayar

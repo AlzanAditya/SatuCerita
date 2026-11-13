@@ -32,7 +32,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   const getEffectiveTab = () => {
     if (propActiveTab) return propActiveTab;
-    if (currentPath.includes("/login") || currentPath.includes("/signup") || currentPath.includes("/app")) return "login";
+    if (currentPath.includes("/login") || currentPath.includes("/signup") || currentPath.includes("/studio")) return "login";
     if (currentPath.includes("/katalog")) return "katalog";
     if (currentPath.includes("/cara-pesan") || currentPath.includes("/carapesan")) return "carapesan";
     if (currentPath.includes("/kontak") || currentPath.includes("/contact")) return "kontak";
@@ -68,7 +68,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
     if (tab === "login") {
       if (user) {
-        onNavigate(PATHS.appHome);
+        onNavigate(PATHS.studioHome);
       } else {
         onNavigate(PATHS.login);
       }

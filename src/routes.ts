@@ -17,12 +17,14 @@ export const PATHS = {
   caraPesan: "/cara-pesan",
   kontak: "/kontak",
   kebijakan: "/kebijakan",
-  appHome: "/app/home",
-  appPesanan: "/app/pesanan",
-  appProses: "/app/pesanan",
-  appProfile: "/app/profile",
-  appCheckout: "/app/checkout",
-  appOrder: "/app/order",
+  studioHome: "/studio/home",
+  studioPesanan: "/studio/pesanan",
+  studioProses: "/studio/pesanan",
+  studioBagikan: "/studio/bagikan",
+  studioUcapan: "/studio/ucapan",
+  studioProfile: "/studio/profile",
+  studioCheckout: "/studio/checkout",
+  studioOrder: "/studio/order",
   dash: "/dash",
   dashLogin: "/dash/login",
   dashCustomer: "/dash/customer",
@@ -41,12 +43,14 @@ export type RouteId =
   | "caraPesan"
   | "kontak"
   | "kebijakan"
-  | "appHome"
-  | "appPesanan"
-  | "appProses"
-  | "appProfile"
-  | "appCheckout"
-  | "appOrder"
+  | "studioHome"
+  | "studioPesanan"
+  | "studioProses"
+  | "studioBagikan"
+  | "studioUcapan"
+  | "studioProfile"
+  | "studioCheckout"
+  | "studioOrder"
   | "dash"
   | "dashLogin"
   | "dashCustomer"
@@ -142,25 +146,42 @@ export const ROUTES: RouteMeta[] = [
     indexable: false,
   },
   {
-    id: "appHome",
-    path: PATHS.appHome,
-    aliases: ["/app"],
+    id: "studioHome",
+    path: PATHS.studioHome,
+    // Alias lama "/app..." tetap dialihkan agar tautan lama tidak mati.
+    aliases: ["/app", "/app/home", "/studio"],
     title: "Undangan Saya | Satu Cerita",
     description: "Kelola undangan digital Anda di dashboard Satu Cerita.",
     indexable: false,
   },
   {
-    id: "appPesanan",
-    path: PATHS.appPesanan,
-    aliases: ["/app/proses", "/app/task", "/app/bayar", "/app/pembayaran"],
+    id: "studioPesanan",
+    path: PATHS.studioPesanan,
+    aliases: ["/app/pesanan", "/app/proses", "/app/task", "/app/bayar", "/app/pembayaran", "/studio", "/studio/proses", "/studio/task", "/studio/bayar", "/studio/pembayaran"],
     title: "Pesanan | Satu Cerita",
     description: "Pantau status pesanan dan pembayaran undangan digital Anda.",
     indexable: false,
   },
   {
-    id: "appProfile",
-    path: PATHS.appProfile,
-    aliases: ["/app/profil"],
+    id: "studioBagikan",
+    path: PATHS.studioBagikan,
+    aliases: ["/app/bagikan"],
+    title: "Bagikan | Satu Cerita",
+    description: "Bagikan undangan digital Anda ke tamu tercinta.",
+    indexable: false,
+  },
+  {
+    id: "studioUcapan",
+    path: PATHS.studioUcapan,
+    aliases: ["/app/ucapan"],
+    title: "Ucapan | Satu Cerita",
+    description: "Kelola ucapan dan doa dari tamu undangan digital Anda.",
+    indexable: false,
+  },
+  {
+    id: "studioProfile",
+    path: PATHS.studioProfile,
+    aliases: ["/app/profile", "/app/profil", "/studio/profil"],
     title: "Profil | Satu Cerita",
     description: "Kelola profil akun Satu Cerita Anda.",
     indexable: false,
@@ -288,33 +309,51 @@ export function resolveRoute(input: string): RouteMeta | null {
     };
   }
 
-  // Dynamic Checkout route: /app/checkout/:templateSlug
-  if (path.startsWith("/app/checkout/") && path.length > 14) {
+  // Dynamic Checkout route: /studio/checkout/:templateSlug (kompatibel dengan /app/checkout lama)
+  if (path.startsWith("/studio/checkout/") && path.length > 17) {
     return {
-      id: "appCheckout",
+      id: "studioCheckout",
       path: path,
       title: "Checkout — Satu Cerita",
       description: "Konfirmasi pesanan template undangan digital di Satu Cerita.",
       indexable: false,
     };
   }
-
-  // Dynamic Order detail route: /app/order/:invoiceNo
-  if (path.startsWith("/app/order/") && path.length > 11) {
+  if (path.startsWith("/app/checkout/") && path.length > 14) {
     return {
-      id: "appOrder",
+      id: "studioCheckout",
+      path: `/studio/checkout/${path.slice(14)}`,
+      title: "Checkout — Satu Cerita",
+      description: "Konfirmasi pesanan template undangan digital di Satu Cerita.",
+      indexable: false,
+    };
+  }
+
+  // Dynamic Order detail route: /studio/order/:invoiceNo (kompatibel dengan /app/order lama)
+  if (path.startsWith("/studio/order/") && path.length > 14) {
+    return {
+      id: "studioOrder",
       path: path,
       title: "Detail Pesanan — Satu Cerita",
       description: "Detail dan status pembayaran pesanan undangan digital Anda.",
       indexable: false,
     };
   }
+  if (path.startsWith("/app/order/") && path.length > 11) {
+    return {
+      id: "studioOrder",
+      path: `/studio/order/${path.slice(11)}`,
+      title: "Detail Pesanan — Satu Cerita",
+      description: "Detail dan status pembayaran pesanan undangan digital Anda.",
+      indexable: false,
+    };
+  }
 
-  // Alias tanpa prefix /app: /order/:invoiceNo (redirect dari Midtrans finish callback)
+  // Alias tanpa prefix: /order/:invoiceNo (redirect dari Midtrans finish callback)
   if (path.startsWith("/order/") && path.length > 7) {
     return {
-      id: "appOrder",
-      path: path,
+      id: "studioOrder",
+      path: `/studio/order/${path.slice(7)}`,
       title: "Detail Pesanan — Satu Cerita",
       description: "Detail dan status pembayaran pesanan undangan digital Anda.",
       indexable: false,

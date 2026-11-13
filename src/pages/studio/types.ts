@@ -61,6 +61,8 @@ export interface OrderItem {
   customerEmail: string;
   /** Instruksi bayar (VA / bill key / QR) dari Midtrans sudah tersimpan di server. */
   paymentReady?: boolean;
+  /** Token Snap Midtrans (hanya mode Snap). Jika ada, frontend harus membuka popup Snap. */
+  snapToken?: string;
   environment?: "sandbox" | "production";
 }
 
@@ -73,6 +75,8 @@ export type UserAppTab =
   | "app"
   | "joki"
   | "katalog"
+  | "bagikan"
+  | "ucapan"
   | "profile"
   | "bayar"
   | "checkout"

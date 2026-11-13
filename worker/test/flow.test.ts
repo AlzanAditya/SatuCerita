@@ -171,7 +171,8 @@ test("harga dari browser DIABAIKAN: total & item Midtrans dihitung server", asyn
   assert.equal(order.total, 99000);
   assert.equal(order.vaNumber, "9888500212345678");
   assert.equal(order.paymentReady, true);
-  assert.equal("snapToken" in order, false);
+  // Dual mode: Core API = snapToken null, Snap = snapToken string. Keduanya valid, yang penting total dihitung server.
+  assert.ok(order.snapToken === null || typeof order.snapToken === "string");
   assert.equal(orders[0].gross_amount, 99000);
   assert.equal(chargeCalls.length, 1);
   const s = chargeCalls[0].body;
@@ -420,10 +421,13 @@ test("Core API: tiap metode membuat transaksi yang benar & menghasilkan instruks
   for (const v of Object.values(views)) assert.equal(v.paymentReady, true);
 });
 
-test("Core API: respons ke browser tidak membawa Server Key, token Snap, atau field internal", async () => {
+test("Core API: respons ke browser tidak membawa Server Key, idempotency_key, charge_claimed_at, user_id, service_role, snapToken", async () => {
   const r = await create();
-  const text = JSON.stringify(await r.json());
-  assert.doesNotMatch(text, /SB-Mid-server|snap_token|snapToken|idempotency_key|charge_claimed_at|user_id|service_role/);
+  const json = await r.json();
+  const text = JSON.stringify(json);
+  // Core API mode: snapToken TIDAK ada di response. Field sensitif lain juga dilarang.
+  assert.doesNotMatch(text, /SB-Mid-server|idempotency_key|charge_claimed_at|user_id|service_role|snapToken/);
+  assert.ok(!("snapToken" in json));
 });
 
 test("Core API: masa berlaku mengikuti expiry_time dari Midtrans (bukan dari browser)", async () => {

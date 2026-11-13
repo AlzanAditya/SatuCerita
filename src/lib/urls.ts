@@ -1,6 +1,6 @@
 /**
  * URL lintas aplikasi (landing / app / dash).
- * - Lokal (localhost / IP): satu origin, pakai path (/login, /app/home, /dash).
+ * - Lokal (localhost / IP): satu origin, pakai path (/login, /studio/home, /dash).
  * - Produksi: subdomain (satucerita.<domain>, app.<domain>, dash.<domain>).
  */
 const loc = () => (typeof window !== "undefined" ? window.location : null);
@@ -23,12 +23,12 @@ export const urls = {
   katalogDetail: (slug: string) => (isLocal() ? `/katalog/${slug}` : `${origin("")}/katalog/${slug}`),
   login: () => (isLocal() ? "/login" : `${origin("")}/login`),
   signup: () => (isLocal() ? "/signup" : `${origin("")}/signup`),
-  appHome: () => (isLocal() ? "/app/home" : `${origin("studio")}/home`),
-  appPesanan: () => (isLocal() ? "/app/pesanan" : `${origin("studio")}/pesanan`),
-  appProses: () => (isLocal() ? "/app/pesanan" : `${origin("studio")}/pesanan`),
-  appProfile: () => (isLocal() ? "/app/profile" : `${origin("studio")}/profile`),
-  appCheckout: (slug: string) => (isLocal() ? `/app/checkout/${slug}` : `${origin("studio")}/checkout/${slug}`),
-  appOrder: (invoice: string) => (isLocal() ? `/app/order/${invoice}` : `${origin("studio")}/order/${invoice}`),
+  studioHome: () => (isLocal() ? "/studio/home" : `${origin("studio")}/home`),
+  studioPesanan: () => (isLocal() ? "/studio/pesanan" : `${origin("studio")}/pesanan`),
+  studioProses: () => (isLocal() ? "/studio/pesanan" : `${origin("studio")}/pesanan`),
+  studioProfile: () => (isLocal() ? "/studio/profile" : `${origin("studio")}/profile`),
+  studioCheckout: (slug: string) => (isLocal() ? `/studio/checkout/${slug}` : `${origin("studio")}/checkout/${slug}`),
+  studioOrder: (invoice: string) => (isLocal() ? `/studio/order/${invoice}` : `${origin("studio")}/order/${invoice}`),
   dashLogin: () => (isLocal() ? "/dash/login" : `${origin("dash")}/login`),
   dashHome: () => (isLocal() ? "/dash" : `${origin("dash")}/overview`),
 };

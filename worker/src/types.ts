@@ -14,6 +14,7 @@ export interface Env {
 
   // ---- Pembayaran (Midtrans) ----
   MIDTRANS_ENV: string;             // "sandbox" | "production"
+  MIDTRANS_PAYMENT_MODE?: string;   // "snap" | "core_api" (default: "core_api")
   MIDTRANS_CLIENT_KEY: string;      // publik; dipakai Core API hanya jika metode butuh (tokenisasi kartu). Tidak dikirim ke browser.
   MIDTRANS_SERVER_KEY: string;      // SECRET -> wrangler secret put MIDTRANS_SERVER_KEY
   SUPABASE_SERVICE_ROLE_KEY: string; // SECRET -> wrangler secret put SUPABASE_SERVICE_ROLE_KEY

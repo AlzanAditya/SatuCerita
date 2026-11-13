@@ -37,7 +37,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     const err = new URLSearchParams(window.location.search).get("error");
     if (err) setNotice({ type: "error", text: ERRORS[err] || "Terjadi kesalahan. Coba lagi." });
     // Sudah login -> langsung ke dashboard user
-    fetchSession().then((u) => u && window.location.replace(urls.appHome()));
+    fetchSession().then((u) => u && window.location.replace(urls.studioHome()));
   }, []);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
     const r = await loginWithEmail(p.email, p.password);
     if (!r.ok) return { error: r.error };
-    window.location.assign(urls.appHome());
+    window.location.assign(urls.studioHome());
   };
   const kebijakanPath = PATHS.kebijakan;
 

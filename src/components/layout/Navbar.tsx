@@ -126,8 +126,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             {user ? (
               <a
                 id="satucerita-navbar-profile-button"
-                href={PATHS.appHome}
-                onClick={(e) => handleNav(e, PATHS.appHome)}
+                href={PATHS.studioHome}
+                onClick={(e) => handleNav(e, PATHS.studioHome)}
                 className="hidden md:inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/80 text-neutral-800 transition-all duration-200 active:scale-95 cursor-pointer select-none"
                 title={`Profil ${user.name}`}
               >

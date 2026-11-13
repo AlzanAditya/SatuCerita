@@ -15,8 +15,8 @@ import {
 import { Button } from "@/components/ui/Button";
 import { PATHS } from "@/routes";
 import { getTemplateBySlug, formatRupiah } from "@/data/templates";
-import { OrderItem, PaymentMethodId } from "@/pages/app/types";
-import { createOrder, newIdempotencyKey, quoteOrder } from "@/lib/payments";
+import { OrderItem, PaymentMethodId } from "@/pages/studio/types";
+import { createOrder, newIdempotencyKey, quoteOrder, openSnap, getPaymentConfig } from "@/lib/payments";
 
 interface CheckoutPageProps {
   currentPath: string;
@@ -54,8 +54,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   onNavigate,
   onCreateOrder,
 }) => {
-  // Extract template slug from /app/checkout/:slug or /checkout/:slug
-  const rawSlug = currentPath.replace(/^(?:\/app)?\/checkout\/?/, "").split("?")[0].split("#")[0];
+  // Extract template slug from /studio/checkout/:slug or /checkout/:slug
+  const rawSlug = currentPath.replace(/^(?:\/(?:app|studio))?\/checkout\/?/, "").split("?")[0].split("#")[0];
   const template = getTemplateBySlug(rawSlug);
 
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
@@ -112,7 +112,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
   const goToOrder = (invoiceNo: string) => {
     const isStandalone = typeof window !== "undefined" && window.location.hostname.startsWith("app.");
-    const prefix = isStandalone ? "" : "/app";
+    const prefix = isStandalone ? "" : "/studio";
     onNavigate(`${prefix}/order/${invoiceNo}`);
   };
 
@@ -143,8 +143,27 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
         return;
       }
 
-      // Transaksi sudah dibuat server (Midtrans Core API). Customer tetap di website ini: instruksi bayar tampil di halaman pesanan.
       if (onCreateOrder) onCreateOrder(order);
+
+      // Dual mode: Snap (popup) atau Core API (instruksi di halaman pesanan)
+      if (order.snapToken) {
+        // Snap mode: buka popup Midtrans
+        let moved = false;
+        const next = () => {
+          if (moved) return;
+          moved = true;
+          goToOrder(order.invoiceNo);
+        };
+        await openSnap(order.snapToken, {
+          onSuccess: next,
+          onPending: next,
+          onClose: next,
+          onError: () => setPayError("Pembayaran gagal diproses. Silakan coba lagi atau pilih metode lain."),
+        });
+        return;
+      }
+
+      // Core API mode: transaksi sudah dibuat server. Customer tetap di website ini: instruksi bayar tampil di halaman pesanan.
       goToOrder(order.invoiceNo);
     } catch (e) {
       setPayError(e instanceof Error && e.message ? e.message : "Gagal memulai pembayaran. Coba lagi.");

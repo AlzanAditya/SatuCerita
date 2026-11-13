@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { PATHS } from "@/routes";
-import { Bell, Pencil, ChevronDown } from "lucide-react";
+import { Bell, Pencil, ChevronDown, ArrowLeft } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 
 export type DashPeriodType =
@@ -22,6 +22,8 @@ export interface AppNavbarProps {
   onLogout?: () => void;
   period?: DashPeriodType;
   onPeriodChange?: (period: DashPeriodType) => void;
+  /** Tampilkan tombol kembali (arrow-left) di navbar atas. */
+  onBack?: () => void;
   userProfile?: {
     name: string;
     email: string;
@@ -32,7 +34,7 @@ export interface AppNavbarProps {
 }
 
 export const AppNavbar: React.FC<AppNavbarProps> = ({
-  currentPath = "/app/home",
+  currentPath = "/studio/home",
   onNavigate,
   activeTab = "home",
   title,
@@ -42,6 +44,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
   onLogout,
   period = "Bulanan",
   onPeriodChange,
+  onBack,
   userProfile: propUserProfile,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -77,8 +80,12 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
         return "Profil";
       case "katalog":
         return "Katalog Template";
+      case "bagikan":
+        return "Bagikan";
+      case "ucapan":
+        return "Ucapan";
       default:
-        return "Satu Cerita App";
+        return "Satu Cerita Studio";
     }
   };
 
@@ -174,6 +181,19 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
               <ChevronDown className="w-3.5 h-3.5 text-[#7d6aee] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2.5]" />
             </div>
           </div>
+        )}
+
+        {/* Tombol kembali — pojok paling kanan, kotak radius outline 1.5px warna icon */}
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="size-9 sm:size-10 rounded-lg border-[1.5px] border-current flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-neutral-100 transition-colors cursor-pointer shrink-0"
+            title="Kembali"
+            aria-label="Kembali"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
         )}
 
 

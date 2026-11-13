@@ -56,20 +56,25 @@ function LandingRouter() {
 
   const navigate = useCallback(
     (to: string) => {
-      // Jika menuju ke app dashboard, checkout, atau order dari landing page yang mandiri
-      if (to.startsWith("/app") || to.startsWith("/checkout") || to.startsWith("/order")) {
+      // Jika menuju ke studio dashboard, checkout, atau order dari landing page yang mandiri
+      if (
+        to.startsWith("/studio") ||
+        to.startsWith("/app") ||
+        to.startsWith("/checkout") ||
+        to.startsWith("/order")
+      ) {
         const host = window.location.hostname;
         const isLocalHost = host === "localhost" || /^[\d.]+$/.test(host) || host.endsWith(".local");
         if (!isLocalHost && !host.startsWith("app.") && !host.startsWith("studio.")) {
           // Jika berada di domain utama (mis. satucerita.app), arahkan ke studio.satucerita.app
           const rootDomain = host.replace(/^www\./, "");
           const appDomain = `${window.location.protocol}//studio.${rootDomain}${window.location.port ? ":" + window.location.port : ""}`;
-          const targetPath = to.replace(/^\/app/, "") || "/home";
+          const targetPath = to.replace(/^\/(?:app|studio)/, "") || "/home";
           window.location.href = `${appDomain}${targetPath}`;
           return;
         } else if (isLocalHost) {
           // Pada lokal/dev environment
-          const targetPath = to.startsWith("/app") ? to : `/app${to}`;
+          const targetPath = to.startsWith("/app") ? to.replace(/^\/app/, "/studio") : `/studio${to}`;
           window.location.href = targetPath;
           return;
         }

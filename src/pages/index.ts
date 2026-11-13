@@ -1,3 +1,3 @@
 export * from "./landing";
-export * from "./app";
+export * from "./studio";
 export * from "./dash";
