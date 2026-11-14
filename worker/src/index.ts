@@ -1,18 +1,20 @@
 import type { Env } from "./types";
-import { json, originAllowed, readJson } from "./http";
+import { json, localizeEnv, originAllowed, readJson } from "./http";
 import { resolveSession, isAdminUser } from "./session";
 import { googleCallback, googleStart, login, logout, me, signup, updateMe } from "./auth";
 import { redirect } from "./http";
 import { cancelOrder, createOrder, getOrder, listOrders, paymentsConfig, quoteOrder, syncOrder } from "./orders";
 import { midtransWebhook } from "./webhook";
 import { streamOrder } from "./stream";
+import { handlePublicAsset, getWishes, postRsvp } from "./public";
+import { invitationsApi } from "./invitations";
 
 // Durable Object hub realtime: HARUS diekspor dari modul entry agar Cloudflare dapat meng-instansiasinya.
 export { PaymentHub } from "./hub";
 
 const isAsset = (p: string) => p.startsWith("/assets/") || (/\.[a-z0-9]{2,5}$/i.test(p) && !p.endsWith(".html"));
 
-async function handleApi(env: Env, req: Request, url: URL): Promise<Response> {
+async function handleApi(env: Env, req: Request, url: URL, ctx?: ExecutionContext): Promise<Response> {
   const { pathname: p } = url;
   const m = req.method;
 
@@ -28,6 +30,10 @@ async function handleApi(env: Env, req: Request, url: URL): Promise<Response> {
   const orderPath = /^\/api\/orders\/([^/]+)(?:\/(sync|cancel|events))?$/.exec(p);
   if (m === "GET" && orderPath && !orderPath[2]) return getOrder(env, req, orderPath[1]);
   if (m === "GET" && orderPath?.[2] === "events") return streamOrder(env, req, orderPath[1]);
+
+  // ---- Publik (tamu undangan, tanpa login): ucapan & RSVP ----
+  const pub = /^\/api\/public\/([a-z0-9-]+)\/(wishes|rsvp)$/.exec(p);
+  if (m === "GET" && pub?.[2] === "wishes") return getWishes(env, url, pub[1]);
 
   // Webhook Midtrans: server-ke-server, TIDAK punya header Origin -> dikecualikan dari cek Origin di bawah.
   // Keamanannya ada di signature SHA512 + konfirmasi Status API (lihat webhook.ts).
@@ -50,6 +56,11 @@ async function handleApi(env: Env, req: Request, url: URL): Promise<Response> {
   if (m === "POST" && p === "/api/orders") return createOrder(env, req, await readJson(req));
   if (m === "POST" && orderPath?.[2] === "sync") return syncOrder(env, req, orderPath[1]);
   if (m === "POST" && orderPath?.[2] === "cancel") return cancelOrder(env, req, orderPath[1]);
+
+  // ---- RSVP publik (POST, wajib Origin) & undangan milik user (editor) ----
+  if (m === "POST" && pub?.[2] === "rsvp") return postRsvp(env, req, pub[1]);
+  const inv = await invitationsApi(env, req, url, ctx);
+  if (inv) return inv;
 
   return json({ error: "Not found" }, 404);
 }
@@ -100,9 +111,13 @@ async function guardPage(env: Env, req: Request, url: URL): Promise<Response> {
 }
 
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, rawEnv: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
-    if (url.pathname.startsWith("/api/")) return handleApi(env, req, url);
+    const env = localizeEnv(rawEnv, url); // localhost -> semua redirect/cookie lokal (lihat http.ts)
+    // Undangan publik (/i/..), template mentah (/templates/..), foto user (/m/..): dilayani dari R2, tanpa guard sesi.
+    const asset = await handlePublicAsset(env, req, url, ctx);
+    if (asset) return asset;
+    if (url.pathname.startsWith("/api/")) return handleApi(env, req, url, ctx);
 
     // Jika ada kode auth dari Supabase (misal fallback ke / atau /login), teruskan ke handler callback
     if (url.searchParams.has("code")) {

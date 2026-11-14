@@ -63,7 +63,8 @@ async function buildLanding() {
 
   // Salin folder templates dari src/templates ke dist/landing/templates
   const templatesSrc = path.resolve(ROOT, "src/templates");
-  if (fs.existsSync(templatesSrc)) {
+  // Template kini dilayani Worker dari R2 (route /templates/*, lihat scripts/sync-templates.ts). Salin statis hanya bila diminta.
+  if (process.env.COPY_TEMPLATES === "1" && fs.existsSync(templatesSrc)) {
     copyDirRecursive(templatesSrc, path.join(landingOutDir, "templates"));
     console.log("   ✓ Template statis disalin ke dist/landing/templates/");
   }

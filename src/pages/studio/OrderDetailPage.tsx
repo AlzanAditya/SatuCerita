@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { OrderItem } from "@/pages/studio/types";
 import { formatRupiah } from "@/data/templates";
-import { formatOrderDate, getOrder, orderEventsUrl, syncOrder } from "@/lib/payments";
+import { formatOrderDate, getOrder, openSnap, orderEventsUrl, preloadSnap, syncOrder } from "@/lib/payments";
 import { createOrderWatcher, type WatcherMode } from "@/lib/orderStream";
 import { PAYMENT_INSTRUCTIONS } from "@/lib/paymentInstructions";
 
@@ -151,6 +151,34 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, [order?.dueDate, order?.status]);
+
+  // Mode Snap: buka (kembali) popup Midtrans dengan token dari server. Token hanya ada selama pesanan masih menunggu bayar.
+  const [snapOpening, setSnapOpening] = useState(false);
+  const hasSnapToken = !!order?.snapToken && order.status === "pending";
+  useEffect(() => { if (hasSnapToken) preloadSnap(); }, [hasSnapToken]);
+  const handleOpenSnap = async () => {
+    if (!order?.snapToken || busy.current) return;
+    busy.current = true;
+    setSnapOpening(true);
+    // Setelah popup selesai/ditutup, minta server memeriksa status ke Midtrans (webhook tetap jalur utama).
+    const check = async () => {
+      const res = await syncOrder(order.invoiceNo);
+      if (res.ok && res.data.order) applyOrder(res.data.order);
+    };
+    try {
+      await openSnap(order.snapToken, {
+        onSuccess: () => void check(),
+        onPending: () => void check(),
+        onClose: () => void check(),
+        onError: () => { if (showToast) showToast("Pembayaran gagal diproses. Coba lagi atau ganti metode."); },
+      });
+    } catch (e) {
+      if (showToast) showToast(e instanceof Error && e.message ? e.message : "Gagal membuka pembayaran. Coba lagi.");
+    } finally {
+      busy.current = false;
+      setSnapOpening(false);
+    }
+  };
 
   const handleCopy = (text: string, label: string) => {
     try {
@@ -354,7 +382,19 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                 </a>
               )}
 
-              {!order.paymentReady && (
+              {hasSnapToken && (
+                <button
+                  type="button"
+                  onClick={handleOpenSnap}
+                  disabled={snapOpening}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-3 rounded-xl bg-neutral-900 text-white font-extrabold text-sm cursor-pointer hover:bg-neutral-800 transition-colors disabled:opacity-60"
+                >
+                  {snapOpening && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {order.paymentReady ? "Buka kembali halaman pembayaran" : "Lanjutkan pembayaran"}
+                </button>
+              )}
+
+              {!order.paymentReady && !hasSnapToken && (
                 <div className="bg-white/30 rounded-xl p-4 mb-3 flex items-center gap-3" role="status">
                   <Loader2 className="w-5 h-5 animate-spin shrink-0" />
                   <p className="text-xs font-semibold text-neutral-800/80 leading-relaxed">

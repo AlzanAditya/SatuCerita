@@ -11,6 +11,7 @@ const SK = "SB-Mid-server-TESTKEY";
 const SB = "https://fake.supabase.co";
 const API = "https://api.sandbox.midtrans.com";
 const CHARGE = `${API}/v2/charge`;
+const SNAP = "https://app.sandbox.midtrans.com/snap/v1/transactions"; // endpoint Snap sesuai dokumentasi Midtrans
 const ORIGIN = "https://studio.satucerita.app";
 
 const env = {
@@ -27,6 +28,8 @@ let orders: Row[] = [];
 let events: Row[] = [];
 let chargeCalls: { body: any; headers: Headers }[] = [];
 let chargeReply: ((body: any, n: number) => Response) | null = null;
+let snapCalls: { body: any; headers: Headers }[] = [];
+let snapReply: ((body: any, n: number) => Response) | null = null;
 let statusReply: (id: string) => any = () => ({ status_code: "404" });
 let statusDown = false;
 let currentUser = "user-1";
@@ -89,6 +92,11 @@ globalThis.fetch = (async (input: any, init: RequestInit = {}) => {
     if (chargeReply) return chargeReply(body, chargeCalls.length);
     return json(fakeCharge(body, chargeCalls.length), 200); // Midtrans: HTTP 200 + status_code di body
   }
+  if (url.href === SNAP && method === "POST") {
+    snapCalls.push({ body, headers: new Headers(init.headers) });
+    if (snapReply) return snapReply(body, snapCalls.length);
+    return json({ token: `snap-token-${snapCalls.length}`, redirect_url: `https://app.sandbox.midtrans.com/snap/v4/redirection/snap-token-${snapCalls.length}` }, 201);
+  }
   if (url.origin === API && url.pathname.endsWith("/status")) {
     statusCalls++;
     if (statusDown) return new Response("down", { status: 503 });
@@ -98,7 +106,7 @@ globalThis.fetch = (async (input: any, init: RequestInit = {}) => {
   throw new Error(`fetch tak terduga: ${method} ${url.href}`);
 }) as typeof fetch;
 
-beforeEach(() => { orders = []; events = []; chargeCalls = []; chargeReply = null; failPatch = false; patchCount = 0; statusCalls = 0; activeEnv = env; hubs.clear(); hubBroken = false; statusReply = () => ({ status_code: "404" }); statusDown = false; currentUser = "user-1"; });
+beforeEach(() => { orders = []; events = []; chargeCalls = []; chargeReply = null; snapCalls = []; snapReply = null; failPatch = false; patchCount = 0; statusCalls = 0; activeEnv = env; hubs.clear(); hubBroken = false; statusReply = () => ({ status_code: "404" }); statusDown = false; currentUser = "user-1"; });
 
 // ---------------------------------------------------------------- hub realtime palsu (memakai kelas PaymentHub ASLI)
 const hubs = new Map<string, PaymentHub>();
@@ -171,8 +179,7 @@ test("harga dari browser DIABAIKAN: total & item Midtrans dihitung server", asyn
   assert.equal(order.total, 99000);
   assert.equal(order.vaNumber, "9888500212345678");
   assert.equal(order.paymentReady, true);
-  // Dual mode: Core API = snapToken null, Snap = snapToken string. Keduanya valid, yang penting total dihitung server.
-  assert.ok(order.snapToken === null || typeof order.snapToken === "string");
+  assert.equal(order.snapToken, undefined); // mode Core API: tidak ada token Snap
   assert.equal(orders[0].gross_amount, 99000);
   assert.equal(chargeCalls.length, 1);
   const s = chargeCalls[0].body;
@@ -759,4 +766,255 @@ test("publish hanya terjadi bila status benar-benar berubah (replay tidak memicu
   await new Promise((r) => setTimeout(r, 30));
   assert.equal(s.frames.length, 1);
   await s.cancel();
+});
+
+
+// ================================================================ MODE SNAP (popup Midtrans)
+const snapEnv = { ...env, MIDTRANS_PAYMENT_MODE: "snap" } as unknown as Env;
+const useSnap = () => { activeEnv = snapEnv; };
+const itemSum = (b: any) => b.item_details.reduce((a: number, i: any) => a + i.price * i.quantity, 0);
+
+test("Snap: config memberi mode + Client Key + URL snap.js sandbox, TANPA Server Key", async () => {
+  useSnap();
+  const c = (await (await call("/api/payments/config")).json()) as any;
+  assert.equal(c.mode, "snap");
+  assert.equal(c.clientKey, "SB-Mid-client-x");
+  assert.equal(c.snapUrl, "https://app.sandbox.midtrans.com/snap/snap.js");
+  assert.doesNotMatch(JSON.stringify(c), /server/i);
+  activeEnv = env; // Core API: tidak ada kunci / URL Snap
+  const core = (await (await call("/api/payments/config")).json()) as any;
+  assert.equal(core.mode, "core_api");
+  assert.ok(!("clientKey" in core) && !("snapUrl" in core));
+});
+
+test("Snap: pesanan memanggil /snap/v1/transactions (BUKAN /v2/charge atau /v2/token) dan token dikembalikan ke browser", async () => {
+  useSnap();
+  const r = await create();
+  assert.equal(r.status, 201);
+  const { order } = (await r.json()) as any;
+  assert.equal(snapCalls.length, 1);
+  assert.equal(chargeCalls.length, 0);
+  assert.equal(order.snapToken, "snap-token-1");
+  assert.equal(order.total, 99000);
+  assert.equal(order.paymentReady, false); // instruksi (VA dst.) baru ada setelah pembeli memilih di popup + notifikasi
+  assert.equal(orders[0].snap_token, "snap-token-1");
+  assert.equal(orders[0].charge_claimed_at, null); // klaim charge hanya untuk Core API
+  const c = snapCalls[0];
+  assert.equal(c.headers.get("Authorization"), "Basic " + btoa(SK + ":"));
+  assert.equal(c.headers.get("Content-Type"), "application/json");
+  assert.equal(c.body.transaction_details.order_id, orders[0].invoice_no);
+  assert.equal(c.body.transaction_details.gross_amount, 99000);
+  assert.deepEqual(c.body.enabled_payments, ["bni_va"]);
+  assert.equal(c.body.expiry.unit, "minutes");
+  assert.equal(c.body.expiry.duration, 1440);
+  assert.match(c.body.expiry.start_time, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \+0700$/);
+  assert.match(c.body.callbacks.finish, /^https:\/\/studio\.satucerita\.app\/order\/SC/);
+  assert.equal(c.body.customer_details.first_name, "Budi");
+  assert.equal(itemSum(c.body), 99000);
+});
+
+test("Snap: voucher -> item diskon negatif, jumlah item = gross_amount (syarat Midtrans)", async () => {
+  useSnap();
+  const r = await create({ voucherCode: "hemat10" });
+  const { order } = (await r.json()) as any;
+  assert.equal(order.total, 89100);
+  assert.equal(snapCalls[0].body.transaction_details.gross_amount, 89100);
+  assert.equal(itemSum(snapCalls[0].body), 89100);
+});
+
+test("Snap: kanal Midtrans per metode sesuai dokumentasi (echannel, other_qris, gopay + callback)", async () => {
+  useSnap();
+  const want: Record<string, string> = { bni_va: "bni_va", bri_va: "bri_va", permata_va: "permata_va", mandiri_bill: "echannel", qris: "other_qris", gopay: "gopay" };
+  for (const [m, ch] of Object.entries(want)) {
+    const r = await createAs(`u-${m}`, m);
+    assert.equal(r.status, 201, m);
+    assert.deepEqual(snapCalls.at(-1)!.body.enabled_payments, [ch], m);
+  }
+  const by = (ch: string) => snapCalls.find((c) => c.body.enabled_payments[0] === ch)!.body;
+  assert.equal(by("gopay").gopay.enable_callback, true); // callback aplikasi GoPay hanya untuk kanal gopay
+  assert.match(by("gopay").gopay.callback_url, /^https:\/\/studio\.satucerita\.app\/order\/SC/);
+  assert.equal(by("other_qris").gopay, undefined);
+  assert.equal(by("bni_va").gopay, undefined);
+});
+
+test("Snap: klik ganda paralel (kunci sama) -> hanya SATU token tersimpan, semua menerima token yang sama", async () => {
+  useSnap();
+  const k = key();
+  const rs = await Promise.all(Array.from({ length: 6 }, () => create({ idempotencyKey: k })));
+  const toks = await Promise.all(rs.map(async (r) => ((await r.json()) as any).order?.snapToken));
+  assert.equal(orders.length, 1);
+  assert.ok(toks.every((t) => t && t === orders[0].snap_token), JSON.stringify(toks));
+});
+
+test("Snap: kunci sama berurutan -> tidak membuat token baru", async () => {
+  useSnap();
+  const k = key();
+  await create({ idempotencyKey: k });
+  await create({ idempotencyKey: k });
+  assert.equal(snapCalls.length, 1);
+  assert.equal(orders.length, 1);
+});
+
+test("Snap: pilihan sama (tab lain, kunci baru) -> pesanan & token lama dipakai ulang, tidak dibatalkan", async () => {
+  useSnap();
+  await create();
+  const r2 = await create();
+  const { order, reused } = (await r2.json()) as any;
+  assert.equal(orders.length, 1);
+  assert.equal(snapCalls.length, 1);
+  assert.equal(order.snapToken, "snap-token-1");
+  assert.equal(reused, true);
+});
+
+test("Snap: ganti metode -> pesanan lama dibatalkan, pesanan baru dengan token baru", async () => {
+  useSnap();
+  await create();
+  const r2 = await create({ method: "bri_va" });
+  assert.equal(r2.status, 201);
+  assert.equal(orders.length, 2);
+  assert.equal(orders[0].status, "cancelled");
+  assert.equal(orders[1].snap_token, "snap-token-2");
+  assert.deepEqual(snapCalls[1].body.enabled_payments, ["bri_va"]);
+});
+
+test("Snap: Midtrans menolak (400) -> error ramah, token tidak tersimpan, tidak ada detail bocor; coba lagi berhasil", async () => {
+  useSnap();
+  snapReply = () => json({ error_messages: ["transaction_details.gross_amount is not equal to the sum of item_details"] }, 400);
+  const k = key();
+  const r = await create({ idempotencyKey: k });
+  assert.equal(r.status, 422);
+  const text = JSON.stringify(await r.json());
+  assert.doesNotMatch(text, /gross_amount|item_details|SB-Mid-server/);
+  assert.equal(orders[0].snap_token, null);
+  assert.equal(orders[0].status, "pending");
+  snapReply = null;
+  const r2 = await create({ idempotencyKey: k }); // percobaan ulang dengan kunci sama
+  assert.equal(r2.status, 200);
+  assert.equal(((await r2.json()) as any).order.snapToken, "snap-token-2");
+  assert.equal(orders.length, 1);
+});
+
+test("Snap: Midtrans down (500) / Server Key salah (401) -> error ramah, pesanan tetap pending tanpa token", async () => {
+  useSnap();
+  for (const status of [500, 401]) {
+    orders = [];
+    snapReply = () => json({ error_messages: ["Access denied due to unauthorized transaction, please check client or server key"] }, status);
+    const r = await create();
+    assert.ok([502, 503, 500].includes(r.status), String(r.status));
+    assert.doesNotMatch(JSON.stringify(await r.json()), /unauthorized|server key/i);
+    assert.equal(orders[0].snap_token, null);
+  }
+});
+
+test("Snap: token tidak bocor ke pesanan yang sudah tidak pending, dan response tidak membawa field internal", async () => {
+  useSnap();
+  const r = await create();
+  const json1 = (await r.json()) as any;
+  assert.doesNotMatch(JSON.stringify(json1), /SB-Mid-server|idempotency_key|charge_claimed_at|user_id|service_role/);
+  const inv = orders[0].invoice_no;
+  orders[0].status = "cancelled";
+  const g = (await (await call(`/api/orders/${inv}`)).json()) as any;
+  assert.equal(g.order.snapToken, undefined);
+  assert.doesNotMatch(JSON.stringify(await (await call("/api/orders")).json()), /snap-token-1/);
+});
+
+test("Snap: GET pesanan pending menyertakan token (untuk 'Lanjutkan pembayaran'); pesanan kedaluwarsa tidak", async () => {
+  useSnap();
+  await create();
+  const inv = orders[0].invoice_no;
+  assert.equal(((await (await call(`/api/orders/${inv}`)).json()) as any).order.snapToken, "snap-token-1");
+  orders[0].expires_at = new Date(Date.now() - 3600_000).toISOString();
+  statusReply = () => ({ status_code: "404" });
+  assert.equal(((await (await call(`/api/orders/${inv}`)).json()) as any).order.snapToken, undefined);
+});
+
+test("Snap: pembeli memilih VA di popup -> notifikasi pending menyimpan nomor VA; settlement -> LUNAS (webhook tetap sumber kebenaran)", async () => {
+  useSnap();
+  await create();
+  const inv = orders[0].invoice_no;
+  statusReply = statusOk("pending", { payment_type: "bank_transfer", transaction_id: "snap-trx-1" });
+  assert.equal((await notify({ transaction_status: "pending", status_code: "201", transaction_id: "snap-trx-1" })).status, 200);
+  assert.equal(orders[0].status, "pending");
+  assert.equal(orders[0].payment_info.vaNumber, "98812345");
+  assert.equal(orders[0].midtrans_trx_id, "snap-trx-1");
+  assert.equal(((await (await call(`/api/orders/${inv}`)).json()) as any).order.paymentReady, true);
+
+  statusReply = statusOk("settlement", { transaction_id: "snap-trx-1" });
+  assert.equal((await notify({ transaction_id: "snap-trx-1" })).status, 200);
+  assert.equal(orders[0].status, "paid");
+  assert.ok(orders[0].paid_at);
+  const g = (await (await call(`/api/orders/${inv}`)).json()) as any;
+  assert.equal(g.order.status, "paid");
+  assert.equal(g.order.snapToken, undefined);
+});
+
+test("Snap: pembeli mengganti kanal di popup (transaction_id baru) setelah gagal -> tetap diterima & bisa lunas", async () => {
+  useSnap();
+  await create();
+  statusReply = statusOk("pending", { transaction_id: "snap-trx-1" });
+  await notify({ transaction_status: "pending", status_code: "201", transaction_id: "snap-trx-1" });
+  // transaksi pertama diganti Snap dengan transaction_id baru (mis. pembeli pilih kanal lain) lalu dibayar
+  statusReply = statusOk("settlement", { transaction_id: "snap-trx-2" });
+  assert.equal((await notify({ transaction_id: "snap-trx-2" })).status, 200);
+  assert.equal(orders[0].status, "paid");
+});
+
+test("Snap: nominal notifikasi tidak cocok -> needs_review (tidak pernah lunas)", async () => {
+  useSnap();
+  await create();
+  assert.equal((await notify({ gross_amount: "1000.00" })).status, 200);
+  assert.notEqual(orders[0].status, "paid");
+});
+
+test("Snap: expire dari Midtrans -> pesanan expired dan token tidak dikirim lagi", async () => {
+  useSnap();
+  await create();
+  const inv = orders[0].invoice_no;
+  statusReply = statusOk("expire");
+  await notify({ transaction_status: "expire", status_code: "407" });
+  assert.equal(orders[0].status, "expired");
+  assert.equal(((await (await call(`/api/orders/${inv}`)).json()) as any).order.snapToken, undefined);
+});
+
+test("Snap: sync ('Cek status') memakai Status API; belum ada transaksi (404) -> tetap pending", async () => {
+  useSnap();
+  await create();
+  const inv = orders[0].invoice_no;
+  const r1 = (await (await call(`/api/orders/${inv}/sync`, { method: "POST" })).json()) as any;
+  assert.equal(r1.order.status, "pending");
+  assert.equal(r1.order.snapToken, "snap-token-1");
+  orders[0].last_synced_at = null;
+  statusReply = statusOk("settlement");
+  const r2 = (await (await call(`/api/orders/${inv}/sync`, { method: "POST" })).json()) as any;
+  assert.equal(r2.order.status, "paid");
+});
+
+test("Snap: konfigurasi salah (key production + mode sandbox) -> 503, tidak menghubungi Midtrans", async () => {
+  activeEnv = { ...snapEnv, MIDTRANS_SERVER_KEY: "Mid-server-PROD" } as unknown as Env;
+  const r = await create();
+  assert.equal(r.status, 503);
+  assert.equal(snapCalls.length, 0);
+});
+
+// ================================================================ Dev lokal: tidak boleh melompat ke produksi
+const prodVars = { ...env, ENVIRONMENT: "production", COOKIE_DOMAIN: "satucerita.app", LOGIN_URL: "https://satucerita.app/login", STUDIO_HOME_URL: `${ORIGIN}/home`, DASH_LOGIN_URL: "https://dash.satucerita.app/login" } as unknown as Env;
+
+test("lokal: login Google gagal kembali ke /login LOKAL (bukan satucerita.app); redirect_to Supabase = localhost", async () => {
+  const bad = await worker.fetch(new Request("http://localhost:3000/api/auth/callback?next=studio"), prodVars);
+  assert.equal(bad.status, 302);
+  assert.equal(bad.headers.get("Location"), "http://localhost:3000/login?error=oauth_failed");
+  const start = await worker.fetch(new Request("http://localhost:3000/api/auth/google?next=studio"), prodVars);
+  const to = new URL(start.headers.get("Location")!).searchParams.get("redirect_to");
+  assert.equal(to, "http://localhost:3000/api/auth/callback?next=studio");
+  const cookie = start.headers.getSetCookie().join("\n");
+  assert.doesNotMatch(cookie, /Domain=/); // cookie ber-Domain produksi ditolak browser di localhost
+  assert.doesNotMatch(cookie, /Secure/);   // http://localhost
+});
+
+test("produksi: perilaku tidak berubah (callback gagal -> LOGIN_URL produksi, cookie ber-Domain)", async () => {
+  const bad = await worker.fetch(new Request("https://satucerita.app/api/auth/callback?next=studio"), prodVars);
+  assert.equal(bad.headers.get("Location"), "https://satucerita.app/login?error=oauth_failed");
+  const start = await worker.fetch(new Request("https://satucerita.app/api/auth/google?next=studio"), prodVars);
+  assert.equal(new URL(start.headers.get("Location")!).searchParams.get("redirect_to"), "https://satucerita.app/api/auth/callback?next=studio");
+  assert.match(start.headers.getSetCookie().join("\n"), /Domain=\.satucerita\.app/);
 });

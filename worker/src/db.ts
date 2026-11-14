@@ -76,3 +76,19 @@ export async function dbPatch<T>(env: Env, table: string, filter: string, patch:
   return (await r.json()) as T[];
 }
 
+
+/** DELETE dengan filter wajib (tidak pernah menghapus tanpa filter). Mengembalikan baris yang terhapus. */
+export async function dbDelete<T>(env: Env, table: string, filter: string): Promise<T[]> {
+  if (!filter.trim()) throw new DbError("delete tanpa filter ditolak", 400);
+  const r = await fetch(url(env, table, filter), {
+    method: "DELETE",
+    headers: svcHeaders(env, { Prefer: "return=representation" }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!r.ok) {
+    const body = await r.text().catch(() => "");
+    console.error("db.delete_error", JSON.stringify({ table, filter: filter.slice(0, 100), status: r.status, body: body.slice(0, 300) }));
+    throw new DbError(`delete ${table} gagal`, r.status);
+  }
+  return (await r.json()) as T[];
+}

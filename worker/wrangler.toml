@@ -15,6 +15,9 @@ preview_urls = false
 routes = [
   { pattern = "satucerita.app/api/*", zone_name = "satucerita.app" },
   { pattern = "satucerita.app/login*", zone_name = "satucerita.app" },
+  { pattern = "satucerita.app/i/*", zone_name = "satucerita.app" },
+  { pattern = "satucerita.app/m/*", zone_name = "satucerita.app" },
+  { pattern = "satucerita.app/templates/*", zone_name = "satucerita.app" },
   { pattern = "studio.satucerita.app/*", zone_name = "satucerita.app" },
   { pattern = "dash.satucerita.app/*", zone_name = "satucerita.app" },
 ]
@@ -38,11 +41,18 @@ DASH_HOME_URL = "https://dash.satucerita.app/overview"
 # ---- Midtrans ----
 # "sandbox" untuk uji coba; ganti ke "production" HANYA saat go-live (beserta key production).
 MIDTRANS_ENV = "sandbox"
+# Mode pembayaran: "snap" (popup Midtrans Snap) atau "core_api" (UI sendiri + /v2/charge). Default: "core_api".
+# Sementara dipakai: Snap. Kode Core API TETAP ada; kembali cukup ganti ke "core_api" lalu deploy ulang.
+MIDTRANS_PAYMENT_MODE = "snap"
 # Client Key itu PUBLIK (boleh di sini). Isi dengan Client Key Sandbox kamu (awalan SB-Mid-client-).
 # Server Key & Service Role Key JANGAN di sini -> `wrangler secret put` (lihat docs/SETUP-MIDTRANS.md).
 MIDTRANS_CLIENT_KEY = "SB-Mid-client-7odcntjN2r~toCTCs-NHe9qE"
 
 # Hub realtime status pembayaran (SSE): satu Durable Object per invoice.
+[[r2_buckets]]
+binding = "ASSETS_BUCKET"
+bucket_name = "satucerita-assets"
+
 [[durable_objects.bindings]]
 name = "PAYMENT_HUB"
 class_name = "PaymentHub"
@@ -65,4 +75,14 @@ simple = { limit = 20, period = 60 }
 [[ratelimits]]
 name = "RL_STREAM"
 namespace_id = "7103"
+simple = { limit = 30, period = 60 }
+
+[[ratelimits]]
+name = "RL_RSVP"
+namespace_id = "7104"
+simple = { limit = 8, period = 60 }
+
+[[ratelimits]]
+name = "RL_UPLOAD"
+namespace_id = "7105"
 simple = { limit = 30, period = 60 }

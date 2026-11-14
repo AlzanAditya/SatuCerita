@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ExternalLink,
@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/Button";
 import { PATHS } from "@/routes";
 import { getTemplateBySlug, formatRupiah } from "@/data/templates";
 import { OrderItem, PaymentMethodId } from "@/pages/studio/types";
-import { createOrder, newIdempotencyKey, quoteOrder, openSnap, getPaymentConfig } from "@/lib/payments";
+import { createOrder, newIdempotencyKey, quoteOrder, openSnap, preloadSnap } from "@/lib/payments";
 
 interface CheckoutPageProps {
   currentPath: string;
@@ -67,6 +67,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [payError, setPayError] = useState("");
   // Anti klik ganda: satu permintaan dalam satu waktu + kunci idempoten per "niat bayar".
+  // Mode Snap: muat snap.js lebih awal supaya popup langsung terbuka setelah tombol Bayar ditekan.
+  useEffect(() => { preloadSnap(); }, []);
+
   const inFlight = useRef(false);
   const lastClickAt = useRef(0);
   const idem = useRef<{ sig: string; key: string } | null>(null);

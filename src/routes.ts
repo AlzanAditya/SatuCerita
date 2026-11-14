@@ -21,6 +21,7 @@ export const PATHS = {
   studioPesanan: "/studio/pesanan",
   studioProses: "/studio/pesanan",
   studioBagikan: "/studio/bagikan",
+  studioEdit: "/studio/edit",
   studioUcapan: "/studio/ucapan",
   studioProfile: "/studio/profile",
   studioCheckout: "/studio/checkout",
@@ -47,6 +48,7 @@ export type RouteId =
   | "studioPesanan"
   | "studioProses"
   | "studioBagikan"
+  | "studioEdit"
   | "studioUcapan"
   | "studioProfile"
   | "studioCheckout"
@@ -168,6 +170,14 @@ export const ROUTES: RouteMeta[] = [
     aliases: ["/app/bagikan"],
     title: "Bagikan | Satu Cerita",
     description: "Bagikan undangan digital Anda ke tamu tercinta.",
+    indexable: false,
+  },
+  {
+    id: "studioEdit",
+    path: PATHS.studioEdit,
+    aliases: ["/app/edit"],
+    title: "Edit Undangan | Satu Cerita",
+    description: "Lengkapi data, foto, cerita, dan galeri undangan digital Anda.",
     indexable: false,
   },
   {

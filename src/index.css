@@ -52,3 +52,13 @@ body {
   overflow-x: clip;
   max-width: 100vw;
 }
+
+/* Animasi notifikasi "undangan selesai" (editor undangan) */
+@keyframes sc-pop { 0% { transform: scale(.6); opacity: 0 } 60% { transform: scale(1.06); opacity: 1 } 100% { transform: scale(1) } }
+@keyframes sc-draw { to { stroke-dashoffset: 0 } }
+@keyframes sc-ring { 0% { transform: scale(.7); opacity: .55 } 100% { transform: scale(1.9); opacity: 0 } }
+@keyframes sc-confetti { 0% { transform: translate(0,0) rotate(0); opacity: 1 } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0 } }
+@keyframes sc-rise { from { transform: translateY(12px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+@media (prefers-reduced-motion: reduce) {
+  .sc-anim, .sc-anim * { animation-duration: .01ms !important; animation-delay: 0s !important; }
+}

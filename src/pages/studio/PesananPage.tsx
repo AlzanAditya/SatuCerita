@@ -1,18 +1,37 @@
 import React, { useState, useMemo } from "react";
-import { ShoppingBag, CheckCircle2, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { ChevronRight, Info, ShoppingBag } from "lucide-react";
 import { PATHS } from "@/routes";
+import { SITE } from "@/config/site";
+import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { OrderItem } from "./types";
-import { formatOrderDate } from "@/lib/payments";
 
-const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  paid: { label: "Lunas", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  pending: { label: "Menunggu Bayar", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  expired: { label: "Kedaluwarsa", cls: "bg-neutral-100 text-neutral-600 border-neutral-200" },
-  cancelled: { label: "Dibatalkan", cls: "bg-neutral-100 text-neutral-600 border-neutral-200" },
-  failed: { label: "Gagal", cls: "bg-rose-50 text-rose-700 border-rose-200" },
-  needs_review: { label: "Ditinjau", cls: "bg-sky-50 text-sky-700 border-sky-200" },
+type Filter = "semua" | "aktif" | "selesai";
+
+const FILTERS: { id: Filter; label: string }[] = [
+  { id: "semua", label: "Semua" },
+  { id: "aktif", label: "Aktif" },
+  { id: "selesai", label: "Selesai" },
+];
+
+// Aktif = masih berjalan (belum dibayar / sedang ditinjau). Selesai = sudah lunas atau sudah berakhir.
+const isActive = (o: OrderItem) => o.status === "pending" || o.status === "needs_review";
+
+const STATUS_BADGE: Record<string, { label: string; cls: string; dot: string }> = {
+  pending: { label: "Menunggu bayar", cls: "bg-[#fff3d6] text-[#8a5a00]", dot: "bg-[#f0a500]" },
+  needs_review: { label: "Ditinjau", cls: "bg-[#e0f1ff] text-[#0b5a8f]", dot: "bg-[#2b9be0]" },
+  paid: { label: "Lunas", cls: "bg-[#ddf6e8] text-[#17794a]", dot: "bg-[#2fb36d]" },
+  expired: { label: "Kedaluwarsa", cls: "bg-[#ece8fb] text-[#5a5476]", dot: "bg-[#a39cc4]" },
+  cancelled: { label: "Dibatalkan", cls: "bg-[#ece8fb] text-[#5a5476]", dot: "bg-[#a39cc4]" },
+  failed: { label: "Gagal", cls: "bg-[#ffe3e6] text-[#a3202f]", dot: "bg-[#e5484d]" },
 };
+
+const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+function shortDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const w = new Date(d.getTime() + 7 * 3600_000); // WIB
+  return `${w.getUTCDate()} ${BULAN[w.getUTCMonth()]} ${w.getUTCFullYear()}`;
+}
 
 export interface PesananPageProps {
   orders: OrderItem[];
@@ -22,161 +41,122 @@ export interface PesananPageProps {
   showToast?: (msg: string) => void;
 }
 
-export const PesananPage: React.FC<PesananPageProps> = ({
-  orders,
-  onNavigate,
-}) => {
-  const [orderFilter, setOrderFilter] = useState<"semua" | "pending" | "paid">("semua");
-  const filteredOrders = useMemo(() => {
-    if (orderFilter === "semua") return orders;
-    return orders.filter((o) => o.status === orderFilter);
-  }, [orders, orderFilter]);
+export const PesananPage: React.FC<PesananPageProps> = ({ orders, onNavigate }) => {
+  const [filter, setFilter] = useState<Filter>("semua");
 
-  // Detail pesanan ditampilkan oleh OrderDetailPage (data & status dari server), bukan di sini.
-  const isStandalone = typeof window !== "undefined" && window.location.hostname.startsWith("app.");
+  const filtered = useMemo(() => {
+    if (filter === "semua") return orders;
+    return orders.filter((o) => (filter === "aktif" ? isActive(o) : !isActive(o)));
+  }, [orders, filter]);
+
+  const isStandalone =
+    typeof window !== "undefined" &&
+    (window.location.hostname.startsWith("studio.") || window.location.hostname.startsWith("app."));
   const prefix = isStandalone ? "" : "/studio";
 
-  // -------------------------------------------------------------
-  // VIEW: LIST PESANAN
-  // -------------------------------------------------------------
+  const helpHref = `https://wa.me/${SITE.contact.whatsapp}?text=${encodeURIComponent(
+    "Halo Satu Cerita, saya butuh bantuan terkait pesanan saya."
+  )}`;
+
   return (
-    <div className="space-y-4 sm:space-y-5 animate-fadeIn">
-      {/* Filter Status Pesanan */}
-      <div className="flex items-center justify-start">
-        <div className="flex items-center gap-1.5 p-1 bg-white rounded-xl border border-purple-100 border-b-[2px] border-b-purple-200/70 shadow-2xs select-none overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setOrderFilter("semua")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
-              orderFilter === "semua"
-                ? "bg-[#7d6aee] text-white shadow-2xs"
-                : "text-neutral-500 hover:text-neutral-800"
-            }`}
-          >
-            Semua
-          </button>
-          <button
-            type="button"
-            onClick={() => setOrderFilter("pending")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
-              orderFilter === "pending"
-                ? "bg-[#7d6aee] text-white shadow-2xs"
-                : "text-neutral-500 hover:text-neutral-800"
-            }`}
-          >
-            Menunggu Bayar
-          </button>
-          <button
-            type="button"
-            onClick={() => setOrderFilter("paid")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
-              orderFilter === "paid"
-                ? "bg-[#7d6aee] text-white shadow-2xs"
-                : "text-neutral-500 hover:text-neutral-800"
-            }`}
-          >
-            Lunas
-          </button>
-        </div>
-      </div>
+    <div className="animate-fadeIn">
+      <StudioPageHeader
+        title="Pesanan"
+        subtitle="Riwayat dan status pesanan undangan Anda."
+        onLogoClick={() => onNavigate(PATHS.home)}
+      />
 
-      {/* KONDISI EMPTY STATE PESANAN */}
-      {filteredOrders.length === 0 ? (
-        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-purple-100 shadow-2xs flex flex-col items-center text-center">
-          <div className="size-20 sm:size-24 rounded-3xl bg-purple-50/80 border border-purple-200/70 flex items-center justify-center text-[#7d6aee] shadow-sm mb-4">
-            <ShoppingBag className="w-9 h-9 sm:w-11 sm:h-11 text-[#7d6aee]" />
+      <div className="space-y-4">
+        <div role="tablist" aria-label="Filter pesanan" className="grid grid-cols-3 gap-2">
+          {FILTERS.map((f) => {
+            const on = filter === f.id;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setFilter(f.id)}
+                className={`h-10 rounded-full text-sm font-bold cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7d6aee] ${
+                  on ? "bg-[#7d6aee] text-white shadow-[0_4px_12px_rgba(125,106,238,0.3)]" : "bg-[#e9e4fb] text-[#5a5476] hover:bg-[#e0daf8]"
+                }`}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="rounded-3xl bg-white p-8 text-center shadow-[0_6px_24px_rgba(94,75,180,0.08)] flex flex-col items-center">
+            <div className="size-16 rounded-2xl bg-[#f1edff] flex items-center justify-center">
+              <ShoppingBag className="w-8 h-8 text-[#7d6aee]" />
+            </div>
+            <h2 className="mt-4 text-lg font-black text-[#17112e]">
+              {orders.length === 0 ? "Belum ada pesanan" : "Tidak ada pesanan di sini"}
+            </h2>
+            <p className="mt-1.5 text-sm text-[#5a5476] max-w-xs leading-relaxed">
+              {orders.length === 0
+                ? "Pesanan template dan add-on Anda akan tercatat di halaman ini."
+                : "Coba pilih filter lain untuk melihat pesanan Anda."}
+            </p>
+            {orders.length === 0 && (
+              <button
+                type="button"
+                onClick={() => onNavigate(PATHS.katalog)}
+                className="mt-5 h-12 px-6 rounded-full bg-[#7d6aee] hover:bg-[#6b58e0] text-white font-bold text-[15px] cursor-pointer shadow-[0_6px_16px_rgba(125,106,238,0.35)]"
+              >
+                Jelajahi katalog
+              </button>
+            )}
           </div>
+        ) : (
+          <ul className="space-y-3">
+            {filtered.map((o) => {
+              const b = STATUS_BADGE[o.status] ?? STATUS_BADGE.pending;
+              return (
+                <li key={o.id}>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(`${prefix}/order/${o.invoiceNo}`)}
+                    className="w-full text-left rounded-2xl bg-white px-4 py-3.5 shadow-[0_4px_18px_rgba(94,75,180,0.07)] flex items-center gap-3 cursor-pointer hover:shadow-[0_6px_22px_rgba(94,75,180,0.12)] transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7d6aee]"
+                  >
+                    <span className={`size-2 rounded-full shrink-0 ${b.dot}`} aria-hidden />
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-[15px] font-extrabold text-[#17112e] truncate">
+                        #{o.invoiceNo}
+                      </span>
+                      <span className="block mt-0.5 text-xs text-[#5a5476] truncate">
+                        Dipesan pada {shortDate(o.date)}
+                      </span>
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${b.cls}`}>
+                      {b.label}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-[#7a7494] shrink-0" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
-          <h3 className="text-base sm:text-lg font-black tracking-tight text-neutral-900">
-            Belum Ada Pesanan
-          </h3>
-
-          <p className="text-xs sm:text-sm text-neutral-500 font-medium max-w-sm mt-1.5 leading-relaxed">
-            Kamu belum memiliki riwayat pesanan. Semua pesanan template dan add-on undangan digital akan tercatat rapi di halaman ini.
-          </p>
-
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={() => onNavigate(PATHS.katalog)}
-            className="mt-5 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            <span>Jelajahi Katalog Template</span>
-          </Button>
-        </div>
-      ) : (
-        /* JIKA SUDAH ADA PESANAN */
-        <div className="space-y-3.5">
-          {filteredOrders.map((ord) => (
-            <div
-              key={ord.id}
-              onClick={() => onNavigate(`${prefix}/order/${ord.invoiceNo}`)}
-              className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 hover:border-purple-300 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+        <aside className="rounded-2xl bg-[#e9e4fb] p-4 flex items-start gap-3">
+          <Info className="w-5 h-5 text-[#7a7494] mt-0.5 shrink-0" />
+          <div className="min-w-0">
+            <h3 className="text-[15px] font-extrabold text-[#17112e]">Butuh bantuan?</h3>
+            <p className="text-xs text-[#5a5476] mt-0.5">Hubungi kami melalui pusat bantuan.</p>
+            <a
+              href={helpHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-[#6b58e0] hover:underline"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-                <div>
-                  <span className="text-[11px] font-semibold text-neutral-400 block">
-                    No. Pesanan
-                  </span>
-                  <strong className="text-xs sm:text-sm font-black text-neutral-900">
-                    #{ord.invoiceNo}
-                  </strong>
-                </div>
-                <span
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
-                    (STATUS_BADGE[ord.status] ?? STATUS_BADGE.pending).cls
-                  }`}
-                >
-                  {(STATUS_BADGE[ord.status] ?? STATUS_BADGE.pending).label}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3.5 py-3">
-                <img
-                  src={ord.templateCover}
-                  alt={ord.templateName}
-                  className="size-14 sm:size-16 rounded-xl object-cover border border-purple-100 shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-xs sm:text-sm font-extrabold text-neutral-900 truncate">
-                    {ord.templateName}
-                  </h4>
-                  <p className="text-[11px] text-neutral-500 font-medium truncate mt-0.5">
-                    {ord.packageTier}
-                  </p>
-                  <div className="text-xs font-black text-[#7d6aee] mt-1">
-                    Rp {ord.total.toLocaleString("id-ID")}
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-neutral-50 flex items-center justify-between text-xs">
-                <span className="text-neutral-400 font-medium">{formatOrderDate(ord.date)}</span>
-                <span className="font-bold text-[#7d6aee] flex items-center gap-1 group-hover:underline">
-                  Lihat Detail Pesanan
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </span>
-              </div>
-            </div>
-          ))}
-
-          {/* Card di bawah item: Tidak ada pesanan lagi */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex items-center gap-3.5 text-left">
-            <div className="size-10 rounded-xl bg-purple-50 text-[#7d6aee] flex items-center justify-center shrink-0 border border-purple-100">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-            <div>
-              <h5 className="text-xs sm:text-sm font-extrabold text-neutral-900">
-                Tidak ada pesanan lagi
-              </h5>
-              <p className="text-[11px] sm:text-xs text-neutral-500 font-medium mt-0.5">
-                Semua riwayat pesanan undangan digital Anda telah ditampilkan.
-              </p>
-            </div>
+              Hubungi <ChevronRight className="w-4 h-4" />
+            </a>
           </div>
-        </div>
-      )}
+        </aside>
+      </div>
     </div>
   );
 };

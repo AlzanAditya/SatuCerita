@@ -118,6 +118,8 @@ function AppRouter() {
       return <AuthGate require="user"><UserApp activeTab="proses" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "studioBagikan":
       return <AuthGate require="user"><UserApp activeTab="bagikan" currentPath={path} onNavigate={navigate} /></AuthGate>;
+    case "studioEdit":
+      return <AuthGate require="user"><UserApp activeTab="edit" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "studioUcapan":
       return <AuthGate require="user"><UserApp activeTab="ucapan" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "studioProfile":

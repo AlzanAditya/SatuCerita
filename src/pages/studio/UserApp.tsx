@@ -28,6 +28,7 @@ import { PesananPage } from "./PesananPage";
 import { ProfilePage } from "./ProfilePage";
 import { CheckoutPage } from "./CheckoutPage";
 import { OrderDetailPage } from "./OrderDetailPage";
+import { EditUndanganPage } from "./EditUndanganPage";
 import { UserAppProps, UserInvitation, OrderItem } from "./types";
 
 export * from "./types";
@@ -71,6 +72,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     }
     if (currentPath.includes("/bagikan")) return "bagikan";
     if (currentPath.includes("/ucapan")) return "ucapan";
+    if (currentPath.includes("/edit")) return "edit";
     if (currentPath.includes("/checkout")) return "checkout";
     if (currentPath.includes("/order")) return "order";
     return "home";
@@ -215,6 +217,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
   // Determine App Bar Title
   const getAppNavbarTitle = () => {
+    if (activeTab === "edit") return "Edit Undangan";
     if (activeTab === "checkout") return "Checkout";
     if (activeTab === "order") return "Detail Pesanan";
     if (selectedOrderId) return "Detail Pesanan";
@@ -295,10 +298,14 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
   ];
 
-  const isCheckoutOrOrder = activeTab === "checkout" || activeTab === "order";
+  const isCheckoutOrOrder = activeTab === "checkout" || activeTab === "order" || activeTab === "edit";
+  // Halaman dengan header berlogo sendiri (StudioPageHeader): top bar lama disembunyikan.
+  const hasOwnHeader =
+    !selectedOrderId &&
+    (activeTab === "home" || activeTab === "proses" || activeTab === "ucapan" || activeTab === "bagikan");
 
   return (
-    <div className="min-h-screen bg-[#faf9ff] flex flex-col md:flex-row font-sans text-neutral-800 pb-20 md:pb-0 select-none">
+    <div className={`min-h-screen ${hasOwnHeader || activeTab === "edit" ? "bg-[#f4f1ff]" : "bg-[#faf9ff]"} flex flex-col md:flex-row font-sans text-neutral-800 ${isCheckoutOrOrder ? "" : "pb-20 md:pb-0"} select-none`}>
 
       {/* DESKTOP SIDEBAR — use shared AppSidebar component (collapsible, logo satucerita, tanpa subjudul) */}
       {!isCheckoutOrOrder && (
@@ -322,7 +329,7 @@ export const UserApp: React.FC<UserAppProps> = ({
       {/* Main Container Right Side */}
       <div className="flex-1 min-w-0 flex flex-col justify-between">
         {/* Top Navbar (Mobile only) — hide on checkout/order to keep clean */}
-        {!isCheckoutOrOrder && (
+        {!isCheckoutOrOrder && !hasOwnHeader && (
           <div className="md:hidden">
             <AppNavbar
               currentPath={currentPath}
@@ -343,7 +350,7 @@ export const UserApp: React.FC<UserAppProps> = ({
         )}
 
         {/* Desktop Top Header Bar */}
-        {!isCheckoutOrOrder && (
+        {!isCheckoutOrOrder && !hasOwnHeader && (
           <header className="hidden md:flex items-center justify-between px-6 lg:px-8 py-4 bg-white border-b border-purple-50 shrink-0">
             <div>
               <h1 className="text-lg font-black text-neutral-900 tracking-tight">
@@ -379,6 +386,8 @@ export const UserApp: React.FC<UserAppProps> = ({
           {activeTab === "home" && (
             <UndanganPage
               invitations={invitations}
+              orders={orders}
+              userName={userProfile.name}
               onNavigate={onNavigate}
               showToast={showToast}
               pendingOrders={orders.filter((o) => o.status === "pending")}
@@ -395,9 +404,16 @@ export const UserApp: React.FC<UserAppProps> = ({
             />
           )}
 
-          {activeTab === "bagikan" && <BagikanPage />}
+          {activeTab === "bagikan" && (
+            <BagikanPage
+              invitations={invitations}
+              orders={orders}
+              onNavigate={onNavigate}
+              showToast={showToast}
+            />
+          )}
 
-          {activeTab === "ucapan" && <UcapanPage />}
+          {activeTab === "ucapan" && <UcapanPage onNavigate={onNavigate} />}
 
           {activeTab === "profile" && (
             <ProfilePage
@@ -415,6 +431,10 @@ export const UserApp: React.FC<UserAppProps> = ({
               ordersCount={orders.length}
               rsvpCount={invitations.reduce((acc, i) => acc + i.guestCount, 0)}
             />
+          )}
+
+          {activeTab === "edit" && (
+            <EditUndanganPage onNavigate={onNavigate} showToast={showToast} />
           )}
 
           {activeTab === "checkout" && (

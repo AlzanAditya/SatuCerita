@@ -1,12 +1,13 @@
 /**
- * Klien Midtrans Core API (charge / status / cancel) untuk Cloudflare Worker.
- * - UI pembayaran dibuat sendiri: TIDAK memakai Snap. Transaksi dibuat lewat POST /v2/charge.
- * - Hanya Worker yang boleh memegang Server Key. Browser tidak menerima kunci apa pun dari Midtrans.
+ * Klien Midtrans untuk Cloudflare Worker. Mendukung DUA mode pembayaran (env `MIDTRANS_PAYMENT_MODE`):
+ *  - "snap"     : popup Midtrans Snap. Server membuat transaksi Snap (POST {app}/snap/v1/transactions) -> token -> snap.js di browser.
+ *  - "core_api" : UI pembayaran sendiri. Transaksi dibuat lewat POST {api}/v2/charge. (default)
+ * Status / cancel / webhook / signature IDENTIK untuk kedua mode (Status API = sumber kebenaran).
+ * - Hanya Worker yang boleh memegang Server Key. Browser hanya menerima token Snap (sekali pakai) & Client Key (publik).
  * - Signature notifikasi: SHA512(order_id + status_code + gross_amount + ServerKey).
- * Referensi: https://docs.midtrans.com/reference/charge-api , /reference/handle-notifications
- *
- * Catatan: Fungsi Snap (popup) dipertahankan di file ini untuk kompatibilitas / rollback.
- * Mode dipilih via env `MIDTRANS_PAYMENT_MODE` = "snap" | "core_api" (default: "core_api").
+ * Referensi: https://docs.midtrans.com/docs/snap-snap-integration-guide ,
+ *            https://docs.midtrans.com/reference/request-body-json-parameter (Snap) ,
+ *            https://docs.midtrans.com/reference/charge-api , /reference/handle-notifications
  */
 import type { Env } from "./types";
 
@@ -74,8 +75,10 @@ async function mtFetch(env: Env, url: string, init: RequestInit = {}, timeoutMs 
 export interface SnapParams {
   orderId: string;
   grossAmount: number;
+  /** Jumlah (price * quantity) semua item HARUS sama dengan grossAmount (diskon = item berharga negatif). */
   items: { id: string; price: number; quantity: number; name: string }[];
-  customer: { first_name: string; email: string; phone?: string };
+  customer: { first_name: string; email?: string; phone?: string };
+  /** Kanal yang ditampilkan di popup (nama sesuai dokumentasi Snap: bni_va, bri_va, permata_va, echannel, gopay, other_qris, ...). */
   enabledPayments: string[];
   expiryStartWib: string;
   expiryMinutes: number;
@@ -83,28 +86,48 @@ export interface SnapParams {
 }
 
 /**
- * Buat transaksi Snap (popup). Mengembalikan { token, redirect_url? }.
- * Token ini dikirim ke browser untuk dibuka via `window.snap.pay(token)`.
- * Referensi: https://docs.midtrans.com/reference/snap-transaction
+ * Susun body Snap. Format mengikuti dokumentasi resmi (Snap > Request Body):
+ *  - expiry: { start_time: "YYYY-MM-DD HH:MM:SS +0700", unit: "minutes", duration }  -> masa berlaku ditentukan SERVER
+ *  - callbacks.finish: URL tujuan setelah pembayaran di halaman Snap (mode redirect)
+ *  - gopay.enable_callback + callback_url: kembali ke situs setelah bayar via aplikasi GoPay
  */
-export async function createSnapTransaction(env: Env, p: SnapParams): Promise<{ token: string; redirect_url?: string }> {
+export function buildSnapBody(p: SnapParams): Record<string, unknown> {
+  const customer: Record<string, string> = { first_name: p.customer.first_name };
+  if (p.customer.email) customer.email = p.customer.email;
+  if (p.customer.phone) customer.phone = p.customer.phone;
   const body: Record<string, unknown> = {
     transaction_details: { order_id: p.orderId, gross_amount: p.grossAmount },
     item_details: p.items,
-    customer_details: p.customer,
+    customer_details: customer,
     enabled_payments: p.enabledPayments,
     expiry: { start_time: p.expiryStartWib, unit: "minutes", duration: p.expiryMinutes },
   };
   if (p.finishUrl) body.callbacks = { finish: p.finishUrl };
+  if (p.finishUrl?.startsWith("https://") && p.enabledPayments.includes("gopay")) {
+    body.gopay = { enable_callback: true, callback_url: p.finishUrl };
+  }
+  return body;
+}
 
-  const r = await mtFetch(env, `${HOSTS[midtransMode(env)].api}/v2/token`, {
+/**
+ * Buat transaksi Snap. Mengembalikan { token, redirect_url }. Token dikirim ke browser dan dibuka via `window.snap.pay(token)`.
+ * Endpoint (dokumentasi Midtrans): POST https://app.sandbox.midtrans.com/snap/v1/transactions  (production: https://app.midtrans.com/...)
+ * Auth: Basic base64(ServerKey + ":"). Sukses = HTTP 201 { token, redirect_url }. Gagal = 4xx { error_messages: [...] }.
+ * Token boleh dibuat berulang untuk order_id yang sama selama belum ada pembayaran, jadi mengulang setelah gagal itu aman.
+ */
+export async function createSnapTransaction(env: Env, p: SnapParams): Promise<{ token: string; redirect_url?: string }> {
+  const r = await mtFetch(env, `${HOSTS[midtransMode(env)].snap}/snap/v1/transactions`, {
     method: "POST",
-    headers: { "Idempotency-Key": `${p.orderId}-snap`.slice(0, 46) },
-    body: JSON.stringify(body),
+    body: JSON.stringify(buildSnapBody(p)),
   });
   if (r.status >= 500) throw new MidtransError("Midtrans sedang bermasalah.", 503);
-  const data = (await r.json().catch(() => null)) as { token?: string; redirect_url?: string; status_code?: string } | null;
-  if (!data?.token) throw new MidtransError("Gagal membuat transaksi Snap.", 502);
+  const data = (await r.json().catch(() => null)) as { token?: string; redirect_url?: string; error_messages?: unknown } | null;
+  if (!r.ok || !data?.token) {
+    // Detail hanya ke log server (tanpa Server Key / data pelanggan). 401 = Server Key salah; 400 = parameter ditolak.
+    const msgs = Array.isArray(data?.error_messages) ? data!.error_messages.map(String).join("; ").slice(0, 200) : "";
+    console.error("midtrans.snap_rejected", JSON.stringify({ invoice: p.orderId, httpStatus: r.status, message: msgs }));
+    throw new MidtransError("Gagal membuat transaksi Snap.", r.status === 400 ? 422 : 502);
+  }
   return { token: data.token, redirect_url: data.redirect_url };
 }
 
@@ -116,7 +139,7 @@ export interface ChargeParams {
   grossAmount: number;
   method: ChargeMethod;
   items: { id: string; price: number; quantity: number; name: string }[];
-  customer: { first_name: string; email: string; phone?: string };
+  customer: { first_name: string; email?: string; phone?: string };
   expiryStartWib: string;
   expiryMinutes: number;
   gopayCallbackUrl?: string;

@@ -11,6 +11,8 @@ export interface UserInvitation {
   status: "active" | "draft";
   guestCount: number;
   rsvpCount: number;
+  /** Jumlah tahap edit yang sudah selesai (0–5): Input Data, Foto & Desain, Cerita Acara, Preview, Selesai. */
+  progressStep?: number;
 }
 
 export interface OrderAddon {
@@ -80,7 +82,8 @@ export type UserAppTab =
   | "profile"
   | "bayar"
   | "checkout"
-  | "order";
+  | "order"
+  | "edit";
 
 export interface UserAppProps {
   activeTab?: UserAppTab;

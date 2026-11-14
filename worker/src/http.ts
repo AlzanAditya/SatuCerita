@@ -2,6 +2,36 @@ import type { Env, SbSession } from "./types";
 
 export const isDev = (env: Env) => env.ENVIRONMENT === "development";
 
+const LOCAL_HOST_RE = /^(localhost|127\.0\.0\.1|\[::1\]|[a-z0-9-]+\.localhost)$/i;
+
+/**
+ * Request yang MASUK lewat localhost (vite dev / wrangler dev)? Hostname diambil dari URL request itu sendiri;
+ * di produksi Cloudflare hanya merutekan host domain kita, jadi nilai ini tidak bisa dipalsukan untuk menyerang produksi.
+ */
+export const isLocalRequest = (url: URL) => LOCAL_HOST_RE.test(url.hostname);
+
+/**
+ * Saat dev lokal, config `vars` yang berisi URL produksi (LOGIN_URL, STUDIO_HOME_URL, COOKIE_DOMAIN, ...) tidak boleh dipakai:
+ * semua redirect harus kembali ke origin lokal dan cookie tidak boleh ber-Domain produksi (browser menolaknya di localhost).
+ * Tanpa ini, login Google di lokal berakhir di https://studio.satucerita.app.
+ */
+export function localizeEnv(env: Env, url: URL): Env {
+  if (!isLocalRequest(url)) return env;
+  const o = url.origin;
+  return {
+    ...env,
+    ENVIRONMENT: "development",
+    DEV_ORIGIN: env.DEV_ORIGIN || o,
+    COOKIE_DOMAIN: "",
+    ALLOWED_ORIGINS: [env.ALLOWED_ORIGINS, o].filter(Boolean).join(","),
+    LOGIN_URL: `${o}/login`,
+    APP_HOME_URL: `${o}/studio/home`,
+    STUDIO_HOME_URL: `${o}/studio/home`,
+    DASH_LOGIN_URL: `${o}/dash/login`,
+    DASH_HOME_URL: `${o}/dash`,
+  };
+}
+
 const SEC_HEADERS: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",

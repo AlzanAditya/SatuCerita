@@ -1,0 +1,7 @@
+# Salin ke .dev.vars (sudah di-gitignore) di ROOT proyek untuk `pnpm dev:api`. Hanya untuk lokal.
+# URL redirect & cookie lokal otomatis dipakai saat request datang dari localhost (lihat worker/src/http.ts: localizeEnv).
+ENVIRONMENT=development
+DEV_ORIGIN=http://localhost:3000
+SUPABASE_ANON_KEY=sb_publishable_xxx
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_xxx
+MIDTRANS_SERVER_KEY=SB-Mid-server-xxx

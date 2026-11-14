@@ -4,7 +4,7 @@ import { UserApp } from "@/pages/studio/UserApp";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { SITE } from "@/config/site";
 
-export type TabType = "home" | "proses" | "bagikan" | "ucapan" | "profile" | "checkout" | "order";
+export type TabType = "home" | "proses" | "bagikan" | "ucapan" | "profile" | "checkout" | "order" | "edit";
 
 function isLandingPath(path: string): boolean {
   const p = (path || "/").toLowerCase().split("?")[0].split("#")[0];
@@ -27,6 +27,9 @@ function pathToTab(pathname: string): TabType {
   }
   if (p.includes("/order")) {
     return "order";
+  }
+  if (p.includes("/edit")) {
+    return "edit";
   }
   if (p.includes("/bagikan")) {
     return "bagikan";
@@ -51,6 +54,8 @@ function tabToPath(tab: TabType, fullPath = ""): string {
       return fullPath.replace(/^\/(?:app|studio)/, "") || "/order";
     case "proses":
       return "/pesanan";
+    case "edit":
+      return "/edit";
     case "bagikan":
       return "/bagikan";
     case "ucapan":

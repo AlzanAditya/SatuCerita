@@ -3,8 +3,8 @@
  * ia hanya meminta pesanan ke Worker, menampilkan instruksi bayar dari server, lalu menerima perubahan status
  * (SSE, fallback polling DB; lihat orderStream.ts).
  *
- * Mendukung dua mode pembayaran (dipilih via env MIDTRANS_PAYMENT_MODE di Worker):
- * - "snap": popup Midtrans Snap (token dari server, dibuka via snap.js)
+ * Mendukung dua mode pembayaran (dipilih via env MIDTRANS_PAYMENT_MODE di Worker; klien membaca /api/payments/config):
+ * - "snap": popup Midtrans Snap (token dari server, dibuka via snap.js; callback popup hanya UX, bukan bukti bayar)
  * - "core_api": UI pembayaran sendiri (instruksi VA/QR/Bill Key dari server)
  */
 import type { OrderItem, PaymentMethodId } from "@/pages/studio/types";
@@ -86,28 +86,61 @@ declare global {
   }
 }
 
+export interface PaymentConfig {
+  mode: "snap" | "core_api";
+  clientKey?: string;
+  snapUrl?: string;
+  environment: "sandbox" | "production";
+}
+
+let configPromise: Promise<PaymentConfig> | null = null;
+
+/** Ambil konfigurasi pembayaran (mode, clientKey, snapUrl) dari server. Di-cache; gagal -> boleh dicoba lagi. */
+export function getPaymentConfig(): Promise<PaymentConfig> {
+  if (!configPromise) {
+    configPromise = (async () => {
+      const cfg = await api<Partial<PaymentConfig>>("/api/payments/config");
+      if (!cfg.ok) throw new Error(cfg.data.error || "Gagal memuat konfigurasi pembayaran");
+      const d = cfg.data;
+      return {
+        mode: d.mode === "snap" || (!d.mode && d.clientKey && d.snapUrl) ? "snap" : "core_api",
+        clientKey: d.clientKey,
+        snapUrl: d.snapUrl,
+        environment: d.environment === "production" ? "production" : "sandbox",
+      } as PaymentConfig;
+    })().catch((e) => {
+      configPromise = null;
+      throw e;
+    });
+  }
+  return configPromise;
+}
+
 let snapLoading: Promise<void> | null = null;
 
 /** Muat snap.js sekali saja, dengan Client Key + URL (sandbox/production) yang diberikan server. */
-export async function loadSnap(): Promise<void> {
+export function loadSnap(): Promise<void> {
   if (typeof window === "undefined") return Promise.reject(new Error("no window"));
   if (window.snap) return Promise.resolve();
   if (snapLoading) return snapLoading;
 
   snapLoading = (async () => {
-    const cfg = await api<{ clientKey: string; snapUrl: string }>("/api/payments/config");
-    if (!cfg.ok || !cfg.data.clientKey || !cfg.data.snapUrl) throw new Error(cfg.data.error || "Pembayaran belum dikonfigurasi.");
+    const cfg = await getPaymentConfig();
+    if (cfg.mode !== "snap" || !cfg.clientKey || !cfg.snapUrl) throw new Error("Pembayaran belum dikonfigurasi.");
     // Hanya izinkan skrip dari domain Midtrans, apa pun yang dibalas server.
-    const u = new URL(cfg.data.snapUrl);
+    const u = new URL(cfg.snapUrl);
     if (u.protocol !== "https:" || !/^app(\.sandbox)?\.midtrans\.com$/.test(u.hostname)) throw new Error("URL Snap tidak valid.");
 
     await new Promise<void>((resolve, reject) => {
       const s = document.createElement("script");
       s.src = u.href;
       s.async = true;
-      s.setAttribute("data-client-key", cfg.data.clientKey);
+      s.setAttribute("data-client-key", cfg.clientKey!);
       s.onload = () => resolve();
-      s.onerror = () => reject(new Error("Gagal memuat halaman pembayaran Midtrans."));
+      s.onerror = () => {
+        s.remove(); // supaya percobaan ulang tidak menumpuk tag skrip
+        reject(new Error("Gagal memuat halaman pembayaran Midtrans."));
+      };
       document.head.appendChild(s);
     });
     if (!window.snap) throw new Error("Snap tidak tersedia.");
@@ -118,21 +151,20 @@ export async function loadSnap(): Promise<void> {
   return snapLoading;
 }
 
+/** Muat snap.js lebih awal (saat halaman checkout / pesanan dibuka) supaya popup langsung muncul. Diam jika bukan mode Snap. */
+export function preloadSnap(): void {
+  getPaymentConfig()
+    .then((c) => (c.mode === "snap" ? loadSnap() : undefined))
+    .catch(() => undefined);
+}
+
 export async function openSnap(token: string, h: SnapResultHandlers = {}): Promise<void> {
   await loadSnap();
+  // Callback Snap hanya penanda UX (mengarahkan halaman). Status lunas SELALU datang dari server (webhook / Status API).
   window.snap!.pay(token, {
     onSuccess: () => h.onSuccess?.(),
     onPending: () => h.onPending?.(),
     onError: () => h.onError?.(),
     onClose: () => h.onClose?.(),
   });
-}
-
-/** Ambil konfigurasi pembayaran (mode, clientKey, snapUrl) dari server. */
-export async function getPaymentConfig(): Promise<{ mode: "snap" | "core_api"; clientKey?: string; snapUrl?: string; environment: "sandbox" | "production" }> {
-  const cfg = await api<{ clientKey?: string; snapUrl?: string; environment: "sandbox" | "production" }>("/api/payments/config");
-  if (!cfg.ok) throw new Error(cfg.data.error || "Gagal memuat konfigurasi pembayaran");
-  // Jika response mengandung clientKey + snapUrl -> mode Snap
-  const mode = cfg.data.clientKey && cfg.data.snapUrl ? "snap" : "core_api";
-  return { mode, clientKey: cfg.data.clientKey, snapUrl: cfg.data.snapUrl, environment: cfg.data.environment };
 }
