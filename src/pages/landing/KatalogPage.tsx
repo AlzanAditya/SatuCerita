@@ -18,7 +18,8 @@ interface KatalogPageProps {
   onNavigate?: (path: string) => void;
 }
 
-import { TEMPLATES_DATA, formatRupiah, TemplateItemData } from "@/data/templates";
+import { TEMPLATES_DATA, formatRupiah as formatRupiahBase, TemplateItemData } from "@/data/templates";
+import { useT } from "@/i18n";
 
 const TEMPLATES: TemplateItemData[] = TEMPLATES_DATA;
 
@@ -26,6 +27,8 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
   currentPath = "/katalog",
   onNavigate = (_path: string) => { },
 }) => {
+  const { t, lang } = useT();
+  const formatRupiah = (val: number) => formatRupiahBase(val, lang);
   const [selectedDemo, setSelectedDemo] = useState<TemplateItemData | null>(null);
 
   return (
@@ -35,11 +38,11 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
 
       {/* 2. Header Bagian Khusus */}
       <SubpageHeader
-        badgeText="Katalog Undangan"
+        badgeText={t("catalog.badge")}
         badgeIcon={<LayoutGrid className="w-3.5 h-3.5 text-[#7d6aee] shrink-0" />}
-        titlePrefix="Jelajahi Beragam Pilihan"
-        titleHighlight="Katalog Terbaik"
-        description="Temukan koleksi template undangan digital eksklusif yang dirancang elegan, interaktif, dan siap membuat momen bahagia Anda semakin berkesan."
+        titlePrefix={t("catalog.titlePrefix")}
+        titleHighlight={t("catalog.titleHighlight")}
+        description={t("catalog.desc")}
       />
 
       {/* 3. Konten Utama: Katalog Template Mengikuti Style App Satu Cerita */}
@@ -48,7 +51,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
           {/* Header Ringkas: Menampilkan N template */}
           <div className="mb-6 sm:mb-8 text-left">
             <h2 className="text-base sm:text-lg font-black text-neutral-800 tracking-tight">
-              Menampilkan {TEMPLATES.length} template
+              {t(TEMPLATES.length === 1 ? "catalog.showing.one" : "catalog.showing.other", { n: TEMPLATES.length })}
             </h2>
           </div>
 
@@ -111,7 +114,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                       className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                     >
                       <Eye className="w-4 h-4 stroke-[2.2]" />
-                      <span>Lihat Demo</span>
+                      <span>{t("tpl.viewDemo")}</span>
                     </Button>
 
                     {/* Tombol Pilih Template -> Checkout */}
@@ -121,7 +124,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                       onClick={() => onNavigate(`/studio/checkout/${item.slug}`)}
                       className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                     >
-                      <span>Pilih Template</span>
+                      <span>{t("tpl.choose")}</span>
                       <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                     </Button>
                   </div>
@@ -141,7 +144,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
               <div className="flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-[#7d6aee]" />
                 <h4 className="text-lg font-black text-neutral-900">
-                  Demo: {selectedDemo.title}
+                  {t("tpl.demoTitle", { title: selectedDemo.title })}
                 </h4>
               </div>
               <button
@@ -168,7 +171,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
             {/* Keterangan & Harga */}
             <div className="flex items-center justify-between mb-4">
               <div>
-                <span className="text-xs font-bold text-neutral-500 uppercase">Harga Promo</span>
+                <span className="text-xs font-bold text-neutral-500 uppercase">{t("tpl.promoPrice")}</span>
                 <p className="text-xl font-black text-neutral-900">
                   {formatRupiah(selectedDemo.discountPrice)}
                 </p>
@@ -189,7 +192,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                 }}
                 className="w-full"
               >
-                <span>Pilih Template Ini</span>
+                <span>{t("tpl.chooseThis")}</span>
                 <ExternalLink className="w-4 h-4" />
               </Button>
               <Button
@@ -198,7 +201,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                 onClick={() => setSelectedDemo(null)}
                 className="w-full text-xs"
               >
-                Tutup Preview
+                {t("tpl.closePreview")}
               </Button>
             </div>
           </div>

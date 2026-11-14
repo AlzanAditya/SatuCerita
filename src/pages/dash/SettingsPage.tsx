@@ -2,6 +2,7 @@ import React from "react";
 import { Users, Pencil, Phone, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { AdminProfileData, AdminSettingsData } from "@/lib/cache";
+import { useT } from "@/i18n";
 
 export interface SettingsPageProps {
   adminProfile: AdminProfileData;
@@ -20,6 +21,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onOpenLogoutModal,
   onSaveSettings,
 }) => {
+  const { t } = useT();
   return (
     <div className="space-y-6 animate-fadeIn md:animate-none">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -29,7 +31,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-[#7d6aee]" />
               <h3 className="text-sm font-extrabold text-neutral-900">
-                Profil Administrator
+                {t("st.dash.set.adminProfile")}
               </h3>
             </div>
             <button
@@ -38,7 +40,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               className="text-xs font-extrabold text-[#7d6aee] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <Pencil className="w-3.5 h-3.5" />
-              <span>Edit Profil</span>
+              <span>{t("st.dash.set.editProfile")}</span>
             </button>
           </div>
 
@@ -60,7 +62,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
           <div className="space-y-2 text-xs text-neutral-500">
             <p>
-              Perubahan foto profil, nama, dan nomor WhatsApp admin langsung disimpan ke cache browser secara otomatis.
+              {t("st.dash.set.cacheNote")}
             </p>
           </div>
         </div>
@@ -71,18 +73,18 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             <div className="flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-[#7d6aee]" />
               <h3 className="text-sm font-extrabold text-neutral-900">
-                Metode Pembayaran
+                {t("st.dash.set.payment")}
               </h3>
             </div>
             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-              Aktif
+              {t("st.dash.set.active")}
             </span>
           </div>
 
           <div className="space-y-3">
             <div>
               <label className="text-xs font-semibold text-neutral-700 block mb-1">
-                Bank Utama (BCA)
+                {t("st.dash.set.bankBca")}
               </label>
               <input
                 type="text"
@@ -96,7 +98,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
             <div>
               <label className="text-xs font-semibold text-neutral-700 block mb-1">
-                Merchant QRIS Statis / Dinamis
+                {t("st.dash.set.qris")}
               </label>
               <input
                 type="text"
@@ -113,7 +115,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               onClick={onSaveSettings}
               className="w-full py-2.5 bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold rounded-xl border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
             >
-              Simpan Pengaturan
+              {t("st.dash.set.save")}
             </button>
           </div>
         </div>
@@ -126,7 +128,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             onClick={onOpenLogoutModal}
             className="w-full py-3.5 rounded-xl sm:rounded-2xl flex items-center justify-center cursor-pointer font-bold"
           >
-            Keluar
+            {t("st.modal.logoutYes")}
           </Button>
         </div>
       </div>

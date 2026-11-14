@@ -13,6 +13,8 @@ export interface SeoProps {
   imageAlt?: string;
   /** true => `noindex, nofollow` */
   noindex?: boolean;
+  /** og:locale, default SITE.locale (id_ID). Mis. "en_US" saat bahasa Inggris aktif. */
+  locale?: string;
 }
 
 function setMeta(attr: "name" | "property", key: string, content: string) {
@@ -69,6 +71,7 @@ export function useSeo({
   imageHeight = SITE.ogImage.height,
   imageAlt = SITE.ogImage.alt,
   noindex = false,
+  locale = SITE.locale,
 }: SeoProps) {
   useEffect(() => {
     const url = `${SITE.url}${path}`;
@@ -92,7 +95,7 @@ export function useSeo({
     setMeta("property", "og:description", description);
     setMeta("property", "og:type", "website");
     setMeta("property", "og:url", url);
-    setMeta("property", "og:locale", SITE.locale);
+    setMeta("property", "og:locale", locale);
     setMeta("property", "og:image", imageUrl);
     setMeta("property", "og:image:secure_url", imageUrl);
     setMeta("property", "og:image:type", imageType);
@@ -128,5 +131,5 @@ export function useSeo({
       "application-name",
       isDash ? "Satu Cerita Dash" : path.startsWith("/studio") ? "Satu Cerita Studio" : "Satu Cerita"
     );
-  }, [title, description, path, image, imageWidth, imageHeight, imageAlt, noindex]);
+  }, [title, description, path, image, imageWidth, imageHeight, imageAlt, noindex, locale]);
 }

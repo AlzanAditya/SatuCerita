@@ -3,6 +3,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Footer } from "@/components/layout/Footer";
 import { ChevronRight } from "lucide-react";
+import { useT } from "@/i18n";
+import type { TKey } from "@/i18n";
 
 interface KebijakanPageProps {
   currentPath?: string;
@@ -13,7 +15,7 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
   currentPath = "/kebijakan",
   onNavigate = (_path: string) => {},
 }) => {
-
+  const { t } = useT();
   const [activeSection, setActiveSection] = useState<"privasi" | "syarat">("privasi");
 
   useEffect(() => {
@@ -64,17 +66,17 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
             <div className="flex max-w-3xl flex-col gap-3.5 sm:gap-4 items-start text-left">
               {/* Badge: Legal */}
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-[#7d6aee] text-xs sm:text-sm font-bold tracking-wider uppercase shadow-xs">
-                Legal
+                {t("policy.badge")}
               </span>
 
               {/* H1 Title: Teks putih */}
               <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-[1.12]">
-                Kebijakan Privasi &amp; Syarat Layanan
+                {t("policy.title")}
               </h1>
 
               {/* Subtitle Terakhir Diperbarui: Teks putih, diperbesar 2px menjadi 20px */}
               <p className="max-w-2xl text-base sm:text-lg md:text-[20px] md:leading-relaxed text-white/90 font-medium">
-                Terakhir diperbarui: 24 September 2026
+                {t("policy.updated")}
               </p>
             </div>
           </div>
@@ -87,9 +89,9 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
         */}
         <div className="mx-auto grid max-w-6xl gap-8 lg:gap-12 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[14rem_1fr] lg:px-8">
           {/* Sisi Kiri: Daftar Isi Sticky (Tanpa Ikon) */}
-          <nav aria-label="Daftar isi" className="lg:sticky lg:top-24 lg:self-start">
+          <nav aria-label={t("policy.tocLabel")} className="lg:sticky lg:top-24 lg:self-start">
             <p className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-neutral-400 mb-3 sm:mb-4">
-              Daftar isi
+              {t("policy.tocLabel")}
             </p>
             <ul className="grid gap-2 sm:gap-2.5">
               <li>
@@ -102,7 +104,7 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                       : "bg-white text-neutral-700 hover:text-[#7d6aee] hover:bg-purple-50/50 border border-purple-100 shadow-2xs"
                   }`}
                 >
-                  <span>Kebijakan Privasi</span>
+                  <span>{t("policy.privacy")}</span>
                   <ChevronRight
                     className={`w-4 h-4 transition-transform ${
                       activeSection === "privasi" ? "translate-x-0.5" : "opacity-40"
@@ -120,7 +122,7 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                       : "bg-white text-neutral-700 hover:text-[#7d6aee] hover:bg-purple-50/50 border border-purple-100 shadow-2xs"
                   }`}
                 >
-                  <span>Syarat &amp; Ketentuan</span>
+                  <span>{t("policy.terms")}</span>
                   <ChevronRight
                     className={`w-4 h-4 transition-transform ${
                       activeSection === "syarat" ? "translate-x-0.5" : "opacity-40"
@@ -151,7 +153,7 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                   id="privasi-judul"
                   className="text-xl sm:text-2xl font-black text-white tracking-tight"
                 >
-                  Kebijakan Privasi
+                  {t("policy.privacy")}
                 </h2>
               </div>
 
@@ -163,10 +165,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       01
                     </span>
-                    Data yang kami kumpulkan
+                    {t("policy.p.1.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Kami mengumpulkan data akun dari Google (nama, email, foto profil), data pesanan, serta konten undangan yang kalian masukkan seperti nama mempelai, jadwal acara, foto, musik, dan daftar tamu. Tamu yang mengisi RSVP atau ucapan memberikan nama dan pesan yang mereka tulis.
+                    {t("policy.p.1.body")}
                   </p>
                 </li>
 
@@ -176,10 +178,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       02
                     </span>
-                    Cara kami menggunakan data
+                    {t("policy.p.2.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Data digunakan untuk menyediakan layanan undangan, memproses pembayaran, mengirim notifikasi terkait pesanan, dan meningkatkan kualitas layanan. Kami tidak menjual data pribadi kepada pihak mana pun.
+                    {t("policy.p.2.body")}
                   </p>
                 </li>
 
@@ -189,10 +191,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       03
                     </span>
-                    Pihak ketiga
+                    {t("policy.p.3.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Pembayaran diproses oleh payment gateway resmi, dan login menggunakan Google. Pihak tersebut memproses data sesuai kebijakan privasi masing-masing. Kami hanya membagikan data seperlunya untuk menjalankan layanan.
+                    {t("policy.p.3.body")}
                   </p>
                 </li>
 
@@ -202,10 +204,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       04
                     </span>
-                    Keamanan &amp; penyimpanan
+                    {t("policy.p.4.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Data disimpan di server yang diamankan dan dicadangkan secara berkala. Informasi sensitif seperti kredensial integrasi disimpan terenkripsi. Konten undangan disimpan selama akun aktif atau sampai kalian memintanya dihapus.
+                    {t("policy.p.4.body")}
                   </p>
                 </li>
 
@@ -215,10 +217,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       05
                     </span>
-                    Hak kalian
+                    {t("policy.p.5.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Kalian dapat mengakses, memperbarui, atau meminta penghapusan data kapan saja melalui dashboard atau dengan menghubungi kami. Tamu yang ingin ucapannya dihapus dapat menghubungi pemilik undangan atau tim kami.
+                    {t("policy.p.5.body")}
                   </p>
                 </li>
 
@@ -228,10 +230,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       06
                     </span>
-                    Cookie
+                    {t("policy.p.6.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Kami menggunakan cookie yang diperlukan untuk menjaga sesi login dan menyimpan preferensi bahasa. Kami tidak menggunakan cookie iklan pihak ketiga.
+                    {t("policy.p.6.body")}
                   </p>
                 </li>
               </ol>
@@ -255,7 +257,7 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                   id="syarat-judul"
                   className="text-xl sm:text-2xl font-black text-white tracking-tight"
                 >
-                  Syarat &amp; Ketentuan
+                  {t("policy.terms")}
                 </h2>
               </div>
 
@@ -267,10 +269,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       01
                     </span>
-                    Layanan
+                    {t("policy.t.1.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    SatuCerita menyediakan template dan alat untuk membuat, mengelola, dan membagikan undangan pernikahan digital. Setiap pembelian template berlaku untuk satu undangan.
+                    {t("policy.t.1.body")}
                   </p>
                 </li>
 
@@ -280,10 +282,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       02
                     </span>
-                    Akun
+                    {t("policy.t.2.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Kalian bertanggung jawab menjaga keamanan akun dan seluruh aktivitas di dalamnya. Kami dapat menangguhkan akun yang melanggar ketentuan ini.
+                    {t("policy.t.2.body")}
                   </p>
                 </li>
 
@@ -293,10 +295,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       03
                     </span>
-                    Pembayaran &amp; pengembalian dana
+                    {t("policy.t.3.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Harga tercantum dalam Rupiah dan dibayar di muka. Karena produk digital langsung dapat digunakan setelah pembayaran, pengembalian dana hanya diberikan bila terjadi kesalahan teknis dari pihak kami yang tidak dapat diperbaiki.
+                    {t("policy.t.3.body")}
                   </p>
                 </li>
 
@@ -306,10 +308,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       04
                     </span>
-                    Konten pengguna
+                    {t("policy.t.4.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Kalian memiliki hak atas konten yang diunggah dan menjamin konten tersebut tidak melanggar hukum atau hak pihak lain. Konten yang melanggar dapat kami turunkan tanpa pemberitahuan.
+                    {t("policy.t.4.body")}
                   </p>
                 </li>
 
@@ -319,10 +321,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       05
                     </span>
-                    Ketersediaan layanan
+                    {t("policy.t.5.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Kami berupaya menjaga layanan selalu tersedia, namun tidak menjamin bebas gangguan. Pemeliharaan terjadwal akan diinformasikan sebisa mungkin.
+                    {t("policy.t.5.body")}
                   </p>
                 </li>
 
@@ -332,10 +334,10 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
                     <span aria-hidden="true" className="text-sm sm:text-base font-bold text-neutral-400 shrink-0">
                       06
                     </span>
-                    Perubahan ketentuan
+                    {t("policy.t.6.title")}
                   </h3>
                   <p className="mt-1.5 sm:mt-2 text-sm sm:text-base leading-relaxed text-neutral-600 pl-7">
-                    Ketentuan ini dapat diperbarui sewaktu-waktu. Perubahan penting akan diumumkan melalui situs atau email. Dengan terus menggunakan layanan, kalian menyetujui ketentuan terbaru.
+                    {t("policy.t.6.body")}
                   </p>
                 </li>
               </ol>

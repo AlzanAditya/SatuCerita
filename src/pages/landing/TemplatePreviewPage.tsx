@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X, ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
+import { useT } from "@/i18n";
 
 interface TemplatePreviewPageProps {
   currentPath: string;
@@ -16,6 +17,7 @@ export const TemplatePreviewPage: React.FC<TemplatePreviewPageProps> = ({
   currentPath,
   onNavigate = (_path: string) => {},
 }) => {
+  const { t } = useT();
   // Extract slug dari /preview/:slug
   const slug = currentPath.replace(/^\/preview\/?/, "").split("/")[0];
 
@@ -58,15 +60,15 @@ export const TemplatePreviewPage: React.FC<TemplatePreviewPageProps> = ({
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all cursor-pointer border border-white/15"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Kembali ke Detail</span>
-          <span className="sm:hidden">Kembali</span>
+          <span className="hidden sm:inline">{t("preview.back")}</span>
+          <span className="sm:hidden">{t("preview.backShort")}</span>
         </button>
 
         {/* Title */}
         <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-white text-sm font-bold tracking-tight">
-            Preview{" "}
+            {t("preview.title")}{" "}
             <span className="text-purple-300">{templateTitle}</span>
           </span>
         </div>
@@ -77,18 +79,18 @@ export const TemplatePreviewPage: React.FC<TemplatePreviewPageProps> = ({
           <button
             type="button"
             onClick={handleOpenNewTab}
-            title="Buka di tab baru"
+            title={t("preview.newTabTitle")}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all cursor-pointer border border-white/15"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Tab Baru</span>
+            <span className="hidden sm:inline">{t("preview.newTab")}</span>
           </button>
 
           {/* Close / back to katalog */}
           <button
             type="button"
             onClick={handleBack}
-            title="Tutup preview"
+            title={t("preview.closeTitle")}
             className="w-8 h-8 rounded-lg bg-white/10 hover:bg-red-500/80 text-white flex items-center justify-center transition-all cursor-pointer border border-white/15"
           >
             <X className="w-4 h-4" />
@@ -103,7 +105,7 @@ export const TemplatePreviewPage: React.FC<TemplatePreviewPageProps> = ({
             <Loader2 className="w-10 h-10 text-purple-400 animate-spin" />
           </div>
           <p className="text-white/60 text-sm font-medium">
-            Memuat template <span className="text-purple-300 font-bold">{templateTitle}</span>…
+            {t("preview.loadingPrefix")} <span className="text-purple-300 font-bold">{templateTitle}</span>…
           </p>
         </div>
       )}
@@ -115,9 +117,9 @@ export const TemplatePreviewPage: React.FC<TemplatePreviewPageProps> = ({
             <X className="w-8 h-8 text-red-400" />
           </div>
           <div>
-            <p className="text-white font-bold text-lg">Template tidak ditemukan</p>
+            <p className="text-white font-bold text-lg">{t("preview.notFoundTitle")}</p>
             <p className="text-white/50 text-sm mt-1">
-              Template <span className="text-purple-300">{templateTitle}</span> belum tersedia untuk pratinjau.
+              {t("preview.notFoundPrefix")} <span className="text-purple-300">{templateTitle}</span> {t("preview.notFoundSuffix")}
             </p>
           </div>
           <button
@@ -125,7 +127,7 @@ export const TemplatePreviewPage: React.FC<TemplatePreviewPageProps> = ({
             onClick={handleBack}
             className="mt-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-all cursor-pointer border border-white/15"
           >
-            Kembali ke Detail Template
+            {t("preview.backToDetail")}
           </button>
         </div>
       )}
@@ -134,7 +136,7 @@ export const TemplatePreviewPage: React.FC<TemplatePreviewPageProps> = ({
       <iframe
         ref={iframeRef}
         src={templateSrc}
-        title={`Preview Template ${templateTitle}`}
+        title={t("preview.iframeTitle", { title: templateTitle })}
         className="flex-1 w-full border-0"
         style={{ display: hasError ? "none" : "block" }}
         onLoad={() => setIsLoading(false)}

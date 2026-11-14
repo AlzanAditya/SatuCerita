@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Headphones,
 } from "lucide-react";
+import { useT } from "@/i18n";
 
 interface CaraPesanPageProps {
   currentPath?: string;
@@ -36,7 +37,7 @@ export const CaraPesanPage: React.FC<CaraPesanPageProps> = ({
   currentPath = "/cara-pesan",
   onNavigate = (_path: string) => {},
 }) => {
-
+  const { t } = useT();
   const katalogPath = PATHS.katalog;
   const loginPath = PATHS.login;
 
@@ -45,56 +46,56 @@ export const CaraPesanPage: React.FC<CaraPesanPageProps> = ({
       number: 1,
       badgeBg: "#F5C744",
       badgeTextColor: "#171717",
-      title: "Pilih template",
-      subtitle: "Jelajahi katalog dan pratinjau setiap template secara langsung.",
+      title: t("order.1.title"),
+      subtitle: t("order.1.subtitle"),
       icon: <LayoutGrid className="w-6 h-6 text-neutral-900 stroke-[2.2]" />,
       points: [
-        "Buka halaman Katalog dan saring berdasarkan kategori.",
-        "Klik Lihat Demo untuk mencoba template di tampilan ponsel maupun desktop.",
-        "Tekan Pilih Template pada template favorit kalian.",
+        t("order.1.p1"),
+        t("order.1.p2"),
+        t("order.1.p3"),
       ],
-      ctaText: "Lihat Katalog",
+      ctaText: t("order.1.cta"),
       ctaLink: katalogPath,
     },
     {
       number: 2,
       badgeBg: "#EE5B4F",
       badgeTextColor: "#FFFFFF",
-      title: "Bayar",
-      subtitle: "Masuk dengan akun Google dan selesaikan pembayaran dengan metode favorit.",
+      title: t("order.2.title"),
+      subtitle: t("order.2.subtitle"),
       icon: <CreditCard className="w-6 h-6 text-neutral-900 stroke-[2.2]" />,
       points: [
-        "Masuk atau daftar dengan akun Google dalam satu klik.",
-        "Bayar melalui transfer bank virtual account, e-wallet, QRIS, atau metode lain yang tersedia.",
-        "Setelah pembayaran terkonfirmasi, undangan otomatis dibuat di dashboard.",
+        t("order.2.p1"),
+        t("order.2.p2"),
+        t("order.2.p3"),
       ],
-      ctaText: "Daftar & Mulai",
+      ctaText: t("order.2.cta"),
       ctaLink: loginPath,
     },
     {
       number: 3,
       badgeBg: "#7D6AEE",
       badgeTextColor: "#FFFFFF",
-      title: "Edit di dashboard",
-      subtitle: "Isi data mempelai, acara, foto, musik, dan daftar tamu sesuka hati.",
+      title: t("order.3.title"),
+      subtitle: t("order.3.subtitle"),
       icon: <SlidersHorizontal className="w-6 h-6 text-neutral-900 stroke-[2.2]" />,
       points: [
-        "Lengkapi setiap section: mempelai, acara, galeri, kisah cinta, hadiah, dan lainnya.",
-        "Unggah foto dengan drag & drop dan pilih musik latar.",
-        "Atur link custom satucerita.id/nama-kalian lalu terbitkan.",
+        t("order.3.p1"),
+        t("order.3.p2"),
+        t("order.3.p3"),
       ],
     },
     {
       number: 4,
       badgeBg: "#22C55E",
       badgeTextColor: "#FFFFFF",
-      title: "Bagikan",
-      subtitle: "Kirim undangan personal ke setiap tamu lewat WhatsApp.",
+      title: t("order.4.title"),
+      subtitle: t("order.4.subtitle"),
       icon: <Send className="w-6 h-6 text-neutral-900 stroke-[2.2]" />,
       points: [
-        "Tambahkan tamu satu per satu atau sekaligus, lengkap dengan label VIP atau Reguler.",
-        "Kirim pesan WhatsApp berisi nama tamu dan tautan undangan personal.",
-        "Pantau RSVP, ucapan, dan check-in QR di hari bahagia.",
+        t("order.4.p1"),
+        t("order.4.p2"),
+        t("order.4.p3"),
       ],
     },
   ];
@@ -106,11 +107,11 @@ export const CaraPesanPage: React.FC<CaraPesanPageProps> = ({
 
       {/* 2. Header Bagian Khusus */}
       <SubpageHeader
-        badgeText="Panduan Cara Pesan"
+        badgeText={t("order.badge")}
         badgeIcon={<HelpCircle className="w-3.5 h-3.5 text-[#7d6aee] shrink-0" />}
-        titlePrefix="Langkah Mudah Memulai di"
+        titlePrefix={t("order.titlePrefix")}
         titleHighlight="Satu Cerita"
-        description="Proses pemesanan yang cepat, transparan, dan tanpa ribet. Mulai dari pemilihan template hingga undangan siap dibagikan ke seluruh tamu."
+        description={t("order.desc")}
       />
 
       {/* 3. Konten Utama: 4 Langkah Alur Pemesanan */}
@@ -202,20 +203,20 @@ export const CaraPesanPage: React.FC<CaraPesanPageProps> = ({
               </div>
               <div className="text-left">
                 <h4 className="text-sm sm:text-base font-extrabold text-neutral-900">
-                  Butuh Bantuan atau Masih Bingung?
+                  {t("order.help.title")}
                 </h4>
                 <p className="text-xs sm:text-sm text-neutral-600">
-                  Konsultasikan konsep acara Anda secara gratis dengan tim admin kami di WhatsApp.
+                  {t("order.help.desc")}
                 </p>
               </div>
             </div>
             <a
-              href="https://wa.me/6285187978443?text=Halo%20Satu%20Cerita,%20saya%20mau%20tanya-tanya%20tentang%20pemesanan%20undangan"
+              href={`https://wa.me/6285187978443?text=${encodeURIComponent(t("wa.orderHelp"))}`}
               target="_blank"
               rel="noopener noreferrer"
               className="shrink-0 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs sm:text-sm font-bold shadow-[0_2px_8px_rgba(37,211,102,0.25)] hover:shadow-[0_4px_12px_rgba(37,211,102,0.35)] transition-all"
             >
-              Konsultasi WhatsApp
+              {t("order.help.cta")}
             </a>
           </div>
         </div>

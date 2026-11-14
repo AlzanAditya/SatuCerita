@@ -4,6 +4,8 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { Footer } from "@/components/layout/Footer";
 import { SubpageHeader } from "@/components/layout/SubpageHeader";
 import { MessageCircle } from "lucide-react";
+import { useT } from "@/i18n";
+import type { TKey } from "@/i18n";
 
 interface KontakPageProps {
   currentPath?: string;
@@ -14,7 +16,7 @@ interface ContactCardItem {
   id: string;
   appName: string;
   contactValue: string;
-  actionText: string;
+  actionKey: TKey;
   link: string;
   logoSrc: string;
   btnStyle: string;
@@ -27,8 +29,8 @@ const CONTACT_ITEMS: ContactCardItem[] = [
     id: "whatsapp",
     appName: "WhatsApp",
     contactValue: "+62 851 8797 8443",
-    actionText: "Chat WhatsApp",
-    link: "https://wa.me/6285187978443?text=Halo%20Satu%20Cerita,%20saya%20ingin%20konsultasi%20pemesanan%20undangan",
+    actionKey: "contact.whatsapp.cta",
+    link: "https://wa.me/6285187978443",
     logoSrc: "/logos/whatsapp.webp",
     // Warna hijau lebih redup/gelap agar kontras tinggi dengan teks putih
     btnStyle: "bg-[#188c43] hover:bg-[#137336] shadow-[#188c43]/20",
@@ -38,7 +40,7 @@ const CONTACT_ITEMS: ContactCardItem[] = [
     id: "gmail",
     appName: "Gmail",
     contactValue: "satuceritadotid@gmail.com",
-    actionText: "Kirim Email",
+    actionKey: "contact.gmail.cta",
     link: "mailto:satuceritadotid@gmail.com",
     logoSrc: "/logos/gmail.webp",
     btnStyle: "bg-[#EA4335] hover:bg-[#d93025] shadow-[#EA4335]/20",
@@ -48,7 +50,7 @@ const CONTACT_ITEMS: ContactCardItem[] = [
     id: "instagram",
     appName: "Instagram",
     contactValue: "@satuceritaid",
-    actionText: "Kunjungi Instagram",
+    actionKey: "contact.instagram.cta",
     link: "https://instagram.com/satuceritaid",
     logoSrc: "/logos/instagram.webp",
     btnStyle: "bg-[#E1306C] hover:bg-[#cf2560] shadow-[#E1306C]/20",
@@ -58,7 +60,7 @@ const CONTACT_ITEMS: ContactCardItem[] = [
     id: "tiktok",
     appName: "TikTok",
     contactValue: "@satuceritaid",
-    actionText: "Kunjungi TikTok",
+    actionKey: "contact.tiktok.cta",
     link: "https://www.tiktok.com/@satuceritaid",
     logoSrc: "/logos/tiktok.webp",
     btnStyle: "bg-[#010101] hover:bg-[#1a1a1a] shadow-black/20",
@@ -70,6 +72,7 @@ export const KontakPage: React.FC<KontakPageProps> = ({
   currentPath = "/kontak",
   onNavigate = (_path: string) => {},
 }) => {
+  const { t } = useT();
 
   return (
     <div className="min-h-screen bg-[#faf9ff] text-text-primary flex flex-col font-sans selection:bg-[#7d6aee]/20 selection:text-[#7d6aee]">
@@ -78,11 +81,11 @@ export const KontakPage: React.FC<KontakPageProps> = ({
 
       {/* 2. Header Bagian Khusus */}
       <SubpageHeader
-        badgeText="Kontak & Dukungan"
+        badgeText={t("contact.badge")}
         badgeIcon={<MessageCircle className="w-3.5 h-3.5 text-[#7d6aee] shrink-0" />}
-        titlePrefix="Ada Pertanyaan? Kami Siap"
-        titleHighlight="Membantu Anda"
-        description="Tim Satu Cerita selalu siap menjawab pertanyaan, memberikan rekomendasi terbaik, dan mendampingi kebutuhan Anda setiap saat."
+        titlePrefix={t("contact.titlePrefix")}
+        titleHighlight={t("contact.titleHighlight")}
+        description={t("contact.desc")}
       />
 
       {/* 3. Konten Utama: Card Kontak Sederhana (WhatsApp, Gmail, Instagram, TikTok) */}
@@ -118,12 +121,12 @@ export const KontakPage: React.FC<KontakPageProps> = ({
 
                 {/* 4. Tombol CTA (Teks diperbesar & dipertebal 100, warna mengikuti logo aplikasi) */}
                 <a
-                  href={item.link}
+                  href={item.id === "whatsapp" ? `${item.link}?text=${encodeURIComponent(t("wa.consult"))}` : item.link}
                   target={item.isExternal ? "_blank" : undefined}
                   rel={item.isExternal ? "noopener noreferrer" : undefined}
                   className={`mt-auto w-full py-2.5 sm:py-3 px-4 rounded-xl font-bold text-sm sm:text-base text-white flex items-center justify-center transition-all duration-200 hover:opacity-95 active:scale-[0.98] shadow-[0px_1px_2px_rgba(16,24,40,0.05)] hover:shadow-[0px_4px_8px_-2px_rgba(16,24,40,0.12),0px_2px_4px_-2px_rgba(16,24,40,0.06)] ${item.btnStyle}`}
                 >
-                  <span>{item.actionText}</span>
+                  <span>{t(item.actionKey)}</span>
                 </a>
               </div>
             ))}

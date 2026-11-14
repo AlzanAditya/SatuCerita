@@ -1,5 +1,6 @@
 import React from "react";
 import { useLanguage, type Language } from "@/context/LanguageContext";
+import { useT } from "@/i18n";
 
 export type { Language };
 
@@ -15,6 +16,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   onChange,
 }) => {
   const { lang: currentLang, setLang } = useLanguage();
+  const { t } = useT();
 
   const handleSelect = (lang: Language) => {
     setLang(lang);
@@ -44,7 +46,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   return (
     <div
       role="group"
-      aria-label="Pilih Bahasa"
+      aria-label={t("lang.choose")}
       className={`inline-flex items-center gap-1 select-none ${containerStyle} ${className}`}
     >
       <button

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { PATHS } from "@/routes";
 import { Home, LayoutGrid, ShoppingBag, MessageCircle, UserRound } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
+import { useT } from "@/i18n";
 import { fetchSession, type SessionUser } from "@/lib/auth";
 
 export interface BottomNavProps {
@@ -15,7 +15,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onNavigate = (_path: string) => {},
   activeTab: propActiveTab,
 }) => {
-  const { lang } = useLanguage();
+  const { t } = useT();
   const [user, setUser] = useState<SessionUser | null>(null);
 
   useEffect(() => {
@@ -85,8 +85,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         href="https://wa.me/6285187978443"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Hubungi WhatsApp Satu Cerita"
-        title="Hubungi WhatsApp Satu Cerita"
+        aria-label={t("nav.whatsappAria")}
+        title={t("nav.whatsappAria")}
         className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 md:right-8 z-40 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#25D366] hover:bg-[#20ba5a] border border-[#22bf5c] border-b-[3px] sm:border-b-[4px] border-b-[#126b34] shadow-md hover:shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 group cursor-pointer"
       >
         <MessageCircle className="w-7 h-7 sm:w-8 sm:h-8 text-white shrink-0 group-hover:scale-110 transition-transform" />
@@ -109,11 +109,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               ? "text-[#7d6aee] font-bold"
               : "text-text-secondary hover:text-text-primary font-semibold"
           }`}
-          aria-label={lang === "id" ? "Beranda" : "Home"}
+          aria-label={t("nav.home")}
         >
           <Home className="w-5 h-5" />
           <span className={`text-[11px] leading-tight ${effectiveActiveTab === "home" ? "font-bold text-[#7d6aee]" : "font-semibold"}`}>
-            {lang === "id" ? "Beranda" : "Home"}
+            {t("nav.home")}
           </span>
         </button>
 
@@ -127,11 +127,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               ? "text-[#7d6aee] font-bold"
               : "text-text-secondary hover:text-text-primary font-semibold"
           }`}
-          aria-label={lang === "id" ? "Katalog" : "Catalog"}
+          aria-label={t("nav.catalog")}
         >
           <LayoutGrid className="w-5 h-5" />
           <span className={`text-[11px] leading-tight ${effectiveActiveTab === "katalog" ? "font-bold text-[#7d6aee]" : "font-semibold"}`}>
-            {lang === "id" ? "Katalog" : "Catalog"}
+            {t("nav.catalog")}
           </span>
         </button>
 
@@ -145,11 +145,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               ? "text-[#7d6aee] font-bold"
               : "text-text-secondary hover:text-text-primary font-semibold"
           }`}
-          aria-label={lang === "id" ? "Cara Pesan" : "How to Order"}
+          aria-label={t("nav.howToOrder")}
         >
           <ShoppingBag className="w-5 h-5" />
           <span className={`text-[11px] leading-tight ${effectiveActiveTab === "carapesan" ? "font-bold text-[#7d6aee]" : "font-semibold"}`}>
-            {lang === "id" ? "Cara Pesan" : "How to Order"}
+            {t("nav.howToOrder")}
           </span>
         </button>
 
@@ -163,11 +163,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               ? "text-[#7d6aee] font-bold"
               : "text-text-secondary hover:text-text-primary font-semibold"
           }`}
-          aria-label={lang === "id" ? "Kontak" : "Contact"}
+          aria-label={t("nav.contact")}
         >
           <MessageCircle className="w-5 h-5" />
           <span className={`text-[11px] leading-tight ${effectiveActiveTab === "kontak" ? "font-bold text-[#7d6aee]" : "font-semibold"}`}>
-            {lang === "id" ? "Kontak" : "Contact"}
+            {t("nav.contact")}
           </span>
         </button>
 
@@ -181,7 +181,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               ? "text-[#7d6aee] font-bold"
               : "text-text-secondary hover:text-text-primary font-semibold"
           }`}
-          aria-label={user ? firstName : lang === "id" ? "Masuk" : "Login"}
+          aria-label={user ? firstName : t("nav.login")}
         >
           {user ? (
             <div className={`size-5 rounded-full overflow-hidden flex items-center justify-center font-bold text-[10px] shrink-0 border ${
@@ -199,7 +199,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             <UserRound className="w-5 h-5" />
           )}
           <span className={`text-[11px] leading-tight truncate max-w-[64px] ${effectiveActiveTab === "login" ? "font-bold text-[#7d6aee]" : "font-semibold"}`}>
-            {user ? firstName : lang === "id" ? "Masuk" : "Login"}
+            {user ? firstName : t("nav.login")}
           </span>
         </button>
       </div>

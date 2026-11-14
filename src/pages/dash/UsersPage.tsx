@@ -2,6 +2,7 @@ import React from "react";
 import { Search, Download } from "lucide-react";
 import { DataTable, DataTableColumn } from "@/components/ui/DataTable";
 import { AdminUserData } from "./types";
+import { useT } from "@/i18n";
 
 export interface UsersPageProps {
   usersList: AdminUserData[];
@@ -19,6 +20,7 @@ export const UsersPage: React.FC<UsersPageProps> = ({
   setSearchQuery,
   onExport,
 }) => {
+  const { t } = useT();
   return (
     <div className="space-y-6 animate-fadeIn md:animate-none">
       {/* Filter & Search Bar */}
@@ -27,7 +29,7 @@ export const UsersPage: React.FC<UsersPageProps> = ({
           <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Cari nama, email, atau nomor WhatsApp..."
+            placeholder={t("st.dash.users.searchPh")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
@@ -36,7 +38,7 @@ export const UsersPage: React.FC<UsersPageProps> = ({
 
         <div className="flex items-center gap-2">
           <span className="text-xs font-extrabold text-purple-700 bg-purple-50 px-3 py-2 rounded-xl border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs">
-            Total: <strong className="text-neutral-900">{usersList.length} Akun</strong>
+            Total: <strong className="text-neutral-900">{usersList.length} {t("st.dash.users.accounts")}</strong>
           </span>
           <button
             type="button"
@@ -45,7 +47,7 @@ export const UsersPage: React.FC<UsersPageProps> = ({
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 hover:bg-neutral-50 text-xs font-extrabold text-neutral-700 shadow-2xs active:scale-[0.99] active:border-b-[2px] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Ekspor CSV</span>
+            <span>{t("st.dash.users.exportCsv")}</span>
           </button>
         </div>
       </div>
@@ -59,7 +61,7 @@ export const UsersPage: React.FC<UsersPageProps> = ({
             u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (u.phone || "").includes(searchQuery)
         )}
-        emptyMessage="Pengguna tidak ditemukan."
+        emptyMessage={t("st.dash.users.empty")}
       />
     </div>
   );

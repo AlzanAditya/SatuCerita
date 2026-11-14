@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Accordion } from "@/components/ui/Accordion";
 import { TEMPLATES_DATA, type TemplateItemData } from "@/data/templates";
+import { useT, formatRupiahLang, type TKey } from "@/i18n";
 
 interface HomePageProps {
   currentPath?: string;
@@ -42,47 +43,18 @@ type TemplateItem = Pick<
 // Satu sumber kebenaran: sama dengan katalog (src/data/templates.ts), yaitu template yang ada di src/templates/.
 const HOME_TEMPLATES: TemplateItem[] = TEMPLATES_DATA;
 
-interface FaqItem {
-  question: string;
-  answer: string;
-}
-
-const FAQ_LIST: FaqItem[] = [
-  {
-    question: "Apa itu undangan pernikahan digital?",
-    answer:
-      "Undangan pernikahan digital adalah website undangan interaktif yang dapat diakses melalui tautan khusus di ponsel maupun laptop. Dilengkapi dengan navigasi peta, hitung mundur, pemutar musik, galeri foto, RSVP, dan fitur kirim nama tamu otomatis.",
-  },
-  {
-    question: "Bagaimana cara membuat undangan digital di Satu Cerita?",
-    answer:
-      "Pilih template di katalog, selesaikan pembayaran, lalu isi data mempelai, acara, foto, dan musik di dashboard. Setelah diterbitkan, undangan langsung bisa dibagikan ke tamu lewat WhatsApp.",
-  },
-  {
-    question: "Berapa harga undangan digital?",
-    answer:
-      "Mulai dari Rp 10.000 sekali bayar per undangan. Tidak ada biaya langganan berulang, dan undangan dapat diakses tanpa batas waktu untuk para tamu.",
-  },
-  {
-    question: "Apakah foto dan musik bisa disesuaikan sendiri?",
-    answer:
-      "Tentu saja! Anda bebas mengunggah foto galeri tanpa batas, memilih musik latar favorit, serta menambahkan cerita cinta dan nomor rekening hadiah digital.",
-  },
-  {
-    question: "Berapa lama proses pembuatan undangan?",
-    answer:
-      "Setelah pembayaran terkonfirmasi, Anda bisa langsung mengisi form di dashboard dan undangan selesai dalam hitungan menit.",
-  },
-];
-
-const formatRupiah = (val: number) => {
-  return "Rp " + val.toLocaleString("id-ID");
-};
+const FAQ_COUNT = 5;
 
 export const HomePage: React.FC<HomePageProps> = ({
   currentPath = "/",
   onNavigate = (_path: string) => { },
 }) => {
+  const { t, lang } = useT();
+  const formatRupiah = (val: number) => formatRupiahLang(val, lang);
+  const faqList = Array.from({ length: FAQ_COUNT }, (_, i) => ({
+    question: t(`home.faq.${i + 1}.q` as TKey),
+    answer: t(`home.faq.${i + 1}.a` as TKey),
+  }));
   const [activeCategory, setActiveCategory] = useState<"ALL" | "ELYSIAN" | "DELUXE">("ALL");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null); // Semua accordion ter-collapse secara default
   const [selectedDemo, setSelectedDemo] = useState<TemplateItem | null>(null);
@@ -92,9 +64,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   const appPath = PATHS.studioHome;
 
   const handleOrderTemplate = (templateTitle: string) => {
-    const waText = encodeURIComponent(
-      `Halo Satu Cerita, saya tertarik untuk memesan template undangan: "${templateTitle}". Boleh info detail pemesanannya?`
-    );
+    const waText = encodeURIComponent(t("wa.order", { title: templateTitle }));
     window.open(`https://wa.me/6285187978443?text=${waText}`, "_blank");
   };
 
@@ -121,7 +91,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="lg:col-span-7 flex flex-col items-start text-left">
               {/* Judul Hero */}
               <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] font-black tracking-tight text-neutral-900 leading-[1.12] mb-3 sm:mb-4 text-left">
-                Momen Berharga Dimulai dari{" "}
+                {t("home.hero.title")}{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7d6aee] via-[#9484f4] to-[#ad9fff]">
                   Satu Cerita
                 </span>
@@ -129,7 +99,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
               {/* Deskripsi Hero (Diperbesar 2px menjadi 20px pada desktop) */}
               <p className="text-base sm:text-lg lg:text-[20px] lg:leading-relaxed text-neutral-600 max-w-xl font-normal leading-relaxed text-left mb-6">
-                Platform pembuatan undangan pernikahan digital yang modern, elegan, dan interaktif. Buat momen spesial Anda berkesan dan bagikan dengan mudah kepada seluruh tamu.
+                {t("home.hero.desc")}
               </p>
 
               {/* Tombol CTA */}
@@ -139,7 +109,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   size="md"
                   onClick={() => onNavigate(katalogPath)}
                 >
-                  <span>Lihat Katalog</span>
+                  <span>{t("home.hero.ctaCatalog")}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
                 <Button
@@ -147,7 +117,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   size="md"
                   onClick={() => onNavigate(appPath)}
                 >
-                  <span>Buat Gratis</span>
+                  <span>{t("home.hero.ctaFree")}</span>
                 </Button>
               </div>
             </div>
@@ -171,7 +141,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                   {/* Red Badge across bottom left */}
                   <div className="absolute -bottom-2 -left-2 z-30 bg-[#EE5B4F] text-white rounded-lg px-2 py-0.5 font-bold text-[9px] shadow-sm -rotate-3 select-none">
-                    Live dalam menit
+                    {t("home.mock.live")}
                   </div>
                 </div>
 
@@ -184,10 +154,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                       className="w-full h-full object-cover opacity-90"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-2 text-white text-center">
-                      <p className="text-[8px] uppercase tracking-wider opacity-80">Undangan</p>
+                      <p className="text-[8px] uppercase tracking-wider opacity-80">{t("home.mock.invitation")}</p>
                       <p className="text-[10px] font-serif font-bold">John & Jane</p>
                       <div className="mt-1 w-full py-0.5 bg-[#7D6AEE] rounded-md text-[8px] font-bold text-white shadow-2xs">
-                        Buka
+                        {t("home.mock.open")}
                       </div>
                     </div>
                   </div>
@@ -213,7 +183,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     <div className="relative z-10 p-2 bg-gradient-to-t from-black/90 via-black/40 to-transparent text-white text-center">
                       <p className="text-[10px] font-serif font-bold leading-tight">John & Jane</p>
                       <p className="text-[7px] opacity-75 mt-0.5">{`15 . 05 . 2027`}</p>
-                      <p className="text-[7px] opacity-70 mt-0.5">Kepada Yth. Tamu Undangan</p>
+                      <p className="text-[7px] opacity-70 mt-0.5">{t("home.mock.dearGuest")}</p>
                     </div>
                   </div>
 
@@ -224,7 +194,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                   {/* Top-right Pill Badge: satucerita.id/nama-kalian */}
                   <div className="absolute -top-2.5 -right-3 z-40 bg-[#7D6AEE] text-white rounded-lg px-2.5 py-1 font-bold text-[9px] shadow-[0_2px_8px_rgba(125,106,238,0.3)] rotate-3 select-none">
-                    satucerita.id/nama-kalian
+                    {t("home.mock.url")}
                   </div>
                 </div>
               </div>
@@ -240,16 +210,16 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Section Badge */}
             <div className="inline-block mb-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-xs font-bold tracking-wide uppercase shadow-2xs">
-                KENAPA SATUCERITA
+                {t("home.why.badge")}
               </span>
             </div>
 
             {/* Section Title & Desc (lebar dipersempit) */}
             <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-black text-neutral-900 tracking-tight leading-[1.12] mb-3 max-w-[360px] sm:max-w-[420px]">
-              Semua yang kalian butuhkan, tanpa ribet.
+              {t("home.why.title")}
             </h2>
             <p className="text-neutral-600 text-sm sm:text-base leading-relaxed mb-8 sm:mb-10 max-w-[360px] sm:max-w-[440px] font-normal">
-              Fitur undangan digital lengkap untuk pasangan yang ingin undangan nikah online tampil memukau sekaligus mudah dikelola dari satu dashboard.
+              {t("home.why.desc")}
             </p>
 
             {/* 8 Feature Cards Grid (4 columns on desktop, 2 on tablet, swipe carousel on mobile ignoring side padding) */}
@@ -262,10 +232,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <SlidersHorizontal className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <h3 className="text-[20px] font-black text-neutral-900 tracking-tight leading-snug mb-2">
-                      Edit setiap section sendiri
+                      {t("home.why.1.title")}
                     </h3>
                     <p className="text-[16px] text-neutral-600 leading-relaxed font-normal">
-                      Ubah teks, urutan, dan isi setiap bagian — dari pembuka, profil mempelai, kisah cinta, hingga penutup.
+                      {t("home.why.1.desc")}
                     </p>
                   </div>
                 </div>
@@ -277,10 +247,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <ImagePlus className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <h3 className="text-[20px] font-black text-neutral-900 tracking-tight leading-snug mb-2">
-                      Drag &amp; drop foto
+                      {t("home.why.2.title")}
                     </h3>
                     <p className="text-[16px] text-neutral-600 leading-relaxed font-normal">
-                      Unggah dan susun foto galeri cukup dengan seret dan lepas. Otomatis dioptimalkan agar cepat dibuka.
+                      {t("home.why.2.desc")}
                     </p>
                   </div>
                 </div>
@@ -292,10 +262,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <Music className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <h3 className="text-[20px] font-black text-neutral-900 tracking-tight leading-snug mb-2">
-                      Musik, YouTube &amp; live streaming
+                      {t("home.why.3.title")}
                     </h3>
                     <p className="text-[16px] text-neutral-600 leading-relaxed font-normal">
-                      Tambahkan lagu latar, video prewedding dari YouTube, dan tautan siaran langsung untuk tamu yang jauh.
+                      {t("home.why.3.desc")}
                     </p>
                   </div>
                 </div>
@@ -307,10 +277,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <Heart className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <h3 className="text-[20px] font-black text-neutral-900 tracking-tight leading-snug mb-2">
-                      RSVP &amp; buku tamu digital
+                      {t("home.why.4.title")}
                     </h3>
                     <p className="text-[16px] text-neutral-600 leading-relaxed font-normal">
-                      Tamu konfirmasi kehadiran dan menulis ucapan langsung dari undangan. Semua rekap tersimpan rapi.
+                      {t("home.why.4.desc")}
                     </p>
                   </div>
                 </div>
@@ -322,10 +292,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <QrCode className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <h3 className="text-[20px] font-black text-neutral-900 tracking-tight leading-snug mb-2">
-                      QR code check-in tamu
+                      {t("home.why.5.title")}
                     </h3>
                     <p className="text-[16px] text-neutral-600 leading-relaxed font-normal">
-                      Setiap tamu mendapat QR unik dengan label dinamis seperti VIP atau Reguler untuk check-in di lokasi acara.
+                      {t("home.why.5.desc")}
                     </p>
                   </div>
                 </div>
@@ -337,10 +307,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <MessageCircle className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <h3 className="text-[20px] font-black text-neutral-900 tracking-tight leading-snug mb-2">
-                      Kirim undangan via WhatsApp
+                      {t("home.why.6.title")}
                     </h3>
                     <p className="text-[16px] text-neutral-600 leading-relaxed font-normal">
-                      Kirim undangan personal dengan nama tamu di setiap pesan, cukup satu klik dari daftar tamu.
+                      {t("home.why.6.desc")}
                     </p>
                   </div>
                 </div>
@@ -352,10 +322,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <Globe className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <h3 className="text-[20px] font-black text-neutral-900 tracking-tight leading-snug mb-2">
-                      Multi bahasa
+                      {t("home.why.7.title")}
                     </h3>
                     <p className="text-[16px] text-neutral-600 leading-relaxed font-normal">
-                      Tampilkan undangan dalam Bahasa Indonesia atau Inggris untuk keluarga dan sahabat dari mana saja.
+                      {t("home.why.7.desc")}
                     </p>
                   </div>
                 </div>
@@ -367,10 +337,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <Link2 className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <h3 className="text-[20px] font-black text-neutral-900 tracking-tight leading-snug mb-2">
-                      Link custom
+                      {t("home.why.8.title")}
                     </h3>
                     <p className="text-[16px] text-neutral-600 leading-relaxed font-normal">
-                      Tautan pendek dan mudah diingat: satucerita.id/nama-kalian. Bisa diganti kapan saja dari dashboard.
+                      {t("home.why.8.desc")}
                     </p>
                   </div>
                 </div>
@@ -387,16 +357,16 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Section Badge */}
             <div className="inline-block mb-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold tracking-wide uppercase shadow-2xs">
-                TEMPLATE PILIHAN
+                {t("home.tpl.badge")}
               </span>
             </div>
 
             {/* Section Title & Desc */}
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-snug mb-3">
-              Template undangan digital yang siap bercerita.
+              {t("home.tpl.title")}
             </h2>
             <p className="text-purple-100 text-sm sm:text-base leading-relaxed mb-6 max-w-2xl font-normal">
-              Pratinjau setiap contoh undangan pernikahan digital langsung di ponsel sebelum kalian memilih.
+              {t("home.tpl.desc")}
             </p>
 
             {/* Button: Lihat semua template */}
@@ -406,7 +376,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 onClick={() => onNavigate(katalogPath)}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl border border-white/40 font-bold text-sm text-[#7d6aee] bg-white hover:bg-purple-50 shadow-sm transition-all cursor-pointer"
               >
-                <span>Lihat semua template</span>
+                <span>{t("home.tpl.seeAll")}</span>
                 <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>            {/* Category Filter Pills */}
@@ -420,7 +390,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
                     }`}
                 >
-                  <span>Semua</span>
+                  <span>{t("home.tpl.filterAll")}</span>
                   <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ALL" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{HOME_TEMPLATES.length}</span>
                 </button>
 
@@ -509,7 +479,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                       >
                         <Eye className="w-4 h-4 stroke-[2.2]" />
-                        <span>Lihat Demo</span>
+                        <span>{t("tpl.viewDemo")}</span>
                       </Button>
                       <Button
                         variant="primary"
@@ -517,7 +487,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         onClick={() => onNavigate(`/studio/checkout/${item.id}`)}
                         className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                       >
-                        <span>Pilih Template</span>
+                        <span>{t("tpl.choose")}</span>
                         <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                       </Button>
                     </div>
@@ -536,13 +506,13 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Section Badge */}
             <div className="inline-block mb-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-xs font-bold tracking-wide uppercase shadow-2xs">
-                CARA PESAN
+                {t("home.how.badge")}
               </span>
             </div>
 
             {/* Section Title */}
             <h2 className="text-2xl sm:text-4xl font-black text-neutral-900 tracking-tight leading-snug mb-3">
-              Cara membuat undangan digital dalam empat langkah.
+              {t("home.how.title")}
             </h2>
 
             {/* Button: Lihat detail cara pesan */}
@@ -553,7 +523,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 onClick={() => onNavigate(caraPesanPath)}
                 className="w-full sm:w-auto text-[16px]"
               >
-                <span>Lihat detail cara pesan</span>
+                <span>{t("home.how.detail")}</span>
                 <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
               </Button>
             </div>
@@ -569,12 +539,12 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <div>
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <h3 className="text-lg sm:text-xl font-black text-neutral-900 tracking-tight">
-                      Pilih template
+                      {t("home.how.1.title")}
                     </h3>
                     <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-[#7d6aee] stroke-[2.2] shrink-0" />
                   </div>
                   <p className="text-[14px] sm:text-[15px] lg:text-[14px] text-neutral-600 leading-relaxed font-normal">
-                    Jelajahi katalog dan pratinjau setiap template secara langsung.
+                    {t("home.how.1.desc")}
                   </p>
                 </div>
               </div>
@@ -588,12 +558,12 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <div>
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <h3 className="text-lg sm:text-xl font-black text-neutral-900 tracking-tight">
-                      Bayar
+                      {t("home.how.2.title")}
                     </h3>
                     <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-[#7d6aee] stroke-[2.2] shrink-0" />
                   </div>
                   <p className="text-[14px] sm:text-[15px] lg:text-[14px] text-neutral-600 leading-relaxed font-normal">
-                    Masuk dengan akun Google dan selesaikan pembayaran dengan metode favorit.
+                    {t("home.how.2.desc")}
                   </p>
                 </div>
               </div>
@@ -607,12 +577,12 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <div>
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <h3 className="text-lg sm:text-xl font-black text-neutral-900 tracking-tight">
-                      Edit di dashboard
+                      {t("home.how.3.title")}
                     </h3>
                     <SlidersHorizontal className="w-5 h-5 sm:w-6 sm:h-6 text-[#7d6aee] stroke-[2.2] shrink-0" />
                   </div>
                   <p className="text-[14px] sm:text-[15px] lg:text-[14px] text-neutral-600 leading-relaxed font-normal">
-                    Isi data mempelai, acara, foto, musik, dan daftar tamu sesuka hati.
+                    {t("home.how.3.desc")}
                   </p>
                 </div>
               </div>
@@ -626,12 +596,12 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <div>
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <h3 className="text-lg sm:text-xl font-black text-neutral-900 tracking-tight">
-                      Bagikan
+                      {t("home.how.4.title")}
                     </h3>
                     <Send className="w-5 h-5 sm:w-6 sm:h-6 text-[#7d6aee] stroke-[2.2] shrink-0" />
                   </div>
                   <p className="text-[14px] sm:text-[15px] lg:text-[14px] text-neutral-600 leading-relaxed font-normal">
-                    Kirim undangan personal ke setiap tamu lewat WhatsApp.
+                    {t("home.how.4.desc")}
                   </p>
                 </div>
               </div>
@@ -647,18 +617,18 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Section Badge */}
             <div className="inline-block mb-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold tracking-wide uppercase shadow-2xs">
-                FAQ
+                {t("home.faq.badge")}
               </span>
             </div>
 
             {/* Section Title */}
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-snug mb-8">
-              Pertanyaan seputar undangan digital.
+              {t("home.faq.title")}
             </h2>
 
             {/* Accordion List */}
             <Accordion
-              items={FAQ_LIST.map((faq, index) => ({
+              items={faqList.map((faq, index) => ({
                 id: index,
                 title: faq.question,
                 content: faq.answer,
@@ -679,7 +649,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               <div className="flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-[#7d6aee]" />
                 <h4 className="text-lg font-black text-neutral-900">
-                  Demo: {selectedDemo.title}
+                  {t("tpl.demoTitle", { title: selectedDemo.title })}
                 </h4>
               </div>
               <button
@@ -704,7 +674,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             <div className="flex items-center justify-between mb-4">
               <div>
-                <span className="text-xs font-bold text-neutral-500 uppercase">Harga Promo</span>
+                <span className="text-xs font-bold text-neutral-500 uppercase">{t("tpl.promoPrice")}</span>
                 <p className="text-xl font-black text-neutral-900">
                   {formatRupiah(selectedDemo.discountPrice)}
                 </p>
@@ -724,7 +694,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 }}
                 className="w-full"
               >
-                <span>Pilih Template Ini</span>
+                <span>{t("tpl.chooseThis")}</span>
                 <ExternalLink className="w-4 h-4" />
               </Button>
               <Button
@@ -733,7 +703,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 onClick={() => setSelectedDemo(null)}
                 className="w-full text-xs"
               >
-                Tutup Preview
+                {t("tpl.closePreview")}
               </Button>
             </div>
           </div>

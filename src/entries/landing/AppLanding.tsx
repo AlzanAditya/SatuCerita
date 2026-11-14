@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { LanguageProvider } from "@/context/LanguageContext";
+import { LanguageProvider, useLanguage } from "@/context/LanguageContext";
 import { useSeo } from "@/hooks/useSeo";
-import { NOT_FOUND_META, normalizePath, resolveRoute } from "@/routes";
+import { normalizePath, resolveRoute } from "@/routes";
+import { localizeRouteMeta } from "@/i18n/seo";
 import {
   HomePage,
   LoginPage,
@@ -20,6 +21,7 @@ function getInitialPath(): string {
 }
 
 function LandingRouter() {
+  const { lang } = useLanguage();
   const [path, setPath] = useState<string>(getInitialPath);
   const route = resolveRoute(path);
 
@@ -108,11 +110,13 @@ function LandingRouter() {
     [path]
   );
 
+  const meta = localizeRouteMeta(route, lang);
   useSeo({
-    title: route?.title ?? NOT_FOUND_META.title,
-    description: route?.description ?? NOT_FOUND_META.description,
+    title: meta.title,
+    description: meta.description,
     path: route?.path ?? path,
     noindex: route ? !route.indexable : true,
+    locale: lang === "en" ? "en_US" : undefined,
   });
 
   switch (route?.id) {

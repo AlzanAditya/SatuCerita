@@ -3,6 +3,7 @@ import { PATHS } from "@/routes";
 import { Home, LayoutGrid, ShoppingBag, MessageCircle, UserRound } from "lucide-react";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { fetchSession, type SessionUser } from "@/lib/auth";
+import { useT } from "@/i18n";
 
 interface NavbarProps {
   currentPath: string;
@@ -13,6 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentPath,
   onNavigate,
 }) => {
+  const { t } = useT();
   const [user, setUser] = useState<SessionUser | null>(null);
 
   useEffect(() => {
@@ -36,25 +38,25 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navLinks = [
     {
-      label: "Beranda",
+      label: t("nav.home"),
       href: PATHS.home,
       icon: <Home className="w-5 h-5" strokeWidth={1.5} />,
       isActive: (path: string) => path === PATHS.home,
     },
     {
-      label: "Katalog",
+      label: t("nav.catalog"),
       href: PATHS.katalog,
       icon: <LayoutGrid className="w-5 h-5" strokeWidth={1.5} />,
       isActive: (path: string) => path === PATHS.katalog,
     },
     {
-      label: "Cara Pesan",
+      label: t("nav.howToOrder"),
       href: PATHS.caraPesan,
       icon: <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />,
       isActive: (path: string) => path === PATHS.caraPesan,
     },
     {
-      label: "Kontak",
+      label: t("nav.contact"),
       href: PATHS.kontak,
       icon: <MessageCircle className="w-5 h-5" strokeWidth={1.5} />,
       isActive: (path: string) => path === PATHS.kontak,
@@ -129,7 +131,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 href={PATHS.studioHome}
                 onClick={(e) => handleNav(e, PATHS.studioHome)}
                 className="hidden md:inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/80 text-neutral-800 transition-all duration-200 active:scale-95 cursor-pointer select-none"
-                title={`Profil ${user.name}`}
+                title={t("nav.profileOf", { name: user.name })}
               >
                 <div className="size-7 rounded-full overflow-hidden bg-[#7d6aee] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                   {user.avatar ? (
@@ -149,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={(e) => handleNav(e, loginPath)}
                 className="hidden md:inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white font-bold text-sm shadow-sm hover:shadow-md transition-all duration-200 active:scale-95 cursor-pointer select-none"
               >
-                Masuk
+                {t("nav.login")}
               </a>
             )}
           </div>

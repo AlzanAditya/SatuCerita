@@ -30,6 +30,7 @@ import { CheckoutPage } from "./CheckoutPage";
 import { OrderDetailPage } from "./OrderDetailPage";
 import { EditUndanganPage } from "./EditUndanganPage";
 import { UserAppProps, UserInvitation, OrderItem } from "./types";
+import { useT } from "@/i18n";
 
 export * from "./types";
 
@@ -83,6 +84,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
   // User Profile
   const { user, setUser, signOut } = useAuth();
+  const { t } = useT();
   const avatarKey = `satucerita_avatar_${user.id}`;
   const [avatarOverride, setAvatarOverride] = useState<string>(() => getCache<string>(avatarKey, ""));
   const userProfile: UserProfileData = {
@@ -108,7 +110,7 @@ export const UserApp: React.FC<UserAppProps> = ({
       setCropImageSrc(dataUrl);
       setIsCropModalOpen(true);
     } catch (_err) {
-      showToast("Gagal membaca file gambar.");
+      showToast(t("st.app.toast.imageReadFailed"));
     }
   };
 
@@ -177,14 +179,14 @@ export const UserApp: React.FC<UserAppProps> = ({
       const res = await updateProfile({ name: u.name, phone: hasPhone ? u.phone : "" });
       if (seq !== saveSeq.current) return;
       if (res.ok && res.user) setUser(res.user);
-      else showToast(res.error || "Gagal menyimpan profil.");
+      else showToast(res.error || t("st.app.toast.profileSaveFailed"));
     }, 900);
   };
 
   const handleSaveProfile = async () => {
     const res = await updateProfile({ name: editName, phone: editPhone });
     if (!res.ok || !res.user) {
-      showToast(res.error || "Gagal menyimpan profil.");
+      showToast(res.error || t("st.app.toast.profileSaveFailed"));
       return;
     }
     setUser(res.user);
@@ -193,7 +195,7 @@ export const UserApp: React.FC<UserAppProps> = ({
       setCache(avatarKey, editAvatarUrl);
     }
     setIsEditProfileOpen(false);
-    showToast("Profil berhasil diperbarui!");
+    showToast(t("st.app.toast.profileUpdated"));
   };
 
   // Perform logout
@@ -217,16 +219,16 @@ export const UserApp: React.FC<UserAppProps> = ({
 
   // Determine App Bar Title
   const getAppNavbarTitle = () => {
-    if (activeTab === "edit") return "Edit Undangan";
-    if (activeTab === "checkout") return "Checkout";
-    if (activeTab === "order") return "Detail Pesanan";
-    if (selectedOrderId) return "Detail Pesanan";
-    if (activeTab === "home") return "Undangan";
-    if (activeTab === "proses") return "Pesanan";
-    if (activeTab === "bagikan") return "Bagikan";
-    if (activeTab === "ucapan") return "Ucapan";
-    if (activeTab === "profile") return "Profil Saya";
-    return "Satu Cerita Studio";
+    if (activeTab === "edit") return t("st.app.title.edit");
+    if (activeTab === "checkout") return t("st.app.title.checkout");
+    if (activeTab === "order") return t("st.app.title.order");
+    if (selectedOrderId) return t("st.app.title.order");
+    if (activeTab === "home") return t("st.app.title.home");
+    if (activeTab === "proses") return t("st.app.title.proses");
+    if (activeTab === "bagikan") return t("st.app.title.bagikan");
+    if (activeTab === "ucapan") return t("st.app.title.ucapan");
+    if (activeTab === "profile") return t("st.app.title.profile");
+    return t("st.app.title.default");
   };
 
   // Pending orders count for notification
@@ -236,7 +238,7 @@ export const UserApp: React.FC<UserAppProps> = ({
   const sidebarNavItems = [
     {
       id: "home",
-      label: "Undangan Saya",
+      label: t("st.app.side.home"),
       icon: Home,
       isActive: !selectedOrderId && activeTab === "home",
       badge: invitations.length > 0 ? invitations.length : undefined,
@@ -247,7 +249,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
     {
       id: "ucapan",
-      label: "Ucapan",
+      label: t("st.app.side.ucapan"),
       icon: MessageSquare,
       isActive: !selectedOrderId && activeTab === "ucapan",
       onClick: () => {
@@ -257,7 +259,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
     {
       id: "proses",
-      label: "Pesanan & Tagihan",
+      label: t("st.app.side.orders"),
       icon: ShoppingBag,
       isActive: selectedOrderId != null || activeTab === "proses",
       badge: orders.filter((o) => o.status === "pending").length || undefined,
@@ -268,7 +270,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
     {
       id: "bagikan",
-      label: "Bagikan",
+      label: t("st.app.side.bagikan"),
       icon: Send,
       isActive: !selectedOrderId && activeTab === "bagikan",
       onClick: () => {
@@ -278,7 +280,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
     {
       id: "profile",
-      label: "Profil Akun",
+      label: t("st.app.side.profile"),
       icon: UserRound,
       isActive: !selectedOrderId && activeTab === "profile",
       onClick: () => {
@@ -288,7 +290,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
     {
       id: "katalog",
-      label: "Katalog Template",
+      label: t("st.app.side.katalog"),
       icon: LayoutGrid,
       isActive: false,
       onClick: () => {
@@ -357,11 +359,11 @@ export const UserApp: React.FC<UserAppProps> = ({
                 {getAppNavbarTitle()}
               </h1>
               <p className="text-xs text-neutral-400">
-                {activeTab === "home" && "Kelola dan pantau undangan digital yang telah Anda buat."}
-                {activeTab === "proses" && "Daftar pesanan aktif dan status proses verifikasi pembayaran."}
-                {activeTab === "bagikan" && "Bagikan undangan Anda kepada tamu tercinta."}
-                {activeTab === "ucapan" && "Baca ucapan dan doa dari tamu undangan Anda."}
-                {activeTab === "profile" && "Informasi akun dan pengaturan data kontak Satu Cerita."}
+                {activeTab === "home" && t("st.app.desc.home")}
+                {activeTab === "proses" && t("st.app.desc.proses")}
+                {activeTab === "bagikan" && t("st.app.desc.bagikan")}
+                {activeTab === "ucapan" && t("st.app.desc.ucapan")}
+                {activeTab === "profile" && t("st.app.desc.profile")}
               </p>
             </div>
 
@@ -375,7 +377,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-[#7d6aee] text-xs font-bold transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Buat Undangan Baru</span>
+                <span>{t("st.app.newInvite")}</span>
               </button>
             </div>
           </header>
@@ -468,7 +470,7 @@ export const UserApp: React.FC<UserAppProps> = ({
           <nav
             id="satucerita-app-bottom-navbar"
             className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
-            aria-label="Satu Cerita Studio Navigation"
+            aria-label={t("st.app.aria.nav")}
           >
             <div className="max-w-md mx-auto grid grid-cols-5 h-16 px-1">
               {/* 1. Beranda */}
@@ -483,7 +485,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label="Beranda"
+                aria-label={t("st.app.nav.home")}
               >
                 <Home className="w-5 h-5" />
                 <span
@@ -493,7 +495,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  Beranda
+                  {t("st.app.nav.home")}
                 </span>
               </button>
 
@@ -509,7 +511,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label="Ucapan"
+                aria-label={t("st.app.nav.ucapan")}
               >
                 <MessageSquare className="w-5 h-5" />
                 <span
@@ -519,7 +521,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  Ucapan
+                  {t("st.app.nav.ucapan")}
                 </span>
               </button>
 
@@ -535,7 +537,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label="Pesanan"
+                aria-label={t("st.app.nav.orders")}
               >
                 <ShoppingBag className="w-5 h-5" />
                 <span
@@ -545,7 +547,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  Pesanan
+                  {t("st.app.nav.orders")}
                 </span>
               </button>
 
@@ -561,7 +563,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label="Bagikan"
+                aria-label={t("st.app.nav.bagikan")}
               >
                 <Send className="w-5 h-5" />
                 <span
@@ -571,7 +573,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  Bagikan
+                  {t("st.app.nav.bagikan")}
                 </span>
               </button>
 
@@ -587,7 +589,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label="Profil"
+                aria-label={t("st.app.nav.profile")}
               >
                 <UserRound className="w-5 h-5" />
                 <span
@@ -597,7 +599,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  Profil
+                  {t("st.app.nav.profile")}
                 </span>
               </button>
             </div>
@@ -610,7 +612,7 @@ export const UserApp: React.FC<UserAppProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-purple-100 overflow-hidden flex flex-col">
             <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-neutral-100">
-              <h3 className="text-base font-bold text-neutral-900">Edit Profil</h3>
+              <h3 className="text-base font-bold text-neutral-900">{t("st.modal.editProfile")}</h3>
               <button
                 type="button"
                 onClick={() => setIsEditProfileOpen(false)}
@@ -630,7 +632,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                 />
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 text-xs font-bold text-neutral-700 hover:bg-neutral-50 cursor-pointer shadow-2xs">
                   <Crop className="w-3.5 h-3.5 text-[#7d6aee]" />
-                  <span>Upload & Potong Foto</span>
+                  <span>{t("st.modal.uploadCrop")}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -642,7 +644,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-800 block mb-1">
-                  Nama Lengkap
+                  {t("st.modal.fullName")}
                 </label>
                 <input
                   type="text"
@@ -654,7 +656,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-800 block mb-1">
-                  Email
+                  {t("st.modal.email")}
                 </label>
                 <input
                   type="email"
@@ -667,7 +669,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-800 block mb-1">
-                  Nomor WhatsApp
+                  {t("st.modal.whatsapp")}
                 </label>
                 <input
                   type="text"
@@ -684,14 +686,14 @@ export const UserApp: React.FC<UserAppProps> = ({
                 size="sm"
                 onClick={() => setIsEditProfileOpen(false)}
               >
-                Batal
+                {t("st.common.cancel")}
               </Button>
               <Button
                 variant="primary"
                 size="sm"
                 onClick={handleSaveProfile}
               >
-                Simpan
+                {t("st.common.save")}
               </Button>
             </div>
           </div>
@@ -716,10 +718,10 @@ export const UserApp: React.FC<UserAppProps> = ({
               <LogOut className="w-6 h-6" />
             </div>
             <h3 className="text-base font-extrabold text-neutral-900 tracking-tight">
-              Yakin Ingin Keluar?
+              {t("st.modal.logoutTitle")}
             </h3>
             <p className="text-xs text-neutral-500 font-medium mt-1 leading-relaxed">
-              Anda akan keluar dari akun Satu Cerita dan diarahkan kembali ke beranda.
+              {t("st.modal.logoutDesc")}
             </p>
 
             <div className="grid grid-cols-2 gap-2 mt-5">
@@ -728,14 +730,14 @@ export const UserApp: React.FC<UserAppProps> = ({
                 size="sm"
                 onClick={() => setIsLogoutModalOpen(false)}
               >
-                Batal
+                {t("st.common.cancel")}
               </Button>
               <Button
                 variant="danger"
                 size="sm"
                 onClick={handlePerformLogout}
               >
-                Ya, Keluar
+                {t("st.modal.logoutYes")}
               </Button>
             </div>
           </div>

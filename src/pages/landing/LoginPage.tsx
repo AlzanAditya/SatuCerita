@@ -4,10 +4,11 @@ import { LoginCard } from "@/components/auth/LoginCard";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { fetchSession, googleLoginUrl, loginWithEmail, signUpWithEmail } from "@/lib/auth";
 import { urls } from "@/lib/urls";
+import { useT, translateApiError, type TKey } from "@/i18n";
 
-const ERRORS: Record<string, string> = {
-  oauth_failed: "Login dengan Google gagal. Silakan coba lagi.",
-  forbidden: "Akun ini tidak diizinkan.",
+const ERROR_KEYS: Record<string, TKey> = {
+  oauth_failed: "login.oauthFailed",
+  forbidden: "login.forbidden",
 };
 
 export interface LoginPageProps {
@@ -19,12 +20,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   onNavigate,
   currentPath,
 }) => {
+  const { t } = useT();
   const [isSignUp, setIsSignUp] = useState(
     currentPath?.includes("signup") || false
   );
 
   const homePath = PATHS.home;
-  const [notice, setNotice] = useState<{ type: "error"; text: string } | null>(null);
+  // Simpan KEY/pesan mentah, bukan teks jadi, agar ikut berganti saat bahasa diubah.
+  const [noticeKey, setNoticeKey] = useState<TKey | null>(null);
+  const notice = noticeKey ? { type: "error" as const, text: t(noticeKey) } : null;
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.search) {
@@ -35,7 +39,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       }
     }
     const err = new URLSearchParams(window.location.search).get("error");
-    if (err) setNotice({ type: "error", text: ERRORS[err] || "Terjadi kesalahan. Coba lagi." });
+    if (err) setNoticeKey(ERROR_KEYS[err] ?? "api.err.generic");
     // Sudah login -> langsung ke dashboard user
     fetchSession().then((u) => u && window.location.replace(urls.studioHome()));
   }, []);
@@ -51,11 +55,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const handleEmail = async (p: { email: string; password: string; name: string; isSignUp: boolean }) => {
     if (p.isSignUp) {
       const r = await signUpWithEmail(p.email, p.password, p.name);
-      if (!r.ok) return { error: r.error };
-      return { info: "Pendaftaran berhasil. Cek email Anda untuk konfirmasi, lalu login." };
+      if (!r.ok) return { error: translateApiError(t, r.error) };
+      return { info: t("login.signUpSuccess") };
     }
     const r = await loginWithEmail(p.email, p.password);
-    if (!r.ok) return { error: r.error };
+    if (!r.ok) return { error: translateApiError(t, r.error) };
     window.location.assign(urls.studioHome());
   };
   const kebijakanPath = PATHS.kebijakan;

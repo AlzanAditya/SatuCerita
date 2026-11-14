@@ -31,8 +31,10 @@ import {
   TEMPLATES_DATA,
   TemplateItemData,
   getTemplateBySlug,
-  formatRupiah,
+  formatRupiah as formatRupiahBase,
 } from "@/data/templates";
+import { useT } from "@/i18n";
+import { localizeTemplate } from "@/i18n/templates";
 
 interface KatalogDetailPageProps {
   currentPath: string;
@@ -47,9 +49,13 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
   onNavigate = (_path: string) => {},
 }) => {
   // Extract slug from /katalog/:slug
+  const { t, lang } = useT();
+  const formatRupiah = (val: number) => formatRupiahBase(val, lang);
   const rawSlug = currentPath.replace(/^\/katalog\/?/, "");
-  const template: TemplateItemData =
+  const baseTemplate: TemplateItemData =
     getTemplateBySlug(rawSlug) || TEMPLATES_DATA[0];
+  // Teks yang tampil (badge, section, bahasa) mengikuti bahasa aktif.
+  const template = localizeTemplate(baseTemplate, lang);
 
   const [previewMode, setPreviewMode] = useState<"phone" | "desktop">("phone");
 
@@ -63,9 +69,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
   };
 
   const handleConsultWa = () => {
-    const waText = encodeURIComponent(
-      `Halo Satu Cerita, saya ingin bertanya lebih lanjut mengenai template undangan "${template.title}".`
-    );
+    const waText = encodeURIComponent(t("wa.ask", { title: template.title }));
     window.open(`https://wa.me/6285187978443?text=${waText}`, "_blank");
   };
 
@@ -234,11 +238,10 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                   id="pratinjau-judul"
                   className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight leading-snug"
                 >
-                  Pratinjau langsung
+                  {t("detail.preview.title")}
                 </h1>
                 <p className="mt-1 text-sm sm:text-base text-neutral-600 leading-relaxed font-normal">
-                  Pratinjau menggunakan data contoh. Semua teks, foto, dan musik
-                  bisa kalian ganti di dashboard.
+                  {t("detail.preview.desc")}
                 </p>
               </div>
 
@@ -247,7 +250,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                 {/* Mode Tampilan Switch (Ponsel / Desktop) */}
                 <div
                   role="group"
-                  aria-label="Mode tampilan"
+                  aria-label={t("detail.viewMode")}
                   className="inline-flex p-1 rounded-xl bg-white border border-purple-200 border-b-[3px] border-b-purple-300 shadow-2xs"
                 >
                   <button
@@ -261,7 +264,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                     }`}
                   >
                     <Smartphone className="w-3.5 h-3.5" />
-                    <span>Ponsel</span>
+                    <span>{t("detail.phone")}</span>
                   </button>
                   <button
                     type="button"
@@ -274,7 +277,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                     }`}
                   >
                     <Monitor className="w-3.5 h-3.5" />
-                    <span>Desktop</span>
+                    <span>{t("detail.desktop")}</span>
                   </button>
                 </div>
 
@@ -285,7 +288,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-purple-50 text-neutral-800 border border-purple-200 border-b-[3px] border-b-purple-300 font-bold text-xs shadow-2xs transition-all cursor-pointer"
                 >
                   <Maximize2 className="w-3.5 h-3.5 text-[#7d6aee]" />
-                  <span>Buka layar penuh</span>
+                  <span>{t("detail.fullscreen")}</span>
                 </button>
               </div>
 
@@ -320,7 +323,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                         <iframe
                           key={`${template.slug}-${previewMode}`}
                           src={`/templates/${template.slug}/index.html`}
-                          title={`Preview ${template.title}`}
+                          title={t("detail.iframeTitle", { title: template.title })}
                           className="w-full h-full border-0 bg-white"
                           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                           loading="lazy"
@@ -330,11 +333,11 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                           <button
                             type="button"
                             onClick={() => onNavigate(`/preview/${template.slug}`)}
-                            title="Buka pratinjau layar penuh"
+                            title={t("detail.fullscreenTitle")}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-900 text-white text-[11px] font-bold backdrop-blur-md shadow-lg border border-white/20 transition-all cursor-pointer hover:scale-105"
                           >
                             <Maximize2 className="w-3 h-3 text-purple-300" />
-                            <span>Layar Penuh</span>
+                            <span>{t("detail.fullscreenShort")}</span>
                           </button>
                         </div>
                       </div>
@@ -374,7 +377,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                               onClick={() => onNavigate(`/preview/${template.slug}`)}
                               className="px-5 py-2 rounded-xl bg-white text-neutral-900 font-bold text-xs shadow-md hover:bg-neutral-100 transition-all inline-flex items-center gap-1.5 cursor-pointer"
                             >
-                              <span>Buka Preview Penuh</span>
+                              <span>{t("detail.openFullPreview")}</span>
                               <ArrowRight className="w-3.5 h-3.5" />
                             </button>
                           </div>
@@ -413,7 +416,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                 {/* Harga Template */}
                 <div>
                   <h2 className="text-xs font-black uppercase tracking-widest text-neutral-500">
-                    Harga template
+                    {t("detail.priceTitle")}
                   </h2>
                   <div className="mt-4 sm:mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <span className="text-3xl sm:text-4xl font-black text-neutral-900 tracking-tight leading-none">
@@ -424,7 +427,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                     </span>
                   </div>
                   <p className="mt-2 text-xs font-bold uppercase tracking-wider text-neutral-500">
-                    sekali bayar / undangan
+                    {t("detail.oncePerInvite")}
                   </p>
                 </div>
 
@@ -435,13 +438,12 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                   onClick={handleOrderTemplate}
                   className="mt-6 w-full !py-3 !text-base shadow-sm hover:shadow-md"
                 >
-                  <span>Pilih Template Ini</span>
+                  <span>{t("detail.choose")}</span>
                   <ArrowRight className="w-5 h-5 stroke-[2.5]" />
                 </Button>
 
                 <p className="mt-3 text-xs text-neutral-500 text-left leading-relaxed">
-                  Kalian akan diarahkan ke dashboard atau WhatsApp kami untuk
-                  melengkapi data dan menyelesaikan pemesanan.
+                  {t("detail.redirectNote")}
                 </p>
 
                 {/* Tombol Tanya Dulu via WhatsApp (Semuanya hitam: icon, teks, dan garis bawah, tanpa separator atas) */}
@@ -453,7 +455,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                   >
                     <MessageCircle className="w-4 h-4 text-black stroke-[2.2] group-hover:scale-110 transition-transform" />
                     <span className="underline decoration-2 underline-offset-4 decoration-black text-black">
-                      Tanya dulu via WhatsApp
+                      {t("detail.askWa")}
                     </span>
                   </button>
                 </div>
@@ -462,23 +464,23 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
               {/* Card 2: Section Yang Tersedia */}
               <div className="bg-white rounded-2xl sm:rounded-3xl border border-purple-200 border-b-[4px] border-b-purple-300 p-6 sm:p-7 shadow-2xs">
                 <h2 className="text-lg sm:text-xl font-black text-neutral-900 tracking-tight">
-                  Section yang tersedia
+                  {t("detail.sections.title")}
                 </h2>
                 <p className="mt-1 text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal">
-                  Setiap section bisa diisi, disembunyikan, atau diubah urutannya
-                  di dashboard.
+                  {t("detail.sections.desc")}
                 </p>
 
                 <ul className="mt-4 flex flex-wrap gap-2">
                   {template.availableSections.map((sec, idx) => {
                     const config = getSectionBadgeConfig(sec);
+                    const label = template.sectionLabels[idx] ?? sec;
                     return (
                       <li
                         key={idx}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold shadow-2xs transition-all ${config.badgeClasses}`}
                       >
                         {config.icon}
-                        <span>{sec}</span>
+                        <span>{label}</span>
                       </li>
                     );
                   })}
@@ -492,10 +494,10 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-neutral-900">
-                    Bahasa undangan
+                    {t("detail.language.title")}
                   </h3>
                   <p className="text-xs sm:text-sm font-semibold text-neutral-600 mt-0.5">
-                    {template.languages.join(" · ")}
+                    {template.languageLabels.join(" · ")}
                   </p>
                 </div>
               </div>

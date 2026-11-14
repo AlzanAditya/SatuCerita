@@ -147,6 +147,6 @@ export function getTemplateBySlug(slug: string): TemplateItemData | undefined {
   );
 }
 
-export function formatRupiah(val: number): string {
-  return "Rp " + val.toLocaleString("id-ID");
+export function formatRupiah(val: number, lang: "id" | "en" = "id"): string {
+  return "Rp " + val.toLocaleString(lang === "en" ? "en-US" : "id-ID");
 }
