@@ -466,31 +466,17 @@ export const HomePage: React.FC<HomePageProps> = ({
                       onClick={() => onNavigate(`/katalog/${item.id}`)}
                       className="cursor-pointer"
                     >
-                      {/* Top Frame dengan Smartphone Mockup (Ratio 1:1) */}
+                      {/* Cover katalog: foto mockup 4:3 ditampilkan penuh */}
                       <div
-                        className="relative w-full aspect-square rounded-xl sm:rounded-2xl border border-purple-100/80 p-2 sm:p-2.5 mb-2.5 flex items-center justify-center overflow-hidden"
+                        className="relative w-full aspect-[4/3] rounded-xl sm:rounded-2xl border border-purple-100/80 mb-3 overflow-hidden bg-neutral-100"
                         style={{ backgroundColor: item.frameBg }}
                       >
-                        {/* Smartphone Mockup */}
-                        <div className="relative h-[86%] aspect-[9/13] max-w-[140px] bg-neutral-950 rounded-[18px] p-0.5 sm:p-1 shadow-md border border-neutral-800 overflow-hidden flex flex-col my-auto">
-                          <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-7 h-1.5 bg-neutral-900 rounded-full z-20 border border-neutral-800" />
-                          <div className="w-full h-full rounded-[14px] overflow-hidden relative bg-neutral-100 flex flex-col justify-end">
-                            <img
-                              src={item.image}
-                              alt={item.title}
-                              loading="lazy"
-                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                            <div className="relative z-10 p-1.5 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white text-center">
-                              <p className="text-[7px] uppercase tracking-widest font-serif opacity-80">Pawiwahan</p>
-                              <p className="text-[10px] font-serif font-bold tracking-wide leading-tight truncate">{item.coupleName}</p>
-                              <p className="text-[6.5px] opacity-75 mt-0.5">{item.date}</p>
-                              <div className="mt-0.5 inline-block px-1.5 py-0.2 bg-white/20 backdrop-blur-xs rounded-full text-[6.5px] font-semibold">
-                                Buka Undangan
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          loading="lazy"
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
                       </div>
 
                       {/* Judul & Kategori */}
@@ -706,24 +692,14 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             <div
-              className="relative rounded-2xl border border-purple-100/80 p-4 mb-4 flex items-center justify-center overflow-hidden"
+              className="relative rounded-2xl border border-purple-100/80 mb-4 overflow-hidden aspect-[4/3] bg-neutral-100"
               style={{ backgroundColor: selectedDemo.frameBg }}
             >
-              <div className="relative w-[75%] max-w-[200px] aspect-[9/16] bg-neutral-950 rounded-[26px] p-2 border border-neutral-800 shadow-xl overflow-hidden flex flex-col">
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-3 bg-neutral-900 rounded-full z-20" />
-                <div className="w-full h-full rounded-[18px] overflow-hidden relative">
-                  <img
-                    src={selectedDemo.image}
-                    alt={selectedDemo.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-3 text-white text-center">
-                    <p className="text-[10px] uppercase font-serif opacity-80">Pawiwahan</p>
-                    <p className="text-sm font-serif font-bold">{selectedDemo.coupleName}</p>
-                    <p className="text-[9px] opacity-75 mt-0.5">{selectedDemo.date}</p>
-                  </div>
-                </div>
-              </div>
+              <img
+                src={selectedDemo.image}
+                alt={selectedDemo.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
             </div>
 
             <div className="flex items-center justify-between mb-4">

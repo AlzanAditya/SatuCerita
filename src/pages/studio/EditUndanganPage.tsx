@@ -13,19 +13,15 @@ import {
 } from "@/lib/invitationApi";
 import type { FieldDef, GroupDef, PublicManifest, SlotDef } from "../../../shared/templates/types";
 import { clone, getPath, isEmpty, setPath } from "../../../shared/templates/path";
+import { EDIT_STEPS, FINAL_PROGRESS, isEditFinished } from "@/lib/editSteps";
 
 export interface EditUndanganPageProps {
   onNavigate: (path: string) => void;
   showToast?: (msg: string) => void;
 }
 
-const STEPS = [
-  { label: "Data", title: "Informasi Utama", sub: "Lengkapi data mempelai dan acara" },
-  { label: "Foto", title: "Foto & Desain", sub: "Unggah foto utama undangan Anda" },
-  { label: "Cerita", title: "Cerita & Detail", sub: "Atur kata-kata, hadiah, dan musik" },
-  { label: "Galeri", title: "Galeri Foto", sub: "Tambahkan momen spesial Anda" },
-  { label: "Selesai", title: "Selesai", sub: "Periksa lalu publikasikan undangan" },
-];
+const STEPS = EDIT_STEPS;
+const LAST_STEP = STEPS.length - 1;
 
 const ICONS: Record<GroupDef["icon"], React.ElementType> = {
   users: Users, calendar: Calendar, quote: Quote, heart: Heart, file: FileText, palette: Palette, video: Video, gift: Gift, music: Music, map: MapPin,
@@ -193,7 +189,7 @@ export const EditUndanganPage: React.FC<EditUndanganPageProps> = ({ onNavigate, 
       setMedia(d.data.media);
       setContent(d.data.invitation.content);
       setSlug(d.data.invitation.slug);
-      setStep(Math.min(d.data.invitation.progressStep, 4));
+      setStep(Math.min(d.data.invitation.progressStep, LAST_STEP));
       setLoad({ state: "ready" });
     })();
     return () => { off = true; };
@@ -219,6 +215,15 @@ export const EditUndanganPage: React.FC<EditUndanganPageProps> = ({ onNavigate, 
     setSave(dirty.current ? "dirty" : "saved");
     return true;
   }, [inv, showToast]);
+
+  // Begitu pengguna tiba di langkah "Selesai", progres edit tercatat selesai (bukan sekadar 80%).
+  const finalSent = useRef(false);
+  useEffect(() => {
+    if (step !== LAST_STEP) { finalSent.current = false; return; }
+    if (!inv || finalSent.current || isEditFinished(inv.progressStep)) return;
+    finalSent.current = true;
+    void flush({ progressStep: FINAL_PROGRESS });
+  }, [step, inv, flush]);
 
   useEffect(() => {
     if (save !== "dirty") return;
@@ -299,7 +304,7 @@ export const EditUndanganPage: React.FC<EditUndanganPageProps> = ({ onNavigate, 
     const e = missingForStep(step);
     setErrors(e);
     if (Object.keys(e).length) return void showToast?.("Lengkapi data yang wajib diisi.");
-    if (await flush({ progressStep: step + 1 })) setStep((s) => Math.min(s + 1, 4));
+    if (await flush({ progressStep: step + 1 })) setStep((s) => Math.min(s + 1, LAST_STEP));
   };
 
   const goStep = (i: number) => {

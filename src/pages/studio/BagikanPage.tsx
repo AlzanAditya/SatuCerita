@@ -1,8 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link2, MoreHorizontal } from "lucide-react";
 import { PATHS } from "@/routes";
 import { SITE } from "@/config/site";
 import { isDemo } from "@/lib/studioDemo";
+import { TEMPLATES_DATA } from "@/data/templates";
+import { listInvitations, type InvitationSummary } from "@/lib/invitationApi";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { OrderItem, UserInvitation } from "./types";
 
@@ -36,6 +38,24 @@ const ShareIllustration: React.FC = () => (
   </svg>
 );
 
+/** Ikon resmi merek dari Simple Icons (CDN jsDelivr, versi dikunci). Glyph hitam diputihkan lewat filter CSS. */
+const SI = "https://cdn.jsdelivr.net/npm/simple-icons@16.37.0/icons";
+
+const BrandIcon: React.FC<{ name: "whatsapp" | "instagram"; bg: string }> = ({ name, bg }) => (
+  <span className={`size-12 rounded-full flex items-center justify-center ${bg}`}>
+    <img
+      src={`${SI}/${name}.svg`}
+      alt=""
+      width={26}
+      height={26}
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      className="size-[26px] brightness-0 invert"
+      onError={(e) => (e.currentTarget.style.visibility = "hidden")}
+    />
+  </span>
+);
+
 const TelegramIcon: React.FC = () => (
   <svg viewBox="0 0 24 24" className="w-7 h-7" aria-hidden>
     <path fill="#fff" d="M18.6 5.4 3.9 11.1c-1 .4-1 1 0 1.3l3.8 1.2 1.5 4.6c.2.5.1.7.6.7.4 0 .6-.2.8-.4l1.9-1.9 3.9 2.9c.7.4 1.2.2 1.4-.7l2.6-12.2c.3-1.1-.4-1.6-1.3-1.2zM9 13.5l8.3-5.2c.4-.2.8-.1.5.2l-6.9 6.2-.3 3z" />
@@ -43,15 +63,36 @@ const TelegramIcon: React.FC = () => (
 );
 
 export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orders = [], onNavigate, showToast }) => {
+  // Semua undangan milik user (satu pesanan lunas = satu undangan). Pilih salah satu untuk dibagikan.
+  const [mine, setMine] = useState<InvitationSummary[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("");
+
+  useEffect(() => {
+    if (isDemo()) return;
+    let off = false;
+    listInvitations().then((r) => {
+      if (off || !r.ok || !Array.isArray(r.data.invitations)) return;
+      setMine(r.data.invitations);
+      setSelectedId((cur) => cur || r.data.invitations[0]?.id || "");
+    });
+    return () => { off = true; };
+  }, []);
+
+  const selected = mine.find((i) => i.id === selectedId) ?? mine[0];
+  const labelOf = (i: InvitationSummary) =>
+    i.title?.trim() || TEMPLATES_DATA.find((t) => t.slug === i.templateSlug)?.title || "Undangan";
+
   const slug = useMemo(() => {
+    if (selected) return selected.slug;
     const fromInv = invitations[0]?.slug;
     if (fromInv) return fromInv;
     const paid = orders.find((o) => o.status === "paid" && o.slug);
     if (paid) return paid.slug;
     return isDemo() ? "alya-dimas" : "";
-  }, [invitations, orders]);
+  }, [selected, invitations, orders]);
 
-  const link = slug ? `${SITE.url}/${slug}` : "";
+  const link = selected?.publicUrl || (slug ? `${SITE.url}/i/${slug}/` : "");
+  const notPublished = !!selected && selected.status !== "published";
   const text = `Kami mengundang Anda ke acara kami. Buka undangan digital kami di sini: ${link}`;
 
   const copy = async (msg = "Tautan disalin!") => {
@@ -85,7 +126,7 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
       id: "wa",
       label: "WhatsApp",
       onClick: () => open(`https://wa.me/?text=${encodeURIComponent(text)}`),
-      icon: <img src="/logos/whatsapp.webp" alt="" className="size-12 rounded-full object-cover" />,
+      icon: <BrandIcon name="whatsapp" bg="bg-[#25D366]" />,
     },
     {
       id: "tg",
@@ -105,7 +146,7 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
         await copy("Tautan disalin. Tempel di Instagram.");
         open("https://www.instagram.com/");
       },
-      icon: <img src="/logos/instagram.webp" alt="" className="size-12 rounded-full object-cover" />,
+      icon: <BrandIcon name="instagram" bg="bg-gradient-to-tr from-[#FEDA75] via-[#D62976] to-[#4F5BD5]" />,
     },
     {
       id: "more",
@@ -140,6 +181,34 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
               <p className="mt-2 text-sm text-[#5a5476] leading-relaxed">
                 Salin tautan atau bagikan langsung melalui aplikasi favorit Anda.
               </p>
+
+              {mine.length > 1 && (
+                <div className="mt-3 flex flex-wrap justify-center gap-2" role="radiogroup" aria-label="Pilih undangan">
+                  {mine.map((i) => {
+                    const on = i.id === selected?.id;
+                    return (
+                      <button
+                        key={i.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        onClick={() => setSelectedId(i.id)}
+                        className={`px-3.5 h-9 rounded-full text-sm font-bold border cursor-pointer max-w-full truncate ${
+                          on ? "bg-[#7d6aee] border-[#7d6aee] text-white" : "bg-white border-[#d4ccf5] text-[#5b49c9]"
+                        }`}
+                      >
+                        {labelOf(i)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {notPublished && (
+                <p className="mt-3 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+                  Undangan ini belum dipublikasikan. Tautan baru bisa dibuka tamu setelah Anda mempublikasikannya di halaman edit.
+                </p>
+              )}
 
               <button
                 type="button"

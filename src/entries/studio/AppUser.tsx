@@ -118,16 +118,19 @@ export function AppUser() {
 
       // 2. Navigasi internal di studio (home, pesanan, profile, checkout, order)
       const nextTab = pathToTab(to);
-      const cleanPath = to.replace(/^\/(?:app|studio)/, "") || "/home";
-      const targetPath =
+      // Query string (mis. /edit?id=...) ikut dibawa agar halaman edit tahu undangan mana yang dibuka.
+      const [toPath, toQuery = ""] = to.split("#")[0].split("?");
+      const cleanPath = toPath.replace(/^\/(?:app|studio)/, "") || "/home";
+      const basePath =
         nextTab === "checkout" || nextTab === "order"
           ? cleanPath
           : tabToPath(nextTab, cleanPath);
+      const targetPath = nextTab === "edit" && toQuery ? `${basePath}?${toQuery}` : basePath;
 
-      if (window.location.pathname !== targetPath) {
+      if (window.location.pathname + window.location.search !== targetPath) {
         window.history.pushState(null, "", targetPath);
       }
-      setCurrentPath(targetPath);
+      setCurrentPath(basePath);
       setActiveTab(nextTab);
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     },

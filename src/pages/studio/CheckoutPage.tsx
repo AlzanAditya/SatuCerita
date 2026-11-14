@@ -211,20 +211,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                   className="sm:w-52 lg:w-60 shrink-0 relative flex items-center justify-center p-4 sm:p-6"
                   style={{ backgroundColor: template.frameBg }}
                 >
-                  <div className="relative h-[200px] sm:h-[220px] aspect-[9/16] max-w-[110px] bg-neutral-950 rounded-[20px] p-1 shadow-xl border border-neutral-800 overflow-hidden mx-auto">
-                    <div className="absolute top-1 left-1/2 -translate-x-1/2 w-8 h-2 bg-neutral-900 rounded-full z-20" />
-                    <div className="w-full h-full rounded-[15px] overflow-hidden relative">
-                      <img
-                        src={template.image}
-                        alt={template.title}
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-2 text-white text-center">
-                        <p className="text-[8px] uppercase tracking-widest font-serif opacity-80">Pawiwahan</p>
-                        <p className="text-[11px] font-serif font-bold">John & Jane</p>
-                      </div>
-                    </div>
-                  </div>
+                  <img
+                    src={template.image}
+                    alt={template.title}
+                    className="w-full aspect-[4/3] rounded-xl object-cover shadow-md"
+                  />
                 </div>
 
                 {/* Template Info */}

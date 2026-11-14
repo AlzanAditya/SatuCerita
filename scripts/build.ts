@@ -43,6 +43,15 @@ function normalizeHtmlOutput(targetDir: string, nestedHtmlRelative: string) {
   copyDirRecursive(PUBLIC_DIR, targetDir);
 }
 
+/** Hapus isi dist/<target>/logos kecuali file yang masih dipakai target tersebut. */
+function pruneLogos(targetDir: string, keep: string[]) {
+  const dir = path.join(targetDir, "logos");
+  if (!fs.existsSync(dir)) return;
+  for (const f of fs.readdirSync(dir)) {
+    if (!keep.includes(f)) fs.rmSync(path.join(dir, f), { recursive: true, force: true });
+  }
+}
+
 async function buildLanding() {
   console.log("📦 Building landing -> dist/landing...");
   const landingOutDir = path.resolve(DIST, "landing");
@@ -106,7 +115,8 @@ async function buildStudio() {
     fs.copyFileSync(path.join(studioOutDir, "index.html"), path.join(studioOutDir, "404.html"));
   }
   fs.rmSync(path.join(studioOutDir, "admin"), { recursive: true, force: true });
-  fs.rmSync(path.join(studioOutDir, "logos"), { recursive: true, force: true });
+  // Logo Satu Cerita dipakai header studio (mobile) & sidebar: jangan dihapus. Buang logo sosial yang tidak dipakai studio.
+  pruneLogos(studioOutDir, ["satucerita.png"]);
 }
 
 async function buildDash() {
@@ -132,7 +142,8 @@ async function buildDash() {
   if (!fs.existsSync(path.join(dashOutDir, "404.html"))) {
     fs.copyFileSync(path.join(dashOutDir, "index.html"), path.join(dashOutDir, "404.html"));
   }
-  fs.rmSync(path.join(dashOutDir, "logos"), { recursive: true, force: true });
+  // Logo dipakai halaman login & sidebar admin.
+  pruneLogos(dashOutDir, ["satucerita.png"]);
 }
 
 async function buildServer() {
