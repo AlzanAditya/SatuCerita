@@ -20,7 +20,7 @@
 			"zone_name": "satucerita.app"
 		},
 		{
-			"pattern": "satucerita.app/templates/*",
+			"pattern": "satucerita.app/templates*",
 			"zone_name": "satucerita.app"
 		},
 		{

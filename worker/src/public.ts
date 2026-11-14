@@ -2,7 +2,8 @@
  * Rute publik (tanpa login):
  *   /i/{slug}/            undangan yang sudah dipublikasi (HTML hasil render)
  *   /i/{slug}/{path}      file template (css/js/aset) — relatif terhadap halaman, jadi template tidak perlu diubah
- *   /templates/{tpl}/...  template mentah (demo / pratinjau katalog)
+ *   /templates/{tpl}/     halaman template mentah (tanpa slash akhir -> 301 ke versi ber-slash agar URL relatif css/js/aset benar)
+ *   /templates/{tpl}/...  file template mentah (demo / pratinjau katalog)
  *   /m/{id}/{file}        foto unggahan user
  *   /api/public/{slug}/wishes (GET) & /rsvp (POST)
  */
@@ -44,6 +45,15 @@ export async function handlePublicAsset(env: Env, req: Request, url: URL, ctx?: 
 
   const media = /^\/m\/([0-9a-f-]{36})\/([A-Za-z0-9._-]+)$/.exec(p);
   if (media) return serveObject(env, req, ctx, mediaKey(media[1], media[2]), { cacheControl: MEDIA_CACHE });
+
+  // /templates/{tpl} dan /templates/{tpl}/ -> index.html template. Template yang tidak punya manifest dibiarkan lewat (SPA menampilkan 404).
+  const tplRoot = /^\/templates\/([a-z0-9-]+)(\/)?$/.exec(p);
+  if (tplRoot) {
+    const [, tpl, slash] = tplRoot;
+    if (!getManifest(tpl)) return null;
+    if (!slash) return new Response(null, { status: 301, headers: { Location: `/templates/${tpl}/${url.search}`, "Cache-Control": "public, max-age=3600" } });
+    return serveTemplateAsset(env, req, ctx, tpl, "index.html");
+  }
 
   const tplRaw = /^\/templates\/([a-z0-9-]+)\/(.+)$/.exec(p);
   if (tplRaw) return serveTemplateAsset(env, req, ctx, tplRaw[1], tplRaw[2]);

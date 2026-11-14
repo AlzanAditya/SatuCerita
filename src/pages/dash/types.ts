@@ -139,39 +139,46 @@ export interface AdminUserData {
   role: string;
   invitationsCount: number;
   totalSpent: number;
+  /** Tanggal tampil, mis. "14 Nov 2026". */
   joinedDate: string;
+  /** ISO dari server (profiles.created_at). */
+  joinedAt: string;
   status: string;
   avatar: string;
 }
 
+/** Status tampil pesanan: LUNAS | MENUNGGU_VERIFIKASI (needs_review) | MENUNGGU_BAYAR (pending) | DIBATALKAN (expired/cancelled/failed). */
 export interface AdminOrderItem {
+  /** Nomor invoice (orders.invoice_no). */
   id: string;
   customer: string;
   customerEmail: string;
   customerPhone: string;
   template: string;
+  templateSlug: string;
+  templateCategory: string;
   tier: string;
   amount: number;
-  uniqueCode: number;
   total: number;
   paymentMethod: string;
   status: string;
+  /** Tanggal tampil, mis. "14 Nov 2026, 14:20" (WIB). */
   date: string;
-  proofUrl: string | null;
+  /** ISO dari server. */
+  createdAt: string;
+  paidAt: string | null;
 }
 
 export interface AdminTemplateItem {
   id: string;
   name: string;
   category: string;
-  tier: string;
   price: number;
   originalPrice: number;
   totalUsers: number;
   totalRevenue: number;
   status: string;
   thumbnail: string;
-  rating: number;
 }
 
 export interface AdminInvitationItem {
@@ -179,12 +186,19 @@ export interface AdminInvitationItem {
   title: string;
   bride: string;
   groom: string;
+  /** Tanggal tampil, mis. "18 Sep 2027" (kosong bila belum diisi). */
   eventDate: string;
   template: string;
   slug: string;
   guestCount: number;
+  /** Jumlah ucapan yang konfirmasi hadir. */
   rsvpCount: number;
+  wishesCount: number;
+  /** "Online" (published) | "Draf" | "Arsip". */
   status: string;
+  createdAt: string;
+  publishedAt: string | null;
+  publicUrl: string;
 }
 
 export interface PeriodDataResult {

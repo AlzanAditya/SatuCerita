@@ -18,11 +18,26 @@ function serveTemplatesPlugin(): Plugin {
         const prefix = "/templates/";
         if (!req.url?.startsWith(prefix)) return next();
 
-        let relPath = req.url.slice(prefix.length).split("?")[0];
+        const [rawPath, query = ""] = req.url.slice(prefix.length).split("?");
+        let relPath: string;
+        try {
+          relPath = decodeURIComponent(rawPath);
+        } catch {
+          return next();
+        }
         let filePath = path.join(TEMPLATES_SRC, relPath);
+        // Cegah path traversal keluar dari src/templates.
+        if (!filePath.startsWith(TEMPLATES_SRC + path.sep)) return next();
 
         // Jika request mengarah ke folder (misal /templates/aglaia atau /templates/aglaia/), cari index.html
         if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+          // Tanpa slash akhir, URL relatif (css/, js/, assets/) di index.html akan salah resolve -> redirect ke versi ber-slash (sama seperti Worker).
+          if (!rawPath.endsWith("/") && fs.existsSync(path.join(filePath, "index.html"))) {
+            res.statusCode = 301;
+            res.setHeader("Location", `${prefix}${relPath}/${query ? "?" + query : ""}`);
+            res.end();
+            return;
+          }
           filePath = path.join(filePath, "index.html");
         }
 

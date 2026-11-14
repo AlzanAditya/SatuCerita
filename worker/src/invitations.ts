@@ -11,6 +11,7 @@
  *   GET    /api/invitations/:id/preview/            pratinjau draft (HTML) + aset di bawahnya
  *   GET|POST /api/invitations/:id/guests, DELETE /api/invitations/:id/guests/:guestId
  *   GET    /api/invitations/:id/wishes, PATCH|DELETE /api/invitations/:id/wishes/:wishId
+ *   GET    /api/wishes                              semua ucapan dari undangan TERPUBLIKASI milik user (halaman /studio/ucapan)
  */
 import type { Env } from "./types";
 import { json, isDev } from "./http";
@@ -93,7 +94,35 @@ function sniff(b: Uint8Array): { ext: string; mime: string } | null {
   return null;
 }
 
+interface WishRow { id: string; invitation_id: string; name: string; attendance: string; guest_count: number; message: string; created_at: string }
+
+/** Ucapan dari semua undangan yang sudah dipublikasikan milik user (satu query undangan + satu query ucapan). */
+async function ownerWishes(env: Env, userId: string) {
+  const invs = await dbSelect<{ id: string; slug: string; title: string | null }>(
+    env, "invitations", `user_id=eq.${userId}&status=eq.published&select=id,slug,title&order=published_at.desc&limit=50`,
+  );
+  if (!invs.length) return { invitations: [], wishes: [] };
+  const rows = await dbSelect<WishRow>(
+    env, "invitation_wishes",
+    `invitation_id=in.(${invs.map((i) => i.id).join(",")})&select=id,invitation_id,name,attendance,guest_count,message,created_at&order=created_at.desc&limit=500`,
+  );
+  return {
+    invitations: invs,
+    wishes: rows.map((r) => ({ id: r.id, invitationId: r.invitation_id, name: r.name, attendance: r.attendance, guestCount: r.guest_count, message: r.message, createdAt: r.created_at })),
+  };
+}
+
 export async function invitationsApi(env: Env, req: Request, url: URL, ctx?: ExecutionContext): Promise<Response | null> {
+  if (url.pathname === "/api/wishes") {
+    if (req.method !== "GET") return json({ error: "Method not allowed" }, 405);
+    const a = await requireUser(env, req);
+    if (a instanceof Response) return a;
+    try {
+      return json(await ownerWishes(env, a.user.id), 200, a.cookies);
+    } catch (e) {
+      return fail(e, a.cookies);
+    }
+  }
   const m = /^\/api\/invitations(?:\/([^/]+)(?:\/(.*))?)?$/.exec(url.pathname);
   if (!m) return null;
   const [, id, rest = ""] = m;
@@ -240,8 +269,8 @@ export async function invitationsApi(env: Env, req: Request, url: URL, ctx?: Exe
       return rows.length ? json({ ok: true }, 200, c) : json({ error: "Ucapan tidak ditemukan." }, 404, c);
     }
     if (w && req.method === "DELETE") {
-      await dbDelete(env, "invitation_wishes", `id=eq.${w[1]}&invitation_id=eq.${id}`);
-      return json({ ok: true }, 200, c);
+      const gone = await dbDelete(env, "invitation_wishes", `id=eq.${w[1]}&invitation_id=eq.${id}`);
+      return gone.length ? json({ ok: true }, 200, c) : json({ error: "Ucapan tidak ditemukan." }, 404, c);
     }
     return json({ error: "Not found" }, 404, c);
   } catch (e) {

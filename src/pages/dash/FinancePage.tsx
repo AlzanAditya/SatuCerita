@@ -9,6 +9,7 @@ export interface FinancePageProps {
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   showToast?: (msg: string) => void;
+  onExport?: () => void;
 }
 
 export const FinancePage: React.FC<FinancePageProps> = ({
@@ -16,45 +17,53 @@ export const FinancePage: React.FC<FinancePageProps> = ({
   financeOrderColumns,
   searchQuery,
   setSearchQuery,
-  showToast,
+  onExport,
 }) => {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const BULAN = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  const paidThisMonth = ordersList.filter(
+    (o) => o.status === "LUNAS" && (Date.parse(o.paidAt ?? o.createdAt) || 0) >= monthStart
+  );
+  const revenueThisMonth = paidThisMonth.reduce((n, o) => n + o.total, 0);
+  const review = ordersList.filter((o) => o.status === "MENUNGGU_VERIFIKASI");
+  const unpaid = ordersList.filter((o) => o.status === "MENUNGGU_BAYAR");
+  const sumTotal = (l: AdminOrderItem[]) => l.reduce((n, o) => n + o.total, 0);
+
   return (
     <div className="space-y-6 animate-fadeIn md:animate-none">
       <div className="flex items-center justify-end">
         <button
           type="button"
-          onClick={() => showToast && showToast("Laporan keuangan berhasil diunduh!")}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
+          onClick={onExport}
+          disabled={ordersList.length === 0}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Receipt className="w-3.5 h-3.5" />
-          <span>Cetak Rekap Keuangan</span>
+          <span>Ekspor Rekap Pesanan (CSV)</span>
         </button>
       </div>
 
       {/* Financial Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-          <span className="text-xs font-semibold text-neutral-400">Total Pemasukan Bersih</span>
-          <p className="text-2xl font-black text-emerald-600 mt-1">Rp 14.850.000</p>
-          <span className="text-[11px] text-neutral-500 mt-1 block">Bulan Berjalan (Oktober 2026)</span>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-          <span className="text-xs font-semibold text-neutral-400">Pending Verifikasi Manual</span>
-          <p className="text-2xl font-black text-amber-600 mt-1">
-            Rp{" "}
-            {ordersList
-              .filter((o) => o.status === "MENUNGGU_VERIFIKASI")
-              .reduce((acc, curr) => acc + curr.total, 0)
-              .toLocaleString("id-ID")}
-          </p>
-          <span className="text-[11px] text-amber-700 font-semibold mt-1 block">
-            {ordersList.filter((o) => o.status === "MENUNGGU_VERIFIKASI").length} pesanan menanti konfirmasi
+          <span className="text-xs font-semibold text-neutral-400">Pemasukan Bulan Ini</span>
+          <p className="text-2xl font-black text-emerald-600 mt-1">Rp {revenueThisMonth.toLocaleString("id-ID")}</p>
+          <span className="text-[11px] text-neutral-500 mt-1 block">
+            {paidThisMonth.length} pesanan lunas · {BULAN[now.getMonth()]} {now.getFullYear()}
           </span>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
-          <span className="text-xs font-semibold text-neutral-400">Biaya Payment Gateway (Est.)</span>
-          <p className="text-2xl font-black text-neutral-900 mt-1">Rp 124.500</p>
-          <span className="text-[11px] text-neutral-500 mt-1 block">0.7% QRIS MDR Rate</span>
+          <span className="text-xs font-semibold text-neutral-400">Perlu Ditinjau</span>
+          <p className="text-2xl font-black text-amber-600 mt-1">Rp {sumTotal(review).toLocaleString("id-ID")}</p>
+          <span className="text-[11px] text-amber-700 font-semibold mt-1 block">
+            {review.length} pesanan ditahan (nominal tidak cocok / fraud challenge)
+          </span>
+        </div>
+        <div className="bg-white p-5 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
+          <span className="text-xs font-semibold text-neutral-400">Menunggu Pembayaran</span>
+          <p className="text-2xl font-black text-neutral-900 mt-1">Rp {sumTotal(unpaid).toLocaleString("id-ID")}</p>
+          <span className="text-[11px] text-neutral-500 mt-1 block">{unpaid.length} pesanan belum dibayar</span>
         </div>
       </div>
 
@@ -81,7 +90,8 @@ export const FinancePage: React.FC<FinancePageProps> = ({
           data={ordersList.filter(
             (ord) =>
               ord.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              ord.customer.toLowerCase().includes(searchQuery.toLowerCase())
+              ord.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              ord.customerEmail.toLowerCase().includes(searchQuery.toLowerCase())
           )}
           emptyMessage="Pesanan tidak ditemukan."
         />

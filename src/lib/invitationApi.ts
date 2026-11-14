@@ -59,3 +59,20 @@ export async function compressImage(file: File, maxSide = 1600, quality = 0.85):
   if (!blob) throw new Error("Gagal memproses foto.");
   return blob;
 }
+
+// ---- Ucapan tamu (halaman /studio/ucapan) ----
+export interface OwnerWish {
+  id: string;
+  invitationId: string;
+  name: string;
+  attendance: "yes" | "no" | "maybe";
+  guestCount: number;
+  message: string;
+  createdAt: string;
+}
+export interface WishInvitation { id: string; slug: string; title: string | null }
+
+/** Semua ucapan dari undangan yang sudah dipublikasikan milik user yang login. */
+export const listMyWishes = () => call<{ invitations: WishInvitation[]; wishes: OwnerWish[] }>("/api/wishes");
+export const deleteWish = (invitationId: string, wishId: string) =>
+  call<{ ok: true }>(`/api/invitations/${invitationId}/wishes/${wishId}`, { method: "DELETE" });

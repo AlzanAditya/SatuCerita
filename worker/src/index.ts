@@ -8,6 +8,7 @@ import { midtransWebhook } from "./webhook";
 import { streamOrder } from "./stream";
 import { handlePublicAsset, getWishes, postRsvp } from "./public";
 import { invitationsApi } from "./invitations";
+import { adminOverview } from "./admin";
 
 // Durable Object hub realtime: HARUS diekspor dari modul entry agar Cloudflare dapat meng-instansiasinya.
 export { PaymentHub } from "./hub";
@@ -34,6 +35,9 @@ async function handleApi(env: Env, req: Request, url: URL, ctx?: ExecutionContex
   // ---- Publik (tamu undangan, tanpa login): ucapan & RSVP ----
   const pub = /^\/api\/public\/([a-z0-9-]+)\/(wishes|rsvp)$/.exec(p);
   if (m === "GET" && pub?.[2] === "wishes") return getWishes(env, url, pub[1]);
+
+  // ---- Admin (khusus akun admin): data dashboard dari Supabase ----
+  if (m === "GET" && p === "/api/admin/overview") return adminOverview(env, req, url);
 
   // Webhook Midtrans: server-ke-server, TIDAK punya header Origin -> dikecualikan dari cek Origin di bawah.
   // Keamanannya ada di signature SHA512 + konfirmasi Status API (lihat webhook.ts).

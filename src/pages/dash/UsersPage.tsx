@@ -9,6 +9,7 @@ export interface UsersPageProps {
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   showToast?: (msg: string) => void;
+  onExport?: () => void;
 }
 
 export const UsersPage: React.FC<UsersPageProps> = ({
@@ -16,7 +17,7 @@ export const UsersPage: React.FC<UsersPageProps> = ({
   userColumns,
   searchQuery,
   setSearchQuery,
-  showToast,
+  onExport,
 }) => {
   return (
     <div className="space-y-6 animate-fadeIn md:animate-none">
@@ -39,8 +40,9 @@ export const UsersPage: React.FC<UsersPageProps> = ({
           </span>
           <button
             type="button"
-            onClick={() => showToast && showToast("Ekspor data pengguna berhasil!")}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 hover:bg-neutral-50 text-xs font-extrabold text-neutral-700 shadow-2xs active:scale-[0.99] active:border-b-[2px] transition-all cursor-pointer"
+            onClick={onExport}
+            disabled={usersList.length === 0}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 hover:bg-neutral-50 text-xs font-extrabold text-neutral-700 shadow-2xs active:scale-[0.99] active:border-b-[2px] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Ekspor CSV</span>
@@ -55,7 +57,7 @@ export const UsersPage: React.FC<UsersPageProps> = ({
           (u) =>
             u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.phone.includes(searchQuery)
+            (u.phone || "").includes(searchQuery)
         )}
         emptyMessage="Pengguna tidak ditemukan."
       />

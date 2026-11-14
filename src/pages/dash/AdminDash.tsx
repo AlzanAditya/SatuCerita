@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   LayoutGrid,
   Users,
@@ -37,6 +37,7 @@ import {
   getCache,
   setCache,
   CACHE_KEYS,
+  removeCache,
   convertFileToDataUrl,
   AdminProfileData,
   AdminSettingsData,
@@ -52,10 +53,11 @@ import {
   AdminInvitationItem,
   PeriodDataResult,
   formatIndonesianDateShort,
-  parseOrderTimestamp,
   pathToDashTab,
   dashTabToPath,
 } from "./types";
+import { fetchAdminOverview, downloadCsv } from "@/lib/adminApi";
+import { buildPeriodData } from "./period";
 import { OverviewPage } from "./OverviewPage";
 import { UsersPage } from "./UsersPage";
 import { AnalyticsPage } from "./AnalyticsPage";
@@ -67,6 +69,38 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { ImageCropModal } from "@/components/ImageCropModal";
 
 export * from "./types";
+
+const OrderStatusBadge: React.FC<{ status: string }> = ({ status }) => {
+  if (status === "LUNAS") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+        Lunas
+      </span>
+    );
+  }
+  if (status === "MENUNGGU_VERIFIKASI") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 animate-pulse">
+        <Clock className="w-3 h-3 text-amber-600" />
+        Perlu Ditinjau
+      </span>
+    );
+  }
+  if (status === "MENUNGGU_BAYAR") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-800">
+        <Clock className="w-3 h-3 text-sky-600" />
+        Belum Bayar
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">
+      Batal
+    </span>
+  );
+};
 
 export const AdminDash: React.FC<AdminDashProps> = ({
   currentPath = "/dash",
@@ -178,575 +212,59 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // 1. DATA PENGGUNA TERDAFTAR
-  const [usersList] = useState<AdminUserData[]>(() =>
-    getCache(CACHE_KEYS.ADMIN_USERS, [
-      {
-        id: "USR-001",
-        name: "Alzan Bella",
-        email: "alzanaditya2@gmail.com",
-        phone: "+62 851-8797-8443",
-        role: "Admin",
-        invitationsCount: 3,
-        totalSpent: 447000,
-        joinedDate: "11 Okt 2026",
-        status: "Aktif",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-      },
-      {
-        id: "USR-002",
-        name: "Rian Pratama",
-        email: "rian.pratama@gmail.com",
-        phone: "+62 812-3456-7890",
-        role: "Pengguna",
-        invitationsCount: 1,
-        totalSpent: 149000,
-        joinedDate: "10 Okt 2026",
-        status: "Aktif",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-      },
-      {
-        id: "USR-003",
-        name: "Dimas Anggara",
-        email: "dimas.ang@yahoo.com",
-        phone: "+62 857-1122-3344",
-        role: "Pengguna",
-        invitationsCount: 1,
-        totalSpent: 99000,
-        joinedDate: "08 Okt 2026",
-        status: "Aktif",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-      },
-      {
-        id: "USR-004",
-        name: "Salsabila Putri",
-        email: "salsaputri@gmail.com",
-        phone: "+62 878-9988-7766",
-        role: "Pengguna",
-        invitationsCount: 2,
-        totalSpent: 298000,
-        joinedDate: "02 Okt 2026",
-        status: "Aktif",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
-      },
-      {
-        id: "USR-005",
-        name: "Fajar Santoso",
-        email: "fajar.santo@outlook.com",
-        phone: "+62 821-4455-6677",
-        role: "Pengguna",
-        invitationsCount: 1,
-        totalSpent: 149000,
-        joinedDate: "25 Sep 2026",
-        status: "Aktif",
-        avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=200&q=80",
-      },
-      {
-        id: "USR-006",
-        name: "Nadia Rahmawati",
-        email: "nadiarahma@gmail.com",
-        phone: "+62 813-7766-5544",
-        role: "Pengguna",
-        invitationsCount: 0,
-        totalSpent: 0,
-        joinedDate: "15 Agu 2026",
-        status: "Pending",
-        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-      },
-      {
-        id: "USR-007",
-        name: "Budi Santoso",
-        email: "buditiara@gmail.com",
-        phone: "+62 852-6677-8899",
-        role: "Pengguna",
-        invitationsCount: 1,
-        totalSpent: 99000,
-        joinedDate: "12 Jan 2026",
-        status: "Aktif",
-        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80",
-      },
-      {
-        id: "USR-008",
-        name: "Arif Hidayat",
-        email: "arif.sarah@gmail.com",
-        phone: "+62 899-5544-3322",
-        role: "Pengguna",
-        invitationsCount: 1,
-        totalSpent: 199000,
-        joinedDate: "20 Des 2025",
-        status: "Aktif",
-        avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=200&q=80",
-      },
-    ])
-  );
+  // ===== DATA ASLI dari Supabase (Worker: GET /api/admin/overview, hanya akun admin) =====
+  const [usersList, setUsersList] = useState<AdminUserData[]>([]);
+  const [ordersList, setOrdersList] = useState<AdminOrderItem[]>([]);
+  const [templatesList, setTemplatesList] = useState<AdminTemplateItem[]>([]);
+  const [allInvitations, setAllInvitations] = useState<AdminInvitationItem[]>([]);
+  const [dataState, setDataState] = useState<{ loading: boolean; error: string | null }>({ loading: true, error: null });
+
+  const loadData = useCallback(async (silent = false) => {
+    if (!silent) setDataState({ loading: true, error: null });
+    const res = await fetchAdminOverview();
+    if (!res.ok) {
+      // Refresh otomatis yang gagal tidak menimpa data yang sudah tampil.
+      if (!silent) setDataState({ loading: false, error: res.error });
+      return;
+    }
+    setUsersList(res.data.users);
+    setOrdersList(res.data.orders);
+    setTemplatesList(res.data.templates);
+    setAllInvitations(res.data.invitations);
+    setDataState({ loading: false, error: null });
+  }, []);
 
   useEffect(() => {
-    setCache(CACHE_KEYS.ADMIN_USERS, usersList);
-  }, [usersList]);
+    // Buang sisa data pengguna tiruan dari versi lama (tidak dipakai lagi).
+    removeCache(CACHE_KEYS.ADMIN_USERS);
+    void loadData();
+    const timer = window.setInterval(() => void loadData(true), 60_000);
+    return () => window.clearInterval(timer);
+  }, [loadData]);
 
-  // 2. DATA KEUANGAN & TRANSAKSI
-  const [ordersList, setOrdersList] = useState<AdminOrderItem[]>([
-    {
-      id: "SC-ORD-8821",
-      customer: "Rian Pratama & Salsabila",
-      customerEmail: "rian.pratama@gmail.com",
-      customerPhone: "+62 812-3456-7890",
-      template: "Elysian Bloom (Gold)",
-      tier: "Gold Tier",
-      amount: 149000,
-      uniqueCode: 24,
-      total: 149024,
-      paymentMethod: "QRIS",
-      status: "LUNAS",
-      date: "11 Okt 2026, 14:20",
-      proofUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80",
-    },
-    {
-      id: "SC-ORD-8820",
-      customer: "Dimas Anggara & Nadia",
-      customerEmail: "dimas.ang@yahoo.com",
-      customerPhone: "+62 857-1122-3344",
-      template: "Deluxe Royal Navy",
-      tier: "Silver Tier",
-      amount: 99000,
-      uniqueCode: 87,
-      total: 99087,
-      paymentMethod: "BCA Virtual Account",
-      status: "MENUNGGU_VERIFIKASI",
-      date: "11 Okt 2026, 13:05",
-      proofUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80",
-    },
-    {
-      id: "SC-ORD-8819",
-      customer: "Fajar Santoso & Indah",
-      customerEmail: "fajar.santo@outlook.com",
-      customerPhone: "+62 821-4455-6677",
-      template: "Minimalist Modern Flora",
-      tier: "Gold Tier",
-      amount: 149000,
-      uniqueCode: 15,
-      total: 149015,
-      paymentMethod: "Mandiri VA",
-      status: "LUNAS",
-      date: "10 Okt 2026, 21:14",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8818",
-      customer: "Arif Hidayat & Sarah",
-      customerEmail: "arif.sarah@gmail.com",
-      customerPhone: "+62 899-5544-3322",
-      template: "Elysian Luxe Emerald",
-      tier: "Platinum Tier",
-      amount: 199000,
-      uniqueCode: 42,
-      total: 199042,
-      paymentMethod: "GoPay",
-      status: "LUNAS",
-      date: "10 Okt 2026, 18:40",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8817",
-      customer: "Budi Santoso & Tiara",
-      customerEmail: "buditiara@gmail.com",
-      customerPhone: "+62 852-6677-8899",
-      template: "Rustic Wooden Botanical",
-      tier: "Silver Tier",
-      amount: 99000,
-      uniqueCode: 63,
-      total: 99063,
-      paymentMethod: "QRIS",
-      status: "DIBATALKAN",
-      date: "09 Okt 2026, 11:25",
-      proofUrl: null,
-    },
-    {
-      id: "SC-ORD-8816",
-      customer: "Andi Wijaya & Maya",
-      customerEmail: "andi.maya@gmail.com",
-      customerPhone: "+62 813-2233-4455",
-      template: "Elysian Bloom (Gold)",
-      tier: "Gold Tier",
-      amount: 149000,
-      uniqueCode: 72,
-      total: 149072,
-      paymentMethod: "QRIS",
-      status: "LUNAS",
-      date: "08 Okt 2026, 16:30",
-      proofUrl: null,
-    },
-  ]);
+  // Tab "Berlangsung" = undangan yang sudah dipublikasikan.
+  const invitationsList = useMemo(() => allInvitations.filter((i) => i.status === "Online"), [allInvitations]);
 
-  // 3. DATA PANTAUAN TEMPLATE
-  const [templatesList] = useState<AdminTemplateItem[]>([
-    {
-      id: "tpl-1",
-      name: "Elysian Bloom (Gold Edition)",
-      category: "Floral & Elegant",
-      tier: "Gold",
-      price: 149000,
-      originalPrice: 299000,
-      totalUsers: 428,
-      totalRevenue: 63772000,
-      status: "Aktif",
-      thumbnail: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=400&q=80",
-      rating: 4.9,
-    },
-    {
-      id: "tpl-2",
-      name: "Deluxe Royal Navy",
-      category: "Luxury & Modern",
-      tier: "Silver",
-      price: 99000,
-      originalPrice: 199000,
-      totalUsers: 312,
-      totalRevenue: 30888000,
-      status: "Aktif",
-      thumbnail: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=400&q=80",
-      rating: 4.8,
-    },
-    {
-      id: "tpl-3",
-      name: "Minimalist Modern Flora",
-      category: "Minimalist Clean",
-      tier: "Gold",
-      price: 149000,
-      originalPrice: 249000,
-      totalUsers: 254,
-      totalRevenue: 37846000,
-      status: "Aktif",
-      thumbnail: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=400&q=80",
-      rating: 4.9,
-    },
-    {
-      id: "tpl-4",
-      name: "Elysian Luxe Emerald",
-      category: "Exclusive Platinum",
-      tier: "Platinum",
-      price: 199000,
-      originalPrice: 399000,
-      totalUsers: 168,
-      totalRevenue: 33432000,
-      status: "Aktif",
-      thumbnail: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=400&q=80",
-      rating: 5.0,
-    },
-    {
-      id: "tpl-5",
-      name: "Adat Jawa Klasik Keraton",
-      category: "Tradisional Adat",
-      tier: "Gold",
-      price: 149000,
-      originalPrice: 299000,
-      totalUsers: 86,
-      totalRevenue: 12814000,
-      status: "Aktif",
-      thumbnail: "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=400&q=80",
-      rating: 4.7,
-    },
-  ]);
+  const periodData: PeriodDataResult = useMemo(
+    () => buildPeriodData(selectedPeriod, ordersList, usersList, allInvitations, templatesList),
+    [selectedPeriod, ordersList, usersList, allInvitations, templatesList]
+  );
 
-  // 4. DATA UNDANGAN AKTIF / BERLANGSUNG
-  const [invitationsList] = useState<AdminInvitationItem[]>([
-    {
-      id: "INV-101",
-      title: "The Wedding of Dimas & Sarah",
-      bride: "Sarah Alisha",
-      groom: "Dimas Anggara",
-      eventDate: "14 November 2026",
-      template: "Elysian Bloom (Gold)",
-      slug: "dimas-sarah",
-      guestCount: 350,
-      rsvpCount: 284,
-      status: "Online",
-    },
-    {
-      id: "INV-102",
-      title: "Pernikahan Rian & Salsabila",
-      bride: "Salsabila Putri",
-      groom: "Rian Pratama",
-      eventDate: "20 Desember 2026",
-      template: "Elysian Bloom (Gold)",
-      slug: "rian-salsabila",
-      guestCount: 500,
-      rsvpCount: 412,
-      status: "Online",
-    },
-    {
-      id: "INV-103",
-      title: "The Wedding of Fajar & Indah",
-      bride: "Indah Permata",
-      groom: "Fajar Santoso",
-      eventDate: "05 Januari 2027",
-      template: "Minimalist Modern Flora",
-      slug: "fajar-indah",
-      guestCount: 200,
-      rsvpCount: 145,
-      status: "Online",
-    },
-    {
-      id: "INV-104",
-      title: "The Wedding of Reza & Maya",
-      bride: "Maya Novita",
-      groom: "Reza Ramadhan",
-      eventDate: "01 Juni 2026",
-      template: "Deluxe Royal Navy",
-      slug: "reza-maya",
-      guestCount: 400,
-      rsvpCount: 388,
-      status: "Online",
-    },
-    {
-      id: "INV-105",
-      title: "Pernikahan Alzan & Bella",
-      bride: "Bella Safitri",
-      groom: "Alzan Aditya",
-      eventDate: "27 Agustus 2025",
-      template: "Elysian Bloom (Gold)",
-      slug: "alzan-bella",
-      guestCount: 600,
-      rsvpCount: 540,
-      status: "Online",
-    },
-    {
-      id: "INV-106",
-      title: "The Wedding of Gilang & Vina",
-      bride: "Vina Pandu",
-      groom: "Gilang Pratama",
-      eventDate: "18 September 2026",
-      template: "Adat Jawa Klasik Keraton",
-      slug: "gilang-vina",
-      guestCount: 300,
-      rsvpCount: 260,
-      status: "Online",
-    },
-  ]);
+  const exportUsersCsv = () => {
+    downloadCsv(
+      "pengguna-satucerita.csv",
+      ["Nama", "Email", "WhatsApp", "Role", "Jumlah Undangan", "Total Belanja", "Tanggal Daftar", "Status"],
+      usersList.map((u) => [u.name, u.email, u.phone, u.role, u.invitationsCount, u.totalSpent, u.joinedDate, u.status])
+    );
+  };
+  const exportOrdersCsv = () => {
+    downloadCsv(
+      "pesanan-satucerita.csv",
+      ["Invoice", "Pemesan", "Email", "WhatsApp", "Template", "Paket", "Harga", "Total", "Metode", "Status", "Dibuat", "Lunas"],
+      ordersList.map((o) => [o.id, o.customer, o.customerEmail, o.customerPhone, o.template, o.tier, o.amount, o.total, o.paymentMethod, o.status, o.date, o.paidAt ?? ""])
+    );
+  };
 
-  // PERIOD DATA CALCULATION
-  const periodData: PeriodDataResult = useMemo(() => {
-    let startCurrent = 0;
-    let endCurrent = new Date(2026, 9, 11, 23, 59, 59).getTime();
-    let startPrev = 0;
-    let endPrev = 0;
-    let comparisonLabel = "";
-    let periodTitle = "";
-    let chartTitle = "";
-    let chartCategories: { label: string; filter: (t: number) => boolean }[] = [];
-
-    if (selectedPeriod === "Harian") {
-      const d1 = new Date(2026, 9, 11, 0, 0, 0).getTime();
-      const d2 = new Date(2026, 9, 11, 23, 59, 59).getTime();
-      const p1 = new Date(2026, 9, 10, 0, 0, 0).getTime();
-      const p2 = new Date(2026, 9, 10, 23, 59, 59).getTime();
-      startCurrent = d1;
-      endCurrent = d2;
-      startPrev = p1;
-      endPrev = p2;
-      comparisonLabel = "vs kemarin";
-      periodTitle = "Hari Ini (11 Okt 2026)";
-      chartTitle = "Grafik Transaksi Per Jam (Hari Ini)";
-      chartCategories = [
-        { label: "08:00", filter: (t) => t >= new Date(2026, 9, 11, 6, 0).getTime() && t < new Date(2026, 9, 11, 10, 0).getTime() },
-        { label: "11:00", filter: (t) => t >= new Date(2026, 9, 11, 10, 0).getTime() && t < new Date(2026, 9, 11, 13, 0).getTime() },
-        { label: "14:00", filter: (t) => t >= new Date(2026, 9, 11, 13, 0).getTime() && t < new Date(2026, 9, 11, 16, 0).getTime() },
-        { label: "17:00", filter: (t) => t >= new Date(2026, 9, 11, 16, 0).getTime() && t < new Date(2026, 9, 11, 19, 0).getTime() },
-        { label: "20:00", filter: (t) => t >= new Date(2026, 9, 11, 19, 0).getTime() && t < new Date(2026, 9, 11, 22, 0).getTime() },
-        { label: "23:00", filter: (t) => t >= new Date(2026, 9, 11, 22, 0).getTime() && t <= new Date(2026, 9, 11, 23, 59).getTime() },
-      ];
-    } else if (selectedPeriod === "Mingguan") {
-      const d1 = new Date(2026, 9, 5, 0, 0, 0).getTime();
-      const d2 = new Date(2026, 9, 11, 23, 59, 59).getTime();
-      const p1 = new Date(2026, 8, 28, 0, 0, 0).getTime();
-      const p2 = new Date(2026, 9, 4, 23, 59, 59).getTime();
-      startCurrent = d1;
-      endCurrent = d2;
-      startPrev = p1;
-      endPrev = p2;
-      comparisonLabel = "vs 7 hari lalu";
-      periodTitle = "Minggu Ini (5 - 11 Okt 2026)";
-      chartTitle = "Grafik Pendapatan Mingguan (7 Hari Terakhir)";
-      chartCategories = [
-        { label: "Sen (5)", filter: (t) => t >= new Date(2026, 9, 5, 0).getTime() && t < new Date(2026, 9, 6, 0).getTime() },
-        { label: "Sel (6)", filter: (t) => t >= new Date(2026, 9, 6, 0).getTime() && t < new Date(2026, 9, 7, 0).getTime() },
-        { label: "Rab (7)", filter: (t) => t >= new Date(2026, 9, 7, 0).getTime() && t < new Date(2026, 9, 8, 0).getTime() },
-        { label: "Kam (8)", filter: (t) => t >= new Date(2026, 9, 8, 0).getTime() && t < new Date(2026, 9, 9, 0).getTime() },
-        { label: "Jum (9)", filter: (t) => t >= new Date(2026, 9, 9, 0).getTime() && t < new Date(2026, 9, 10, 0).getTime() },
-        { label: "Sab (10)", filter: (t) => t >= new Date(2026, 9, 10, 0).getTime() && t < new Date(2026, 9, 11, 0).getTime() },
-        { label: "Min (11)", filter: (t) => t >= new Date(2026, 9, 11, 0).getTime() && t <= new Date(2026, 9, 11, 23, 59, 59).getTime() },
-      ];
-    } else if (selectedPeriod === "Bulanan") {
-      const d1 = new Date(2026, 9, 1, 0, 0, 0).getTime();
-      const d2 = new Date(2026, 9, 31, 23, 59, 59).getTime();
-      const p1 = new Date(2026, 8, 1, 0, 0, 0).getTime();
-      const p2 = new Date(2026, 8, 30, 23, 59, 59).getTime();
-      startCurrent = d1;
-      endCurrent = d2;
-      startPrev = p1;
-      endPrev = p2;
-      comparisonLabel = "vs bulan lalu";
-      periodTitle = "Bulan Ini (Oktober 2026)";
-      chartTitle = "Tren Pendapatan & Pembelian (30 Hari)";
-      chartCategories = [
-        { label: "Tgl 1-5", filter: (t) => t >= new Date(2026, 9, 1, 0).getTime() && t < new Date(2026, 9, 6, 0).getTime() },
-        { label: "Tgl 6-10", filter: (t) => t >= new Date(2026, 9, 6, 0).getTime() && t < new Date(2026, 9, 11, 0).getTime() },
-        { label: "Tgl 11-15", filter: (t) => t >= new Date(2026, 9, 11, 0).getTime() && t < new Date(2026, 9, 16, 0).getTime() },
-        { label: "Tgl 16-20", filter: (t) => t >= new Date(2026, 9, 16, 0).getTime() && t < new Date(2026, 9, 21, 0).getTime() },
-        { label: "Tgl 21-25", filter: (t) => t >= new Date(2026, 9, 21, 0).getTime() && t < new Date(2026, 9, 26, 0).getTime() },
-        { label: "Tgl 26-31", filter: (t) => t >= new Date(2026, 9, 26, 0).getTime() && t <= new Date(2026, 9, 31, 23, 59, 59).getTime() },
-      ];
-    } else {
-      startCurrent = 0;
-      endCurrent = new Date(2030, 11, 31).getTime();
-      startPrev = 0;
-      endPrev = 0;
-      comparisonLabel = "sepanjang waktu";
-      periodTitle = "Semua Waktu";
-      chartTitle = "Akumulasi Pendapatan Historis Platform";
-      chartCategories = [
-        { label: "2025 Q4", filter: (t) => t >= new Date(2025, 9, 1).getTime() && t < new Date(2026, 0, 1).getTime() },
-        { label: "2026 Q1", filter: (t) => t >= new Date(2026, 0, 1).getTime() && t < new Date(2026, 3, 1).getTime() },
-        { label: "2026 Q2", filter: (t) => t >= new Date(2026, 3, 1).getTime() && t < new Date(2026, 6, 1).getTime() },
-        { label: "2026 Q3", filter: (t) => t >= new Date(2026, 6, 1).getTime() && t < new Date(2026, 9, 1).getTime() },
-        { label: "2026 Q4", filter: (t) => t >= new Date(2026, 9, 1).getTime() && t <= new Date(2026, 11, 31).getTime() },
-      ];
-    }
-
-    const currentOrders = ordersList.filter((ord) => {
-      if (selectedPeriod === "Semua") return true;
-      const t = parseOrderTimestamp(ord.date);
-      return t >= startCurrent && t <= endCurrent;
-    });
-
-    const prevOrders = ordersList.filter((ord) => {
-      if (selectedPeriod === "Semua" || startPrev === 0) return false;
-      const t = parseOrderTimestamp(ord.date);
-      return t >= startPrev && t <= endPrev;
-    });
-
-    const currentRevenue = currentOrders
-      .filter((o) => o.status === "LUNAS")
-      .reduce((acc, curr) => acc + curr.total, 0);
-
-    const prevRevenue = prevOrders
-      .filter((o) => o.status === "LUNAS")
-      .reduce((acc, curr) => acc + curr.total, 0);
-
-    let revenueGrowth = "+0.0%";
-    let isRevenueUp = true;
-    if (selectedPeriod === "Semua") {
-      revenueGrowth = "Akumulasi";
-      isRevenueUp = true;
-    } else if (prevRevenue > 0) {
-      const diff = ((currentRevenue - prevRevenue) / prevRevenue) * 100;
-      revenueGrowth = `${diff >= 0 ? "+" : ""}${diff.toFixed(1)}%`;
-      isRevenueUp = diff >= 0;
-    } else if (currentRevenue > 0) {
-      revenueGrowth = "+100%";
-      isRevenueUp = true;
-    }
-
-    const pendingOrders = currentOrders.filter((o) => o.status === "MENUNGGU_VERIFIKASI");
-
-    const totalInvitationsCount = invitationsList.filter((inv) => {
-      if (selectedPeriod === "Semua") return true;
-      const t = parseOrderTimestamp(inv.eventDate);
-      return t >= startCurrent && t <= endCurrent;
-    }).length || currentOrders.length;
-
-    const prevInvitationsCount = invitationsList.filter((inv) => {
-      if (selectedPeriod === "Semua" || startPrev === 0) return false;
-      const t = parseOrderTimestamp(inv.eventDate);
-      return t >= startPrev && t <= endPrev;
-    }).length || prevOrders.length;
-
-    let invitationGrowth = "+0.0%";
-    let isInvUp = true;
-    if (selectedPeriod === "Semua") {
-      invitationGrowth = "Semua Acara";
-    } else if (prevInvitationsCount > 0) {
-      const diff = ((totalInvitationsCount - prevInvitationsCount) / prevInvitationsCount) * 100;
-      invitationGrowth = `${diff >= 0 ? "+" : ""}${diff.toFixed(1)}%`;
-      isInvUp = diff >= 0;
-    } else {
-      invitationGrowth = `+${totalInvitationsCount}`;
-    }
-
-    const currentUsers = usersList.filter((u) => {
-      if (selectedPeriod === "Semua") return true;
-      const t = parseOrderTimestamp(u.joinedDate);
-      return t >= startCurrent && t <= endCurrent;
-    });
-    const prevUsers = usersList.filter((u) => {
-      if (selectedPeriod === "Semua" || startPrev === 0) return false;
-      const t = parseOrderTimestamp(u.joinedDate);
-      return t >= startPrev && t <= endPrev;
-    });
-
-    const newUsersCount = currentUsers.length;
-    const prevNewUsersCount = prevUsers.length;
-    let userGrowthText = `${newUsersCount} user baru`;
-    if (selectedPeriod === "Semua") {
-      userGrowthText = `${usersList.length} total akun`;
-    } else if (prevNewUsersCount > 0) {
-      const diff = ((newUsersCount - prevNewUsersCount) / prevNewUsersCount) * 100;
-      userGrowthText = `${diff >= 0 ? "+" : ""}${diff.toFixed(0)}% vs periode lalu`;
-    }
-
-    const chartBars = chartCategories.map((cat) => {
-      const ordersInCat = currentOrders.filter(
-        (o) => o.status === "LUNAS" && cat.filter(parseOrderTimestamp(o.date))
-      );
-      const rev = ordersInCat.reduce((acc, curr) => acc + curr.total, 0);
-      return {
-        label: cat.label,
-        revenue: rev,
-        count: ordersInCat.length,
-      };
-    });
-
-    const maxChartRev = Math.max(...chartBars.map((b) => b.revenue), 1);
-
-    const tplCounter: Record<string, { count: number; revenue: number; tpl: any }> = {};
-    currentOrders.forEach((ord) => {
-      const key = ord.template;
-      if (!tplCounter[key]) {
-        const found = templatesList.find(
-          (t) => t.name.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(t.name.toLowerCase())
-        ) || templatesList[0];
-        tplCounter[key] = { count: 0, revenue: 0, tpl: found };
-      }
-      tplCounter[key].count += 1;
-      if (ord.status === "LUNAS") {
-        tplCounter[key].revenue += ord.total;
-      }
-    });
-
-    const popularTemplates = Object.entries(tplCounter)
-      .map(([name, data]) => ({ name, ...data }))
-      .sort((a, b) => b.count - a.count);
-
-    return {
-      currentOrders,
-      prevOrders,
-      currentRevenue,
-      prevRevenue,
-      revenueGrowth,
-      isRevenueUp,
-      pendingOrders,
-      totalInvitationsCount,
-      invitationGrowth,
-      isInvUp,
-      newUsersCount,
-      userGrowthText,
-      comparisonLabel,
-      periodTitle,
-      chartTitle,
-      chartBars,
-      maxChartRev,
-      popularTemplates: popularTemplates.length > 0 ? popularTemplates : templatesList.slice(0, 3).map((t) => ({ name: t.name, count: t.totalUsers, revenue: t.totalRevenue, tpl: t })),
-    };
-  }, [selectedPeriod, ordersList, usersList, invitationsList, templatesList]);
 
   // COLUMNS
   const dashboardOrderColumns: DataTableColumn<AdminOrderItem>[] = [
@@ -784,23 +302,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       key: "status",
       header: "STATUS",
       sortable: true,
-      render: (ord) => (
-        ord.status === "LUNAS" ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-            Lunas
-          </span>
-        ) : ord.status === "MENUNGGU_VERIFIKASI" ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 animate-pulse">
-            <Clock className="w-3 h-3 text-amber-600" />
-            Verifikasi
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">
-            Batal
-          </span>
-        )
-      ),
+      render: (ord) => <OrderStatusBadge status={ord.status} />,
     },
     {
       key: "action",
@@ -842,14 +344,18 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       header: "KONTAK WHATSAPP",
       sortable: true,
       render: (usr) => (
-        <a
-          href={`https://wa.me/${usr.phone.replace(/\D/g, "")}`}
-          target="_blank"
-          rel="noreferrer"
-          className="hover:text-emerald-600 hover:underline inline-flex items-center gap-1 font-mono text-neutral-600"
-        >
-          {usr.phone}
-        </a>
+        usr.phone ? (
+          <a
+            href={`https://wa.me/${usr.phone.replace(/\D/g, "")}`}
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-emerald-600 hover:underline inline-flex items-center gap-1 font-mono text-neutral-600"
+          >
+            {usr.phone}
+          </a>
+        ) : (
+          <span className="text-neutral-300">-</span>
+        )
       ),
     },
     {
@@ -938,7 +444,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       sortable: true,
       render: (inv) => (
         <span className="text-neutral-600 font-medium">
-          {formatIndonesianDateShort(inv.eventDate)}
+          {inv.eventDate ? formatIndonesianDateShort(inv.eventDate) : "-"}
         </span>
       ),
     },
@@ -950,7 +456,9 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       render: (inv) => (
         <div>
           <span className="font-bold text-neutral-900">{inv.rsvpCount}</span>
-          <span className="text-neutral-400 text-xs"> / {inv.guestCount} Hadir</span>
+          <span className="text-neutral-400 text-xs">
+            {inv.guestCount > 0 ? ` / ${inv.guestCount} tamu` : " hadir"} · {inv.wishesCount} ucapan
+          </span>
         </div>
       ),
     },
@@ -960,7 +468,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       align: "right",
       render: (inv) => (
         <a
-          href={`/${inv.slug}`}
+          href={inv.publicUrl}
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center gap-1 text-xs font-extrabold text-[#7d6aee] hover:bg-purple-100 bg-purple-50 border border-purple-200/80 border-b-[2px] border-b-purple-300 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-[0.98] shadow-2xs"
@@ -1011,7 +519,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
     {
       key: "total",
-      header: "TOTAL + UNIK",
+      header: "TOTAL",
       sortable: true,
       render: (ord) => <span className="font-black text-neutral-900">Rp {ord.total.toLocaleString("id-ID")}</span>,
     },
@@ -1025,23 +533,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       key: "status",
       header: "STATUS",
       sortable: true,
-      render: (ord) => (
-        ord.status === "LUNAS" ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-            Lunas
-          </span>
-        ) : ord.status === "MENUNGGU_VERIFIKASI" ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 animate-pulse">
-            <Clock className="w-3 h-3 text-amber-600" />
-            Menunggu
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">
-            Batal
-          </span>
-        )
-      ),
+      render: (ord) => <OrderStatusBadge status={ord.status} />,
     },
     {
       key: "action",
@@ -1053,7 +545,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
           size="xs"
           onClick={() => setSelectedOrderModal(ord)}
         >
-          Detail &amp; Verifikasi
+          Detail
         </Button>
       ),
     },
@@ -1159,14 +651,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       ),
     },
   ];
-
-  const handleApproveOrder = (orderId: string) => {
-    setOrdersList((prev) =>
-      prev.map((ord) => (ord.id === orderId ? { ...ord, status: "LUNAS" } : ord))
-    );
-    showToast(`Pesanan #${orderId} berhasil diverifikasi & ditandai Lunas!`);
-    setSelectedOrderModal(null);
-  };
 
   const handlePerformLogout = async () => {
     setIsLogoutModalOpen(false);
@@ -1295,6 +779,23 @@ export const AdminDash: React.FC<AdminDashProps> = ({
 
         {/* MAIN CONTENT AREA */}
         <main className="flex-1 min-w-0 flex flex-col p-4 sm:p-6 lg:p-8 gap-6 max-w-7xl mx-auto w-full pb-24 md:pb-8">
+          {dataState.loading && (
+            <div role="status" className="text-xs font-bold text-[#7d6aee] bg-purple-50 border border-purple-100 rounded-xl px-4 py-2.5">
+              Memuat data dari database…
+            </div>
+          )}
+          {dataState.error && (
+            <div role="alert" className="flex items-center justify-between gap-3 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5">
+              <span>{dataState.error}</span>
+              <button
+                type="button"
+                onClick={() => void loadData()}
+                className="shrink-0 px-3 py-1.5 rounded-lg bg-white border border-rose-200 text-rose-700 hover:bg-rose-100 cursor-pointer"
+              >
+                Coba lagi
+              </button>
+            </div>
+          )}
           {activeTab === "overview" && (
             <OverviewPage
               periodData={periodData}
@@ -1313,6 +814,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               showToast={showToast}
+              onExport={exportUsersCsv}
             />
           )}
 
@@ -1320,6 +822,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
             <AnalyticsPage
               timeRange={timeRange}
               setTimeRange={setTimeRange}
+              ordersList={ordersList}
+              templatesList={templatesList}
             />
           )}
 
@@ -1330,6 +834,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               showToast={showToast}
+              onExport={exportOrdersCsv}
             />
           )}
 
@@ -1554,7 +1059,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
             <div className="bg-neutral-50 p-3.5 rounded-xl text-xs space-y-2 border border-neutral-100">
               <div className="flex justify-between">
                 <span className="text-neutral-500">Nomor WhatsApp:</span>
-                <span className="font-bold text-neutral-800">{selectedUserModal.phone}</span>
+                <span className="font-bold text-neutral-800">{selectedUserModal.phone || "-"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-500">Jumlah Undangan:</span>
@@ -1580,17 +1085,19 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               >
                 Tutup
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  showToast(`Pesan WhatsApp dikirimkan ke ${selectedUserModal.name}`);
-                  setSelectedUserModal(null);
-                }}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold border border-emerald-500 border-b-[3px] border-b-emerald-800 shadow-2xs active:scale-[0.99] active:border-b-[2px] flex items-center gap-1.5 cursor-pointer transition-all"
-              >
-                <Phone className="w-3.5 h-3.5" />
-                <span>Hubungi WA</span>
-              </button>
+              {selectedUserModal.phone ? (
+                <a
+                  href={`https://wa.me/${selectedUserModal.phone.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold border border-emerald-500 border-b-[3px] border-b-emerald-800 shadow-2xs active:scale-[0.99] active:border-b-[2px] flex items-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Hubungi WA</span>
+                </a>
+              ) : (
+                <span className="text-xs text-neutral-400 px-2">Belum ada nomor WhatsApp</span>
+              )}
             </div>
           </div>
         </div>
@@ -1603,7 +1110,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <div>
                 <h3 className="text-base font-bold text-neutral-900">
-                  Verifikasi Pesanan #{selectedOrderModal.id}
+                  Detail Pesanan #{selectedOrderModal.id}
                 </h3>
                 <span className="text-xs text-neutral-400">{selectedOrderModal.date}</span>
               </div>
@@ -1627,12 +1134,13 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-500">WhatsApp:</span>
-                <span className="font-medium text-neutral-700">{selectedOrderModal.customerPhone}</span>
+                <span className="font-medium text-neutral-700">{selectedOrderModal.customerPhone || "-"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-500">Template / Paket:</span>
                 <span className="font-bold text-neutral-900">
-                  {selectedOrderModal.template} ({selectedOrderModal.tier})
+                  {selectedOrderModal.template}
+                  {selectedOrderModal.tier ? ` (${selectedOrderModal.tier})` : ""}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -1640,25 +1148,22 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 <span className="font-bold text-[#7d6aee]">{selectedOrderModal.paymentMethod}</span>
               </div>
               <div className="flex justify-between text-sm font-extrabold border-t border-neutral-200 pt-2 mt-2">
-                <span className="text-neutral-900">Total Nominal (+ Unik):</span>
+                <span className="text-neutral-900">Total Pembayaran:</span>
                 <span className="text-emerald-600">
                   Rp {selectedOrderModal.total.toLocaleString("id-ID")}
                 </span>
               </div>
             </div>
 
-            {selectedOrderModal.proofUrl ? (
-              <div>
-                <p className="text-xs font-bold text-neutral-800 mb-2">Foto / Bukti Transfer:</p>
-                <img
-                  src={selectedOrderModal.proofUrl}
-                  alt="Bukti Transfer"
-                  className="w-full h-44 object-cover rounded-xl border border-neutral-200"
-                />
+            {selectedOrderModal.status === "MENUNGGU_VERIFIKASI" && (
+              <div className="p-3 rounded-xl bg-amber-50 text-amber-800 text-xs font-medium border border-amber-200 leading-relaxed">
+                Pesanan ini ditahan otomatis (nominal pembayaran tidak cocok atau ditandai fraud challenge). Periksa transaksinya di dashboard Midtrans;
+                status baru berubah lunas lewat notifikasi pembayaran Midtrans.
               </div>
-            ) : (
-              <div className="p-3 rounded-xl bg-amber-50 text-amber-800 text-xs font-medium border border-amber-200">
-                Belum ada lampiran bukti transfer manual (Pembayaran otomatis QRIS/VA terdeteksi di gateway).
+            )}
+            {selectedOrderModal.status === "MENUNGGU_BAYAR" && (
+              <div className="p-3 rounded-xl bg-sky-50 text-sky-800 text-xs font-medium border border-sky-200">
+                Pembeli belum menyelesaikan pembayaran. Status berubah otomatis saat Midtrans mengirim notifikasi.
               </div>
             )}
 
@@ -1670,16 +1175,6 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               >
                 Tutup
               </button>
-              {selectedOrderModal.status !== "LUNAS" && (
-                <button
-                  type="button"
-                  onClick={() => handleApproveOrder(selectedOrderModal.id)}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-extrabold hover:bg-emerald-700 border border-emerald-500 border-b-[3px] border-b-emerald-800 shadow-2xs active:scale-[0.99] active:border-b-[2px] flex items-center gap-1.5 cursor-pointer transition-all"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Setujui &amp; Tandai Lunas</span>
-                </button>
-              )}
             </div>
           </div>
         </div>

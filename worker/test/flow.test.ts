@@ -206,9 +206,9 @@ test("voucher HEMAT10 dihitung server, item diskon negatif, jumlah item = total"
 
 test("voucher sekali pakai per akun; voucher ngawur ditolak", async () => {
   assert.equal((await create({ voucherCode: "HEMAT10" })).status, 201);
-  const second = await create({ templateSlug: "hypatia", voucherCode: "HEMAT10" });
+  const second = await create({ templateSlug: "aglaia", voucherCode: "HEMAT10" });
   assert.equal(second.status, 400);
-  assert.equal((await create({ templateSlug: "hypatia", voucherCode: "GRATIS100" })).status, 400);
+  assert.equal((await create({ templateSlug: "aglaia", voucherCode: "GRATIS100" })).status, 400);
 });
 
 test("idempotensi: kunci sama dikirim bersamaan (klik ganda) -> satu pesanan, satu token yang sama", async () => {
@@ -531,7 +531,7 @@ test("webhook: order_id tak dikenal / format asing -> 200 diabaikan, TIDAK membu
 
 test("webhook transaksi A tidak mengubah transaksi B (dan tidak ada UPDATE tanpa filter order)", async () => {
   await createAs("ua", "bni_va", "antheia");
-  await createAs("ub", "bri_va", "hypatia");
+  await createAs("ub", "bri_va", "aglaia");
   assert.equal(orders.length, 2);
   statusReply = statusOk("settlement");
   assert.equal((await notify({}, { order: orders[0] })).status, 200);

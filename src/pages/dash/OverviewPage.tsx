@@ -38,7 +38,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             Ringkasan Kinerja Platform
           </h1>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">
-            Menampilkan data aktual periode: <span className="font-bold text-[#7d6aee]">{periodData.periodTitle}</span>
+            Data langsung dari database untuk periode: <span className="font-bold text-[#7d6aee]">{periodData.periodTitle}</span>
           </p>
         </div>
 
@@ -95,7 +95,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             </div>
           </div>
           <div className="mt-3 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md inline-block border border-amber-200/60 border-b-[2px] border-b-amber-300/80">
-            {periodData.pendingOrders.length > 0 ? "Butuh aksi konfirmasi bukti" : "Semua pesanan terverifikasi"}
+            {periodData.pendingOrders.length > 0 ? "Tinjau di dashboard Midtrans" : "Tidak ada pesanan yang ditahan"}
           </div>
         </div>
 
@@ -200,14 +200,21 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
               Template Terlaris ({periodData.periodTitle})
             </h2>
             <div className="mt-4 space-y-3">
+              {periodData.popularTemplates.length === 0 && (
+                <p className="text-xs text-neutral-400 py-6 text-center">Belum ada penjualan pada periode ini.</p>
+              )}
               {periodData.popularTemplates.slice(0, 3).map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-neutral-50 transition-colors">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <img
-                      src={item.tpl.thumbnail}
-                      alt={item.name}
-                      className="size-10 rounded-lg object-cover border border-purple-100 shrink-0"
-                    />
+                    {item.tpl.thumbnail ? (
+                      <img
+                        src={item.tpl.thumbnail}
+                        alt={item.name}
+                        className="size-10 rounded-lg object-cover border border-purple-100 shrink-0"
+                      />
+                    ) : (
+                      <span className="size-10 rounded-lg bg-purple-50 border border-purple-100 shrink-0" />
+                    )}
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-neutral-900 truncate">{item.name}</p>
                       <p className="text-[11px] text-neutral-400">{item.tpl.category}</p>
@@ -237,10 +244,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div className="p-4 sm:p-5 border-b border-neutral-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="font-extrabold text-sm sm:text-base text-neutral-900">
-              Pesanan &amp; Verifikasi Terkini ({periodData.periodTitle})
+              Pesanan Terkini ({periodData.periodTitle})
             </h2>
             <p className="text-xs text-neutral-400">
-              Daftar pembayaran masuk yang menunggu verifikasi atau transaksi pada periode ini.
+              Transaksi terbaru pada periode ini beserta statusnya.
             </p>
           </div>
           <button

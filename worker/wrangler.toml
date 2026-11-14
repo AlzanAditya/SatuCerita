@@ -17,7 +17,7 @@ routes = [
   { pattern = "satucerita.app/login*", zone_name = "satucerita.app" },
   { pattern = "satucerita.app/i/*", zone_name = "satucerita.app" },
   { pattern = "satucerita.app/m/*", zone_name = "satucerita.app" },
-  { pattern = "satucerita.app/templates/*", zone_name = "satucerita.app" },
+  { pattern = "satucerita.app/templates*", zone_name = "satucerita.app" },
   { pattern = "studio.satucerita.app/*", zone_name = "satucerita.app" },
   { pattern = "dash.satucerita.app/*", zone_name = "satucerita.app" },
 ]

@@ -27,80 +27,20 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Accordion } from "@/components/ui/Accordion";
+import { TEMPLATES_DATA, type TemplateItemData } from "@/data/templates";
 
 interface HomePageProps {
   currentPath?: string;
   onNavigate?: (path: string) => void;
 }
 
-interface TemplateItem {
-  id: string;
-  title: string;
-  category: "ELYSIAN" | "DELUXE";
-  originalPrice: number;
-  discountPrice: number;
-  badge?: string;
-  discountBadge?: string;
-  frameBg: string;
-  image: string;
-  coupleName: string;
-  date: string;
-}
+type TemplateItem = Pick<
+  TemplateItemData,
+  "id" | "title" | "category" | "originalPrice" | "discountPrice" | "badge" | "discountBadge" | "frameBg" | "image" | "coupleName" | "date"
+>;
 
-const HOME_TEMPLATES: TemplateItem[] = [
-  {
-    id: "antheia",
-    title: "Antheia",
-    category: "ELYSIAN",
-    originalPrice: 199000,
-    discountPrice: 99000,
-    badge: "UNGGULAN",
-    discountBadge: "Hemat 50%",
-    frameBg: "#F5C744",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=700&q=80",
-    coupleName: "John & Jane",
-    date: "18 . 09 . 2027",
-  },
-  {
-    id: "hypatia",
-    title: "Hypatia",
-    category: "ELYSIAN",
-    originalPrice: 199000,
-    discountPrice: 99000,
-    badge: "UNGGULAN",
-    discountBadge: "Hemat 50%",
-    frameBg: "#EE5B4F",
-    image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=700&q=80",
-    coupleName: "John & Jane",
-    date: "12 . 06 . 2027",
-  },
-  {
-    id: "serenade",
-    title: "Serenade",
-    category: "DELUXE",
-    originalPrice: 189000,
-    discountPrice: 89000,
-    badge: "POPULER",
-    discountBadge: "Hemat 53%",
-    frameBg: "#7D6AEE",
-    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=700&q=80",
-    coupleName: "Fajar & Dina",
-    date: "25 . 10 . 2027",
-  },
-  {
-    id: "royal-emerald",
-    title: "Royal Emerald",
-    category: "DELUXE",
-    originalPrice: 249000,
-    discountPrice: 129000,
-    badge: "PREMIUM",
-    discountBadge: "Hemat 48%",
-    frameBg: "#38BDF8",
-    image: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=700&q=80",
-    coupleName: "Rizky & Amanda",
-    date: "08 . 11 . 2027",
-  },
-];
+// Satu sumber kebenaran: sama dengan katalog (src/data/templates.ts), yaitu template yang ada di src/templates/.
+const HOME_TEMPLATES: TemplateItem[] = TEMPLATES_DATA;
 
 interface FaqItem {
   question: string;
@@ -157,6 +97,8 @@ export const HomePage: React.FC<HomePageProps> = ({
     );
     window.open(`https://wa.me/6285187978443?text=${waText}`, "_blank");
   };
+
+  const countByCategory = (c: TemplateItem["category"]) => HOME_TEMPLATES.filter((t) => t.category === c).length;
 
   const filteredTemplates =
     activeCategory === "ALL"
@@ -479,7 +421,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     }`}
                 >
                   <span>Semua</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ALL" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>14</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ALL" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{HOME_TEMPLATES.length}</span>
                 </button>
 
                 <button
@@ -491,20 +433,22 @@ export const HomePage: React.FC<HomePageProps> = ({
                     }`}
                 >
                   <span>Elysian</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ELYSIAN" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>6</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ELYSIAN" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{countByCategory("ELYSIAN")}</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => setActiveCategory("DELUXE")}
-                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${activeCategory === "DELUXE"
-                    ? "bg-white text-[#7d6aee] border-white shadow-xs"
-                    : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
-                    }`}
-                >
-                  <span>Deluxe</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "DELUXE" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>8</span>
-                </button>
+                {countByCategory("DELUXE") > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveCategory("DELUXE")}
+                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${activeCategory === "DELUXE"
+                      ? "bg-white text-[#7d6aee] border-white shadow-xs"
+                      : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
+                      }`}
+                  >
+                    <span>Deluxe</span>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "DELUXE" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{countByCategory("DELUXE")}</span>
+                  </button>
+                )}
               </div>
             </div>
 

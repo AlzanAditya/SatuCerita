@@ -413,7 +413,7 @@ export const UserApp: React.FC<UserAppProps> = ({
             />
           )}
 
-          {activeTab === "ucapan" && <UcapanPage onNavigate={onNavigate} />}
+          {activeTab === "ucapan" && <UcapanPage onNavigate={onNavigate} showToast={showToast} />}
 
           {activeTab === "profile" && (
             <ProfilePage

@@ -192,8 +192,9 @@ test("tidak ada setInterval/EventSource di luar watcher (halaman order memakai c
     .filter((f) => !/orderStream\.ts$/.test(f))
     .filter((f) => /setInterval\(|new EventSource\(/.test(fs.readFileSync(f, "utf8")))
     .map((f) => path.relative(ROOT, f));
-  // OrderDetailPage: satu setInterval = countdown 1 detik (dihentikan saat bukan pending) + EventSource lewat injeksi watcher.
-  assert.deepEqual(offenders.sort(), ["src/pages/studio/OrderDetailPage.tsx"]);
+  // OrderDetailPage: countdown 1 detik + EventSource lewat injeksi watcher.
+  // AdminDash: auto-refresh data dashboard tiap 60 detik (polling diperbolehkan di dashboard, bukan di halaman order).
+  assert.deepEqual(offenders.sort(), ["src/pages/dash/AdminDash.tsx", "src/pages/studio/OrderDetailPage.tsx"]);
   const od = fs.readFileSync(path.join(ROOT, "src/pages/studio/OrderDetailPage.tsx"), "utf8");
   assert.equal((od.match(/setInterval\(/g) ?? []).length, 2); // countdown + injeksi watcher
   assert.equal((od.match(/new EventSource\(/g) ?? []).length, 1);
