@@ -2,6 +2,8 @@
  * Client API dashboard admin. Data asli dari Supabase lewat Worker (GET /api/admin/overview, hanya akun admin).
  */
 import type {
+  RedeemCodeInput,
+  RedeemCodeItem,
   AdminInvitationItem,
   AdminOrderItem,
   AdminTemplateItem,
@@ -68,6 +70,32 @@ export async function fetchAdminOverview(): Promise<{ ok: true; data: AdminData 
     return { ok: false, error: "Tidak dapat terhubung ke server." };
   }
 }
+
+// ---------------------------------------------------------------- Kode redeem (CRUD; hanya akun admin)
+type ApiOk<T> = { ok: true; data: T } | { ok: false; error: string; status: number };
+
+async function redeemCall<T>(path: string, init: RequestInit = {}): Promise<ApiOk<T>> {
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      credentials: "include",
+      ...init,
+      headers: { "Content-Type": "application/json", ...(init.headers || {}) },
+    });
+    const raw = (await res.json().catch(() => ({}))) as T & { error?: string };
+    if (!res.ok) return { ok: false, error: raw.error || "Permintaan gagal.", status: res.status };
+    return { ok: true, data: raw };
+  } catch {
+    return { ok: false, error: "Tidak dapat terhubung ke server.", status: 0 };
+  }
+}
+
+export const fetchRedeemCodes = () => redeemCall<{ codes: RedeemCodeItem[] }>("/api/admin/redeem");
+export const createRedeemCode = (input: RedeemCodeInput) =>
+  redeemCall<{ code: RedeemCodeItem }>("/api/admin/redeem", { method: "POST", body: JSON.stringify(input) });
+export const updateRedeemCode = (id: string, input: RedeemCodeInput) =>
+  redeemCall<{ code: RedeemCodeItem }>(`/api/admin/redeem/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(input) });
+export const deleteRedeemCode = (id: string) =>
+  redeemCall<{ ok: true }>(`/api/admin/redeem/${encodeURIComponent(id)}`, { method: "DELETE" });
 
 /** Unduh CSV di browser (BOM + CRLF agar terbuka benar di Excel). */
 export function downloadCsv(filename: string, header: string[], rows: (string | number)[][]): void {

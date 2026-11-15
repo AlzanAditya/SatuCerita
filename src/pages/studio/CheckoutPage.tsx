@@ -115,7 +115,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
     } else {
       setVoucherApplied(false);
       setAppliedDiscount(null);
-      setVoucherError(res.data.error || "Kode voucher tidak valid atau sudah kadaluarsa.");
+      setVoucherError(res.data.error || "Kode redeem tidak valid.");
     }
   };
 

@@ -14,7 +14,7 @@ import { dbSelect } from "./db";
 import { PAYMENT_METHODS } from "./pricing";
 import { TEMPLATES_DATA } from "../../src/data/templates";
 
-async function requireAdmin(env: Env, req: Request): Promise<{ cookies: string[] } | Response> {
+export async function requireAdmin(env: Env, req: Request): Promise<{ cookies: string[] } | Response> {
   const s = await resolveSession(env, req);
   if (!s.user) return json({ error: "Belum login." }, 401, s.setCookies);
   if (!isAdminUser(env, s.user)) return json({ error: "Akses ditolak." }, 403, s.setCookies);
@@ -22,7 +22,7 @@ async function requireAdmin(env: Env, req: Request): Promise<{ cookies: string[]
 }
 
 /** PostgREST membatasi 1000 baris per request (max-rows Supabase), jadi baca berhalaman. Query WAJIB punya `order=` yang stabil. */
-async function selectAll<T>(env: Env, table: string, query: string, maxRows = 20_000): Promise<T[]> {
+export async function selectAll<T>(env: Env, table: string, query: string, maxRows = 20_000): Promise<T[]> {
   const page = 1000;
   const out: T[] = [];
   for (let offset = 0; offset < maxRows; offset += page) {

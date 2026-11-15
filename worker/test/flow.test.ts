@@ -37,12 +37,17 @@ let failPatch = false;
 let patchCount = 0;
 let statusCalls = 0;
 let activeEnv: Env = undefined as unknown as Env;
+let redeemCodes: Row[] = [];
+let redeemUsers: Row[] = [];
+let rejectInsertWithCode = false; // meniru trigger DB yang menolak INSERT pesanan ber-kode (balapan / kode baru saja nonaktif)
+const hemat10 = (): Row => ({ id: "00000000-0000-4000-8000-000000000001", code: "HEMAT10", description: null, discount_type: "percent", discount_value: 10, max_discount: null, usage_mode: "per_invitation", max_invitations_per_user: 1, starts_at: null, expires_at: null, audience: "all", is_active: true, created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z" });
 
 function matches(row: Row, params: URLSearchParams): boolean {
   for (const [k, v] of params) {
-    if (["select", "limit", "order", "on_conflict"].includes(k)) continue;
+    if (["select", "limit", "offset", "order", "on_conflict"].includes(k)) continue;
     if (v.startsWith("eq.")) { if (String(row[k]) !== decodeURIComponent(v.slice(3))) return false; }
     else if (v === "is.null") { if (row[k] != null) return false; }
+    else if (v === "not.is.null") { if (row[k] == null) return false; }
     else if (v.startsWith("in.(")) { if (!v.slice(4, -1).split(",").includes(String(row[k]))) return false; }
     else return false;
   }
@@ -55,7 +60,10 @@ globalThis.fetch = (async (input: any, init: RequestInit = {}) => {
   const method = (init.method || "GET").toUpperCase();
   const body = init.body ? JSON.parse(String(init.body)) : undefined;
 
-  if (url.origin === SB && url.pathname === "/auth/v1/user") return json({ id: currentUser, email: `${currentUser}@mail.id`, user_metadata: { full_name: "Budi" } });
+  if (url.origin === SB && url.pathname === "/auth/v1/user") {
+    if (currentUser === "admin-1") return json({ id: "admin-1", email: "admin@x.id", email_confirmed_at: "2026-01-01T00:00:00Z", identities: [{ provider: "google" }], user_metadata: { full_name: "Admin" } });
+    return json({ id: currentUser, email: `${currentUser}@mail.id`, user_metadata: { full_name: "Budi" } });
+  }
   if (url.origin === SB && url.pathname === "/rest/v1/profiles") return json([{ full_name: "Budi", phone: "+628111" }]);
 
   if (url.origin === SB && url.pathname === "/rest/v1/orders") {
@@ -63,8 +71,8 @@ globalThis.fetch = (async (input: any, init: RequestInit = {}) => {
     if (method === "POST") {
       const dupIdem = orders.some((o) => o.user_id === body.user_id && o.idempotency_key === body.idempotency_key);
       const dupPend = body.status === "pending" && orders.some((o) => o.user_id === body.user_id && o.template_slug === body.template_slug && o.status === "pending");
-      const dupVoucher = body.discount_code && orders.some((o) => o.user_id === body.user_id && o.discount_code === body.discount_code && ["pending", "paid", "needs_review"].includes(o.status));
-      if (dupIdem || dupPend || dupVoucher) return json({ code: "23505" }, 409);
+      if (dupIdem || dupPend) return json({ code: "23505" }, 409);
+      if (body.discount_code && rejectInsertWithCode) return json({ message: "Jatah pemakaian kode redeem untuk akun ini sudah habis." }, 400); // trigger orders_enforce_redeem
       if (body.gross_amount !== body.base_price - body.discount_amount) return json({ code: "23514" }, 400);
       const row = { id: crypto.randomUUID(), snap_token: null, payment_info: {}, midtrans_trx_id: null, charge_claimed_at: null, paid_at: null, last_synced_at: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), ...body };
       orders.push(row);
@@ -79,6 +87,38 @@ globalThis.fetch = (async (input: any, init: RequestInit = {}) => {
         if (failPatch) return json({ message: "db down" }, 500);
         Object.assign(o, body);
       }
+      return json(hit);
+    }
+  }
+  if (url.origin === SB && url.pathname === "/rest/v1/redeem_codes") {
+    if (method === "GET") return json(redeemCodes.filter((r) => matches(r, url.searchParams)));
+    if (method === "POST") {
+      if (redeemCodes.some((r) => r.code === body.code)) return json({ code: "23505" }, 409);
+      const row = { id: crypto.randomUUID(), created_at: new Date().toISOString(), updated_at: new Date().toISOString(), ...body };
+      redeemCodes.push(row);
+      return json([row], 201);
+    }
+    if (method === "PATCH") {
+      const hit = redeemCodes.filter((r) => matches(r, url.searchParams));
+      for (const r of hit) Object.assign(r, body);
+      return json(hit);
+    }
+    if (method === "DELETE") {
+      const hit = redeemCodes.filter((r) => matches(r, url.searchParams));
+      redeemCodes = redeemCodes.filter((r) => !hit.includes(r));
+      redeemUsers = redeemUsers.filter((u) => redeemCodes.some((r) => r.id === u.code_id));
+      return json(hit);
+    }
+  }
+  if (url.origin === SB && url.pathname === "/rest/v1/redeem_code_users") {
+    if (method === "GET") return json(redeemUsers.filter((r) => matches(r, url.searchParams)));
+    if (method === "POST") {
+      for (const r of body as Row[]) if (!redeemUsers.some((u) => u.code_id === r.code_id && u.email === r.email)) redeemUsers.push(r);
+      return new Response(null, { status: 201 });
+    }
+    if (method === "DELETE") {
+      const hit = redeemUsers.filter((r) => matches(r, url.searchParams));
+      redeemUsers = redeemUsers.filter((u) => !hit.includes(u));
       return json(hit);
     }
   }
@@ -106,7 +146,7 @@ globalThis.fetch = (async (input: any, init: RequestInit = {}) => {
   throw new Error(`fetch tak terduga: ${method} ${url.href}`);
 }) as typeof fetch;
 
-beforeEach(() => { orders = []; events = []; chargeCalls = []; chargeReply = null; snapCalls = []; snapReply = null; failPatch = false; patchCount = 0; statusCalls = 0; activeEnv = env; hubs.clear(); hubBroken = false; statusReply = () => ({ status_code: "404" }); statusDown = false; currentUser = "user-1"; });
+beforeEach(() => { orders = []; events = []; chargeCalls = []; chargeReply = null; snapCalls = []; snapReply = null; failPatch = false; patchCount = 0; statusCalls = 0; activeEnv = env; hubs.clear(); hubBroken = false; statusReply = () => ({ status_code: "404" }); statusDown = false; currentUser = "user-1"; redeemCodes = [hemat10()]; redeemUsers = []; rejectInsertWithCode = false; });
 
 // ---------------------------------------------------------------- hub realtime palsu (memakai kelas PaymentHub ASLI)
 const hubs = new Map<string, PaymentHub>();
@@ -204,10 +244,11 @@ test("voucher HEMAT10 dihitung server, item diskon negatif, jumlah item = total"
   assert.equal(chargeCalls[0].body.item_details.reduce((a: number, i: any) => a + i.price * i.quantity, 0), 89100);
 });
 
-test("voucher sekali pakai per akun; voucher ngawur ditolak", async () => {
+test("HEMAT10 (bawaan: 1 undangan per akun); kode ngawur ditolak", async () => {
   assert.equal((await create({ voucherCode: "HEMAT10" })).status, 201);
   const second = await create({ templateSlug: "aglaia", voucherCode: "HEMAT10" });
   assert.equal(second.status, 400);
+  assert.match(((await second.json()) as any).error, /Jatah pemakaian/);
   assert.equal((await create({ templateSlug: "aglaia", voucherCode: "GRATIS100" })).status, 400);
 });
 
@@ -1017,4 +1058,177 @@ test("produksi: perilaku tidak berubah (callback gagal -> LOGIN_URL produksi, co
   const start = await worker.fetch(new Request("https://satucerita.app/api/auth/google?next=studio"), prodVars);
   assert.equal(new URL(start.headers.get("Location")!).searchParams.get("redirect_to"), "https://satucerita.app/api/auth/callback?next=studio");
   assert.match(start.headers.getSetCookie().join("\n"), /Domain=\.satucerita\.app/);
+});
+
+// ================================================================ KODE REDEEM (diatur admin)
+const addCode = (over: Row = {}): Row => {
+  const r = { ...hemat10(), id: crypto.randomUUID(), code: "PROMO", ...over };
+  redeemCodes.push(r);
+  return r;
+};
+const errOf = async (r: Response) => ((await r.json()) as any).error as string;
+const ago = (ms: number) => new Date(Date.now() - ms).toISOString();
+const ahead = (ms: number) => new Date(Date.now() + ms).toISOString();
+
+test("redeem persen + batas maksimal: 50% dibatasi Rp30.000; total & item Midtrans konsisten", async () => {
+  addCode({ code: "CAP30", discount_value: 50, max_discount: 30000 });
+  const r = await create({ voucherCode: "cap30" });
+  assert.equal(r.status, 201);
+  const { order } = (await r.json()) as any;
+  assert.equal(order.discountAmount, 30000);
+  assert.equal(order.total, 69000);
+  assert.equal(orders[0].discount_code, "CAP30");
+  assert.equal(chargeCalls[0].body.item_details.reduce((a: number, i: any) => a + i.price * i.quantity, 0), 69000);
+});
+
+test("redeem flat: potongan nominal tetap", async () => {
+  addCode({ code: "FLAT25", discount_type: "flat", discount_value: 25000 });
+  const { order } = (await (await create({ voucherCode: "FLAT25" })).json()) as any;
+  assert.equal(order.discountAmount, 25000);
+  assert.equal(order.total, 74000);
+});
+
+test("redeem per undangan: jatah 2 undangan per akun -> pesanan ke-3 ditolak; akun lain tidak terpengaruh", async () => {
+  addCode({ code: "DUA", max_invitations_per_user: 2 });
+  assert.equal((await create({ templateSlug: "antheia", voucherCode: "DUA" })).status, 201);
+  assert.equal((await create({ templateSlug: "aglaia", voucherCode: "DUA" })).status, 201);
+  const third = await create({ templateSlug: "thaleia", voucherCode: "DUA" });
+  assert.equal(third.status, 400);
+  assert.match(await errOf(third), /Jatah pemakaian/);
+  assert.equal(orders.length, 2);
+  assert.equal((await call("/api/orders", { method: "POST", user: "user-2", body: { templateSlug: "antheia", method: "bni_va", idempotencyKey: key(), voucherCode: "DUA" } })).status, 201);
+});
+
+test("redeem per undangan: pesanan batal/kedaluwarsa mengembalikan jatah", async () => {
+  addCode({ code: "SATU", max_invitations_per_user: 1 });
+  assert.equal((await create({ templateSlug: "antheia", voucherCode: "SATU" })).status, 201);
+  assert.equal((await create({ templateSlug: "aglaia", voucherCode: "SATU" })).status, 400);
+  orders[0].status = "cancelled";
+  assert.equal((await create({ templateSlug: "aglaia", voucherCode: "SATU" })).status, 201);
+});
+
+test("redeem berdasarkan waktu: tidak dibatasi jumlah pesanan selama masa berlaku", async () => {
+  addCode({ code: "FLASH", usage_mode: "time_based", expires_at: ahead(3600_000), max_invitations_per_user: 1 });
+  for (const slug of ["antheia", "aglaia", "thaleia"]) assert.equal((await create({ templateSlug: slug, voucherCode: "FLASH" })).status, 201, slug);
+  assert.equal(orders.filter((o) => o.discount_code === "FLASH").length, 3);
+});
+
+test("redeem: belum berlaku / kedaluwarsa / dinonaktifkan / tidak ada -> ditolak dengan pesan jelas", async () => {
+  addCode({ code: "NANTI", starts_at: ahead(3600_000) });
+  addCode({ code: "LEWAT", expires_at: ago(1000) });
+  addCode({ code: "MATI", is_active: false });
+  const cases: [string, RegExp][] = [["NANTI", /belum berlaku/], ["LEWAT", /kedaluwarsa/], ["MATI", /tidak valid/], ["TIDAKADA", /tidak valid/]];
+  for (const [code, re] of cases) {
+    const r = await create({ voucherCode: code });
+    assert.equal(r.status, 400, code);
+    assert.match(await errOf(r), re, code);
+  }
+  assert.equal(orders.length, 0);
+});
+
+test("redeem audiens terpilih: hanya email yang terdaftar; audiens semua: siapa saja", async () => {
+  const c = addCode({ code: "VIP", audience: "selected" });
+  redeemUsers.push({ code_id: c.id, email: "user-1@mail.id" });
+  assert.equal((await create({ voucherCode: "VIP" })).status, 201);
+  const other = await call("/api/orders", { method: "POST", user: "user-2", body: { templateSlug: "antheia", method: "bni_va", idempotencyKey: key(), voucherCode: "VIP" } });
+  assert.equal(other.status, 400);
+  assert.match(await errOf(other), /tidak tersedia untuk akunmu/);
+  addCode({ code: "SEMUA" });
+  const anyone = await call("/api/orders", { method: "POST", user: "user-2", body: { templateSlug: "antheia", method: "bni_va", idempotencyKey: key(), voucherCode: "SEMUA" } });
+  assert.equal(anyone.status, 201);
+});
+
+test("redeem tidak bisa ditumpuk: dua kode (string/array) ditolak dan tidak ada pesanan dibuat", async () => {
+  addCode({ code: "FLAT25", discount_type: "flat", discount_value: 25000 });
+  for (const voucherCode of ["HEMAT10,FLAT25", "HEMAT10 FLAT25", ["HEMAT10", "FLAT25"]]) {
+    const r = await create({ voucherCode });
+    assert.equal(r.status, 400);
+    assert.match(await errOf(r), /Hanya satu kode redeem/);
+  }
+  assert.equal(orders.length, 0);
+});
+
+test("quote: pesanan pending milik sendiri untuk template yang sama tidak menghabiskan jatah (akan digantikan)", async () => {
+  assert.equal((await create({ templateSlug: "antheia", voucherCode: "HEMAT10" })).status, 201); // pending
+  const q = (slug: string) => call("/api/orders/quote", { method: "POST", body: { templateSlug: slug, voucherCode: "HEMAT10" } });
+  const same = await q("antheia");
+  assert.equal(same.status, 200);
+  assert.equal(((await same.json()) as any).discountAmount, 9900);
+  assert.equal((await q("aglaia")).status, 400); // template lain: jatah 1 undangan sudah terpakai
+});
+
+test("retry idempoten untuk pesanan ber-kode tetap mengembalikan pesanan yang sama (bukan error jatah habis)", async () => {
+  const k = key();
+  const a = await create({ idempotencyKey: k, voucherCode: "HEMAT10" });
+  assert.equal(a.status, 201);
+  const b = await create({ idempotencyKey: k, voucherCode: "HEMAT10" });
+  assert.equal(b.status, 200);
+  assert.equal(orders.length, 1);
+});
+
+test("redeem: penjaga DB menolak INSERT (balapan / kode baru nonaktif) -> 400 yang ramah, bukan 500", async () => {
+  rejectInsertWithCode = true;
+  const r = await create({ voucherCode: "HEMAT10" });
+  assert.equal(r.status, 400);
+  assert.match(await errOf(r), /Kode redeem tidak dapat digunakan/);
+});
+
+// ---------------------------------------------------------------- API admin kode redeem
+const admin = (path: string, init: { method?: string; body?: unknown } = {}) => call(path, { ...init, user: "admin-1" });
+const validCode = (over: Record<string, unknown> = {}) => ({ code: "natal", discountType: "percent", discountValue: 25, maxDiscount: 30000, usageMode: "per_invitation", maxInvitationsPerUser: 3, audience: "all", ...over });
+
+test("admin redeem: hanya admin (401 tanpa login, 403 pengguna biasa)", async () => {
+  assert.equal((await call("/api/admin/redeem")).status, 403);
+  assert.equal((await call("/api/admin/redeem", { method: "POST", body: validCode() })).status, 403);
+  assert.equal(redeemCodes.length, 1);
+});
+
+test("admin redeem: buat -> daftar (dengan statistik) -> ubah -> hapus", async () => {
+  const created = await admin("/api/admin/redeem", { method: "POST", body: validCode({ expiresAt: ahead(86400_000), description: "Promo Natal" }) });
+  assert.equal(created.status, 201);
+  const { code } = (await created.json()) as any;
+  assert.equal(code.code, "NATAL");
+  assert.equal(code.maxDiscount, 30000);
+  assert.equal(code.maxInvitationsPerUser, 3);
+
+  assert.equal((await admin("/api/admin/redeem", { method: "POST", body: validCode() })).status, 409); // nama sama
+
+  // dipakai oleh user -> muncul di statistik
+  assert.equal((await create({ voucherCode: "NATAL" })).status, 201);
+  orders[0].status = "paid";
+  const list = (await (await admin("/api/admin/redeem")).json()) as any;
+  const natal = list.codes.find((c: any) => c.code === "NATAL");
+  assert.deepEqual(natal.stats, { orders: 1, paid: 1, users: 1, discountGiven: 24750 });
+  assert.equal(list.codes.find((c: any) => c.code === "HEMAT10").stats.orders, 0);
+
+  // ubah: nonaktifkan -> checkout menolak
+  const off = await admin(`/api/admin/redeem/${code.id}`, { method: "PATCH", body: { isActive: false } });
+  assert.equal(off.status, 200);
+  assert.equal(redeemCodes.find((r) => r.code === "NATAL")!.is_active, false);
+  assert.equal((await create({ templateSlug: "aglaia", voucherCode: "NATAL" })).status, 400);
+
+  // nama kode tidak bisa diganti; kode yang sudah dipakai tidak bisa dihapus
+  assert.equal((await admin(`/api/admin/redeem/${code.id}`, { method: "PATCH", body: { code: "LAIN" } })).status, 400);
+  const del = await admin(`/api/admin/redeem/${code.id}`, { method: "DELETE" });
+  assert.equal(del.status, 409);
+  assert.match(await errOf(del), /Nonaktifkan/);
+
+  // kode yang belum pernah dipakai boleh dihapus
+  const fresh = (await (await admin("/api/admin/redeem", { method: "POST", body: validCode({ code: "BARU" }) })).json()) as any;
+  assert.equal((await admin(`/api/admin/redeem/${fresh.code.id}`, { method: "DELETE" })).status, 200);
+  assert.equal(redeemCodes.some((r) => r.code === "BARU"), false);
+  assert.equal((await admin("/api/admin/redeem/bukan-uuid", { method: "DELETE" })).status, 404);
+});
+
+test("admin redeem: daftar email dikelola (tambah/hapus) dan validasi input mengembalikan 400", async () => {
+  assert.equal((await admin("/api/admin/redeem", { method: "POST", body: validCode({ audience: "selected" }) })).status, 400); // tanpa email
+  assert.equal((await admin("/api/admin/redeem", { method: "POST", body: validCode({ usageMode: "time_based" }) })).status, 400); // tanpa akhir
+  assert.equal((await admin("/api/admin/redeem", { method: "POST", body: validCode({ discountValue: 150 }) })).status, 400);
+  assert.equal(redeemCodes.length, 1);
+
+  const c = (await (await admin("/api/admin/redeem", { method: "POST", body: validCode({ code: "TIM", audience: "selected", emails: ["A@x.id", "b@x.id"] }) })).json()) as any;
+  assert.deepEqual(redeemUsers.map((u) => u.email).sort(), ["a@x.id", "b@x.id"]);
+  const upd = await admin(`/api/admin/redeem/${c.code.id}`, { method: "PATCH", body: { emails: ["b@x.id", "c@x.id"] } });
+  assert.equal(upd.status, 200);
+  assert.deepEqual(redeemUsers.map((u) => u.email).sort(), ["b@x.id", "c@x.id"]);
 });

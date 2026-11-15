@@ -33,6 +33,7 @@ export const PATHS = {
   dashFinance: "/dash/finance",
   dashTemplates: "/dash/templates",
   dashInvitations: "/dash/invitations",
+  dashRedeem: "/dash/redeem",
   dashSettings: "/dash/settings",
 } as const;
 
@@ -60,6 +61,7 @@ export type RouteId =
   | "dashFinance"
   | "dashTemplates"
   | "dashInvitations"
+  | "dashRedeem"
   | "dashSettings"
   | "katalogDetail";
 
@@ -249,6 +251,14 @@ export const ROUTES: RouteMeta[] = [
     aliases: ["/invitations", "/admin/invitations"],
     title: "Undangan Tayang | Admin Satu Cerita",
     description: "Pantau undangan aktif yang sedang online di Satu Cerita.",
+    indexable: false,
+  },
+  {
+    id: "dashRedeem",
+    path: PATHS.dashRedeem,
+    aliases: ["/redeem", "/admin/redeem"],
+    title: "Kode Redeem | Admin Satu Cerita",
+    description: "Kelola kode redeem (diskon) untuk pemesanan undangan di Satu Cerita.",
     indexable: false,
   },
   {

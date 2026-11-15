@@ -60,6 +60,22 @@ export async function dbInsertIgnore(env: Env, table: string, row: Record<string
   if (!r.ok) throw new DbError(`insert ${table} gagal`, r.status);
 }
 
+/** Insert banyak baris sekaligus; baris yang sudah ada (kunci unik sama) dilewati. */
+export async function dbInsertManyIgnore(env: Env, table: string, rows: Record<string, unknown>[], onConflict: string): Promise<void> {
+  if (!rows.length) return;
+  const r = await fetch(url(env, table, `on_conflict=${encodeURIComponent(onConflict)}`), {
+    method: "POST",
+    headers: svcHeaders(env, { Prefer: "resolution=ignore-duplicates,return=minimal" }),
+    body: JSON.stringify(rows),
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!r.ok) {
+    const body = await r.text().catch(() => "");
+    console.error("db.insert_many_error", JSON.stringify({ table, status: r.status, body: body.slice(0, 300) }));
+    throw new DbError(`insert ${table} gagal`, r.status);
+  }
+}
+
 /** PATCH dengan filter; mengembalikan baris yang benar-benar berubah (kosong = kondisi filter tidak terpenuhi). */
 export async function dbPatch<T>(env: Env, table: string, filter: string, patch: Record<string, unknown>): Promise<T[]> {
   const r = await fetch(url(env, table, filter), {

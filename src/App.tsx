@@ -143,6 +143,8 @@ function AppRouter() {
       return <AuthGate require="admin"><AdminDash activeTab="templates" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dashInvitations":
       return <AuthGate require="admin"><AdminDash activeTab="invitations" currentPath={path} onNavigate={navigate} /></AuthGate>;
+    case "dashRedeem":
+      return <AuthGate require="admin"><AdminDash activeTab="redeem" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dashSettings":
       return <AuthGate require="admin"><AdminDash activeTab="settings" currentPath={path} onNavigate={navigate} /></AuthGate>;
     case "dash":

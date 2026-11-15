@@ -9,6 +9,7 @@ import { streamOrder } from "./stream";
 import { handlePublicAsset, getWishes, postRsvp } from "./public";
 import { invitationsApi } from "./invitations";
 import { adminOverview } from "./admin";
+import { createRedeemCode, deleteRedeemCode, listRedeemCodes, updateRedeemCode } from "./redeem";
 
 // Durable Object hub realtime: HARUS diekspor dari modul entry agar Cloudflare dapat meng-instansiasinya.
 export { PaymentHub } from "./hub";
@@ -38,6 +39,7 @@ async function handleApi(env: Env, req: Request, url: URL, ctx?: ExecutionContex
 
   // ---- Admin (khusus akun admin): data dashboard dari Supabase ----
   if (m === "GET" && p === "/api/admin/overview") return adminOverview(env, req, url);
+  if (m === "GET" && p === "/api/admin/redeem") return listRedeemCodes(env, req);
 
   // Webhook Midtrans: server-ke-server, TIDAK punya header Origin -> dikecualikan dari cek Origin di bawah.
   // Keamanannya ada di signature SHA512 + konfirmasi Status API (lihat webhook.ts).
@@ -60,6 +62,15 @@ async function handleApi(env: Env, req: Request, url: URL, ctx?: ExecutionContex
   if (m === "POST" && p === "/api/orders") return createOrder(env, req, await readJson(req));
   if (m === "POST" && orderPath?.[2] === "sync") return syncOrder(env, req, orderPath[1]);
   if (m === "POST" && orderPath?.[2] === "cancel") return cancelOrder(env, req, orderPath[1]);
+
+  // ---- Admin: kelola kode redeem (tulis; wajib Origin + akun admin) ----
+  const redeemPath = /^\/api\/admin\/redeem(?:\/([^/]+))?$/.exec(p);
+  if (redeemPath) {
+    const id = redeemPath[1];
+    if (m === "POST" && !id) return createRedeemCode(env, req, await readJson(req));
+    if (m === "PATCH" && id) return updateRedeemCode(env, req, id, await readJson(req));
+    if (m === "DELETE" && id) return deleteRedeemCode(env, req, id);
+  }
 
   // ---- RSVP publik (POST, wajib Origin) & undangan milik user (editor) ----
   if (m === "POST" && pub?.[2] === "rsvp") return postRsvp(env, req, pub[1]);

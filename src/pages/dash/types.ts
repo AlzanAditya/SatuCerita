@@ -79,6 +79,7 @@ export type DashTabType =
   | "finance"
   | "templates"
   | "invitations"
+  | "redeem"
   | "settings";
 
 export function pathToDashTab(pathname: string): DashTabType {
@@ -94,6 +95,9 @@ export function pathToDashTab(pathname: string): DashTabType {
   }
   if (p.includes("templates") || p.includes("template")) {
     return "templates";
+  }
+  if (p.includes("redeem") || p.includes("voucher") || p.includes("diskon")) {
+    return "redeem";
   }
   if (p.includes("invitations") || p.includes("berlangsung") || p.includes("undangan")) {
     return "invitations";
@@ -117,6 +121,8 @@ export function dashTabToPath(tab: DashTabType, isStandalone = false): string {
       return `${prefix}/templates`;
     case "invitations":
       return `${prefix}/invitations`;
+    case "redeem":
+      return `${prefix}/redeem`;
     case "settings":
       return `${prefix}/settings`;
     case "overview":
@@ -201,6 +207,43 @@ export interface AdminInvitationItem {
   createdAt: string;
   publishedAt: string | null;
   publicUrl: string;
+}
+
+/** Kode redeem (dari Worker: GET /api/admin/redeem). Tanggal berupa ISO UTC. */
+export interface RedeemCodeItem {
+  id: string;
+  code: string;
+  description: string;
+  discountType: "percent" | "flat";
+  /** percent: 1-100 | flat: rupiah. */
+  discountValue: number;
+  /** Batas potongan (rupiah) untuk persen; null = tanpa batas. */
+  maxDiscount: number | null;
+  usageMode: "per_invitation" | "time_based";
+  /** Jatah undangan per akun (hanya bermakna untuk per_invitation). */
+  maxInvitationsPerUser: number;
+  startsAt: string | null;
+  expiresAt: string | null;
+  audience: "all" | "selected";
+  emails: string[];
+  isActive: boolean;
+  createdAt: string;
+  stats: { orders: number; paid: number; users: number; discountGiven: number };
+}
+
+export interface RedeemCodeInput {
+  code?: string;
+  description?: string;
+  discountType?: "percent" | "flat";
+  discountValue?: number;
+  maxDiscount?: number | null;
+  usageMode?: "per_invitation" | "time_based";
+  maxInvitationsPerUser?: number;
+  startsAt?: string | null;
+  expiresAt?: string | null;
+  audience?: "all" | "selected";
+  emails?: string[];
+  isActive?: boolean;
 }
 
 export interface PeriodDataResult {

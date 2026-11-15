@@ -10,7 +10,8 @@ import {
   MidtransError, assertMidtransConfig, cancelTransaction, chargeTransaction, createSnapTransaction, formatWib, getStatus,
   parseGrossAmount, parseMidtransTime, midtransMode, paymentMode, snapScriptUrl, type MidtransStatus,
 } from "./midtrans";
-import { PAYMENT_METHODS, computeQuote, isPaymentMethod, type PaymentMethodId } from "./pricing";
+import { PAYMENT_METHODS, isPaymentMethod, type PaymentMethodId } from "./pricing";
+import { MSG as REDEEM_MSG, quoteWithRedeem } from "./redeem";
 import { extractPaymentInfo, hasPaymentInfo, mapMidtransStatus, nextStatus, type OrderStatus } from "./state";
 import { allow } from "./ratelimit";
 import { publishOrderEvent } from "./hub";
@@ -21,7 +22,6 @@ const SYNC_COOLDOWN_MS = 8_000;
 const CHARGE_INFLIGHT_MS = 30_000; // klaim charge yang lebih baru dari ini dianggap masih berjalan (jangan dibatalkan/diulang)
 const INVOICE_RE = /^SC[0-9]{6}-[0-9A-Z]{8}$/;
 const IDEM_RE = /^[A-Za-z0-9_-]{16,64}$/;
-const LIVE_STATUSES = "(pending,paid,needs_review)";
 
 export interface OrderRow {
   id: string;
@@ -261,18 +261,15 @@ export function paymentsConfig(env: Env): Response {
 export async function quoteOrder(env: Env, req: Request, body: Record<string, unknown> | null): Promise<Response> {
   const a = await requireUser(env, req);
   if (a instanceof Response) return a;
-  const q = computeQuote(body?.templateSlug, body?.voucherCode);
-  if (!q.ok) return json({ error: q.error }, q.status, a.cookies);
-
-  if (q.quote.discountCode) {
-    const used = await dbSelect<{ id: string }>(
-      env, "orders",
-      `user_id=eq.${encodeURIComponent(a.user.id)}&discount_code=eq.${encodeURIComponent(q.quote.discountCode)}&status=in.${LIVE_STATUSES}&select=id&limit=1`,
-    ).catch(() => []);
-    if (used.length) return json({ error: "Voucher ini sudah pernah kamu pakai." }, 400, a.cookies);
+  try {
+    // Kode redeem divalidasi penuh di server (aktif, masa berlaku, audiens, jatah akun) dan hanya SATU kode per pesanan.
+    const q = await quoteWithRedeem(env, a.user, body?.templateSlug, body?.voucherCode);
+    if (!q.ok) return json({ error: q.error }, q.status, a.cookies);
+    const { basePrice, discountCode, discountAmount, total } = q.quote;
+    return json({ basePrice, discountCode, discountAmount, total }, 200, a.cookies);
+  } catch (e) {
+    return failResponse(e, a.cookies);
   }
-  const { basePrice, discountCode, discountAmount, total } = q.quote;
-  return json({ basePrice, discountCode, discountAmount, total }, 200, a.cookies);
 }
 
 // ------------------------------------------------------------------ POST /api/orders
@@ -292,15 +289,17 @@ export async function createOrder(env: Env, req: Request, body: Record<string, u
     if (!isPaymentMethod(method)) return json({ error: "Metode pembayaran tidak valid." }, 400, a.cookies);
     if (typeof idemKey !== "string" || !IDEM_RE.test(idemKey)) return json({ error: "Permintaan tidak valid." }, 400, a.cookies);
 
-    const q = computeQuote(body?.templateSlug, body?.voucherCode);
-    if (!q.ok) return json({ error: q.error }, q.status, a.cookies);
-    const { template, basePrice, discountCode, discountAmount, total } = q.quote;
-
     // 1) Idempotensi: kunci yang sama = permintaan yang sama -> kembalikan pesanan yang sudah ada.
+    //    (Sebelum validasi kode redeem: percobaan ulang untuk pesanan yang sudah dibuat tidak boleh gagal karena jatah kodenya sudah terpakai oleh pesanan itu sendiri.)
     const same = await dbSelect<OrderRow>(
       env, "orders", `user_id=eq.${encodeURIComponent(a.user.id)}&idempotency_key=eq.${encodeURIComponent(idemKey)}&select=*&limit=1`,
     );
     if (same[0]) return respondWithPayment(env, a, same[0], 200);
+
+    // Harga & diskon dihitung server: template valid, SATU kode redeem (tidak bisa ditumpuk), aturan kode (aktif, masa berlaku, audiens, jatah akun).
+    const q = await quoteWithRedeem(env, a.user, body?.templateSlug, body?.voucherCode);
+    if (!q.ok) return json({ error: q.error }, q.status, a.cookies);
+    const { template, basePrice, discountCode, discountAmount, total } = q.quote;
 
     // 2) Sudah ada pesanan pending untuk template ini?
     const pend = await dbSelect<OrderRow>(
@@ -325,39 +324,38 @@ export async function createOrder(env: Env, req: Request, body: Record<string, u
       }
     }
 
-    // 3) Voucher sekali pakai per akun (dipaksa juga oleh unique index di DB).
-    if (discountCode) {
-      const used = await dbSelect<{ id: string }>(
-        env, "orders",
-        `user_id=eq.${encodeURIComponent(a.user.id)}&discount_code=eq.${encodeURIComponent(discountCode)}&status=in.${LIVE_STATUSES}&select=id&limit=1`,
-      );
-      if (used.length) return json({ error: "Voucher ini sudah pernah kamu pakai." }, 400, a.cookies);
-    }
-
-    // 4) Simpan pesanan (status pending) SEBELUM menghubungi Midtrans.
+    // 3) Simpan pesanan (status pending) SEBELUM menghubungi Midtrans.
+    //    Trigger DB `orders_enforce_redeem` memeriksa ulang kode (penjaga terakhir terhadap balapan dua pesanan bersamaan).
     const pub = await toPublicUser(env, a.user, a.token);
     const now = new Date();
     const invoiceNo = newInvoiceNo(now);
-    const ins = await dbInsert<OrderRow>(env, "orders", {
-      invoice_no: invoiceNo,
-      user_id: a.user.id,
-      template_slug: template.slug,
-      template_title: template.title,
-      template_category: template.category,
-      template_cover: template.image,
-      package_tier: template.badge,
-      base_price: basePrice,
-      discount_code: discountCode,
-      discount_amount: discountAmount,
-      gross_amount: total,
-      payment_method: method,
-      status: "pending",
-      idempotency_key: idemKey,
-      customer_name: pub.name,
-      customer_email: pub.email,
-      customer_phone: pub.phone || null,
-      expires_at: new Date(now.getTime() + EXPIRY_MINUTES * 60_000).toISOString(),
-    });
+    let ins: { status: number; rows: OrderRow[] };
+    try {
+      ins = await dbInsert<OrderRow>(env, "orders", {
+        invoice_no: invoiceNo,
+        user_id: a.user.id,
+        template_slug: template.slug,
+        template_title: template.title,
+        template_category: template.category,
+        template_cover: template.image,
+        package_tier: template.badge,
+        base_price: basePrice,
+        discount_code: discountCode,
+        discount_amount: discountAmount,
+        gross_amount: total,
+        payment_method: method,
+        status: "pending",
+        idempotency_key: idemKey,
+        customer_name: pub.name,
+        customer_email: pub.email,
+        customer_phone: pub.phone || null,
+        expires_at: new Date(now.getTime() + EXPIRY_MINUTES * 60_000).toISOString(),
+      });
+    } catch (e) {
+      // Penjaga DB menolak (kode baru saja nonaktif / kedaluwarsa / jatah habis karena pesanan lain): beri tahu user, bukan error server.
+      if (discountCode && e instanceof DbError && e.status === 400) return json({ error: REDEEM_MSG.insertRejected }, 400, a.cookies);
+      throw e;
+    }
     if (ins.status === 409 || !ins.rows[0]) {
       // Balapan (tab lain / klik ganda): kembalikan yang sudah ada kalau kuncinya sama, selain itu minta ulang.
       const again = await dbSelect<OrderRow>(
@@ -366,7 +364,7 @@ export async function createOrder(env: Env, req: Request, body: Record<string, u
       if (again[0]) return respondWithPayment(env, a, again[0], 200);
       return json({ error: "Pesanan sedang diproses. Muat ulang halaman lalu coba lagi." }, 409, a.cookies);
     }
-    log("order.created", { invoice: invoiceNo, method, total });
+    log("order.created", { invoice: invoiceNo, method, total, code: discountCode });
     return respondWithPayment(env, a, ins.rows[0], 201);
   } catch (e) {
     return failResponse(e, a.cookies);

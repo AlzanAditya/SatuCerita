@@ -23,6 +23,7 @@ import {
   Wallet,
   Radio,
   HeartHandshake,
+  TicketPercent,
   ChevronRight,
   PanelLeft,
   PanelLeftOpen,
@@ -64,6 +65,7 @@ import { AnalyticsPage } from "./AnalyticsPage";
 import { FinancePage } from "./FinancePage";
 import { TemplatesPage } from "./TemplatesPage";
 import { InvitationsPage } from "./InvitationsPage";
+import { RedeemPage } from "./RedeemPage";
 import { SettingsPage } from "./SettingsPage";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ImageCropModal } from "@/components/ImageCropModal";
@@ -679,6 +681,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     { id: "finance" as const, label: t("dash.nav.finance"), icon: Wallet, badge: ordersList.filter(o => o.status === "MENUNGGU_VERIFIKASI").length },
     { id: "templates" as const, label: t("dash.nav.templates"), icon: Palette, badge: templatesList.length },
     { id: "invitations" as const, label: t("dash.nav.live"), icon: Radio, badge: invitationsList.length },
+    { id: "redeem" as const, label: t("dash.nav.redeem"), icon: TicketPercent },
   ];
 
   const getDashNavbarTitle = () => {
@@ -693,6 +696,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         return t("dash.nav.templates");
       case "invitations":
         return t("dash.nav.live");
+      case "redeem":
+        return t("dash.nav.redeem");
       case "settings":
         return t("dash.nav.settings");
       case "overview":
@@ -868,6 +873,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
             />
           )}
 
+          {activeTab === "redeem" && <RedeemPage showToast={showToast} />}
+
           {activeTab === "settings" && (
             <SettingsPage
               adminProfile={adminProfile}
@@ -1013,6 +1020,26 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 {invitationsList.length > 0 && (
                   <span className="absolute -top-1 -right-1 size-2 bg-emerald-500 rounded-full ring-2 ring-white" />
                 )}
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSelectTab("redeem")}
+              className={`flex items-center justify-center transition-all cursor-pointer relative ${
+                activeTab === "redeem" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
+              }`}
+              title={t("dash.nav.redeem")}
+              aria-label={t("dash.nav.redeem")}
+            >
+              <div
+                className={`p-1.5 sm:p-2 rounded-xl transition-all ${
+                  activeTab === "redeem"
+                    ? "bg-purple-100/90 text-[#7d6aee] border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs scale-105"
+                    : "hover:bg-neutral-100"
+                }`}
+              >
+                <TicketPercent className="w-5 h-5" />
               </div>
             </button>
 

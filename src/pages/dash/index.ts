@@ -7,4 +7,5 @@ export * from "./AnalyticsPage";
 export * from "./FinancePage";
 export * from "./TemplatesPage";
 export * from "./InvitationsPage";
+export * from "./RedeemPage";
 export * from "./SettingsPage";

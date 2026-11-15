@@ -140,7 +140,24 @@ const EN: Record<string, string> = {
   "Harga template tidak valid.": "Invalid template price.",
   "Kata sandi minimal 8 karakter.": "Password must be at least 8 characters.",
   "Kata sandi terlalu lemah.": "Password is too weak.",
-  "Kode voucher tidak valid atau sudah kadaluarsa.": "The voucher code is invalid or has expired.",
+  "Kode redeem tidak valid.": "The redeem code is invalid.",
+  "Kode redeem belum berlaku.": "The redeem code is not valid yet.",
+  "Kode redeem sudah kedaluwarsa.": "The redeem code has expired.",
+  "Kode redeem ini tidak tersedia untuk akunmu.": "This redeem code is not available for your account.",
+  "Jatah pemakaian kode redeem ini untuk akunmu sudah habis.": "You've used up your allowance for this redeem code.",
+  "Hanya satu kode redeem yang dapat digunakan per pesanan.": "Only one redeem code can be used per order.",
+  "Kode redeem tidak dapat digunakan. Muat ulang halaman lalu coba lagi.": "This redeem code can't be used. Reload the page and try again.",
+  "Kode redeem dengan nama ini sudah ada.": "A redeem code with this name already exists.",
+  "Kode redeem tidak ditemukan.": "Redeem code not found.",
+  "Kode ini sudah pernah dipakai pada pesanan, jadi tidak bisa dihapus. Nonaktifkan saja.": "This code has been used in orders, so it can't be deleted. Deactivate it instead.",
+  "Kode harus 3–32 karakter: huruf A–Z, angka, tanda - atau _.": "The code must be 3–32 characters: letters A–Z, digits, - or _.",
+  "Persen potongan harus bilangan bulat 1–100.": "Discount percent must be a whole number from 1 to 100.",
+  "Nominal potongan harus bilangan bulat 1–10.000.000.": "Discount amount must be a whole number from 1 to 10,000,000.",
+  "Mode berdasarkan waktu wajib punya tanggal berakhir.": "Time-based mode requires an end date.",
+  "Tanggal berakhir harus setelah tanggal mulai.": "The end date must be after the start date.",
+  "Tanggal berakhir sudah lewat.": "The end date is already in the past.",
+  "Pilih minimal satu email untuk kode yang hanya berlaku bagi pengguna tertentu.": "Add at least one email for a code limited to specific users.",
+  "Nama kode tidak bisa diubah. Buat kode baru jika perlu.": "The code name can't be changed. Create a new code if needed.",
   "Layanan pembayaran sedang sibuk. Coba lagi sebentar lagi.":
     "The payment service is busy. Please try again shortly.",
   "Link hanya boleh huruf kecil, angka, dan tanda hubung (3–48 karakter).":
@@ -187,7 +204,6 @@ const EN: Record<string, string> = {
   "Ucapan tidak ditemukan.": "Wish not found.",
   "Ukuran foto maksimal 5 MB.": "Maximum photo size is 5 MB.",
   "Undangan tidak ditemukan.": "Invitation not found.",
-  "Voucher ini sudah pernah kamu pakai.": "You've already used this voucher.",
 
   // ---------- Toast & error dari komponen Studio ----------
   // (showToast di UserApp otomatis menerjemahkan lewat tr(), jadi cukup daftarkan di sini)
