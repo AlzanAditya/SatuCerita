@@ -129,7 +129,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="lg:col-span-5 flex items-center justify-center w-full py-4">
               <div className="relative w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[340px] aspect-[4/3.2] flex items-center justify-center">
                 {/* Left Tilted Phone (Menjauh ke kiri) - cover template */}
-                <div className="absolute -left-8 sm:-left-12 top-2 w-[58%] aspect-[3/4] bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] -rotate-12 transform origin-bottom-left transition-transform hover:-rotate-14">
+                <div className="absolute -left-8 sm:-left-12 top-2 w-[58%] aspect-square bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] -rotate-12 transform origin-bottom-left transition-transform hover:-rotate-14">
                   <div className="w-full h-full rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[1].frameBg }}>
                     <img src={heroCovers[1].image} alt={heroCovers[1].title} className="w-full h-full object-cover" />
                   </div>
@@ -141,14 +141,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
                 {/* Right Tilted Phone (Menjauh ke kanan) - cover template */}
-                <div className="absolute -right-8 sm:-right-12 top-0 w-[58%] aspect-[3/4] bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] rotate-12 transform origin-bottom-right transition-transform hover:rotate-14">
+                <div className="absolute -right-8 sm:-right-12 top-0 w-[58%] aspect-square bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] rotate-12 transform origin-bottom-right transition-transform hover:rotate-14">
                   <div className="w-full h-full rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[2].frameBg }}>
                     <img src={heroCovers[2].image} alt={heroCovers[2].title} className="w-full h-full object-cover" />
                   </div>
                 </div>
 
                 {/* Center Front Phone - cover template */}
-                <div className="relative z-20 w-[62%] aspect-[3/4] bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-2 shadow-[0_16px_36px_rgba(125,106,238,0.16)] flex flex-col">
+                <div className="relative z-20 w-[62%] aspect-square bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-2 shadow-[0_16px_36px_rgba(125,106,238,0.16)] flex flex-col">
                   <div className="w-full h-full rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[0].frameBg }}>
                     <img src={heroCovers[0].image} alt={heroCovers[0].title} className="w-full h-full object-cover" />
                   </div>
@@ -170,16 +170,16 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="max-w-6xl mx-auto w-full text-left">
             {/* Section Badge */}
             <div className="inline-block mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-xs font-bold tracking-wide uppercase shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-[16px] sm:text-xs font-bold tracking-wide uppercase shadow-2xs">
                 {t("home.why.badge")}
               </span>
             </div>
 
             {/* Section Title & Desc (lebar dipersempit) */}
-            <h2 className="text-3xl sm:text-5xl font-black text-neutral-900 tracking-tight leading-[1.12] mb-3 max-w-[360px] sm:max-w-[560px] lg:max-w-[680px]">
+            <h2 className="text-3xl sm:text-5xl font-black text-neutral-900 tracking-tight leading-[1.12] mb-3 max-w-[360px] sm:max-w-[560px] lg:max-w-[600px]">
               {t("home.why.title")}
             </h2>
-            <p className="text-neutral-600 text-sm sm:text-base leading-relaxed mb-8 sm:mb-10 max-w-[360px] sm:max-w-[440px] font-normal">
+            <p className="text-neutral-600 text-[16px] sm:text-base leading-relaxed mb-8 sm:mb-10 max-w-[360px] sm:max-w-[440px] lg:max-w-[640px] font-normal">
               {t("home.why.desc")}
             </p>
 
@@ -320,29 +320,29 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div>
             {/* Section Badge */}
             <div className="inline-block mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold tracking-wide uppercase shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-[16px] sm:text-xs font-bold tracking-wide uppercase shadow-2xs">
                 {t("home.tpl.badge")}
               </span>
             </div>
 
             {/* Section Title & Desc */}
-            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-snug mb-3">
+            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-snug mb-3 lg:max-w-[600px]">
               {t("home.tpl.title")}
             </h2>
-            <p className="text-purple-100 text-sm sm:text-base leading-relaxed mb-6 lg:mb-0 max-w-2xl font-normal">
+            <p className="text-purple-100 text-[16px] sm:text-base leading-relaxed mb-6 lg:mb-0 max-w-2xl lg:max-w-[640px] font-normal">
               {t("home.tpl.desc")}
             </p>
             </div>
 
-            {/* Button: Lihat semua template */}
+            {/* Button: Lihat semua template (style outline seperti tombol cara pesan, warna disesuaikan latar gelap) */}
             <div className="mb-6 lg:mb-0 shrink-0">
               <button
                 type="button"
                 onClick={() => onNavigate(katalogPath)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl border border-white/40 font-bold text-sm text-[#7d6aee] bg-white hover:bg-purple-50 shadow-sm transition-all cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2.5 sm:py-3 px-5 sm:px-6 rounded-xl border border-purple-200 border-b-[3px] border-b-purple-300 bg-white hover:bg-purple-50 text-[#7d6aee] font-bold text-[16px] tracking-tight shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] transition-all duration-150 select-none cursor-pointer"
               >
                 <span>{t("home.tpl.seeAll")}</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
               </button>
             </div>
             </div>
@@ -353,38 +353,38 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveCategory("ALL")}
-                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${activeCategory === "ALL"
+                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-[16px] sm:text-xs transition-all cursor-pointer ${activeCategory === "ALL"
                     ? "bg-white text-[#7d6aee] border-white shadow-xs"
                     : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
                     }`}
                 >
                   <span>{t("home.tpl.filterAll")}</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ALL" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{HOME_TEMPLATES.length}</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[16px] sm:text-[10px] ${activeCategory === "ALL" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{HOME_TEMPLATES.length}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveCategory("ELYSIAN")}
-                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${activeCategory === "ELYSIAN"
+                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-[16px] sm:text-xs transition-all cursor-pointer ${activeCategory === "ELYSIAN"
                     ? "bg-white text-[#7d6aee] border-white shadow-xs"
                     : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
                     }`}
                 >
                   <span>Elysian</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "ELYSIAN" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{countByCategory("ELYSIAN")}</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[16px] sm:text-[10px] ${activeCategory === "ELYSIAN" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{countByCategory("ELYSIAN")}</span>
                 </button>
 
                 {countByCategory("DELUXE") > 0 && (
                   <button
                     type="button"
                     onClick={() => setActiveCategory("DELUXE")}
-                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-xs transition-all cursor-pointer ${activeCategory === "DELUXE"
+                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-[16px] sm:text-xs transition-all cursor-pointer ${activeCategory === "DELUXE"
                       ? "bg-white text-[#7d6aee] border-white shadow-xs"
                       : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
                       }`}
                   >
                     <span>Deluxe</span>
-                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === "DELUXE" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{countByCategory("DELUXE")}</span>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[16px] sm:text-[10px] ${activeCategory === "DELUXE" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{countByCategory("DELUXE")}</span>
                   </button>
                 )}
               </div>
@@ -404,9 +404,9 @@ export const HomePage: React.FC<HomePageProps> = ({
                       onClick={() => onNavigate(`/katalog/${item.id}`)}
                       className="cursor-pointer"
                     >
-                      {/* Cover katalog: foto mockup 3:4 ditampilkan penuh */}
+                      {/* Cover katalog: foto mockup 1:1 ditampilkan penuh */}
                       <div
-                        className="relative w-full aspect-[3/4] rounded-xl sm:rounded-2xl border border-purple-100/80 mb-3 overflow-hidden bg-neutral-100"
+                        className="relative w-full aspect-square rounded-xl sm:rounded-2xl border border-purple-100/80 mb-3 overflow-hidden bg-neutral-100"
                         style={{ backgroundColor: item.frameBg }}
                       >
                         <img
@@ -422,7 +422,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         <h3 className="text-[20px] md:text-[24px] font-black text-neutral-900 tracking-tight leading-snug truncate group-hover:text-[#7d6aee] transition-colors">
                           {item.title}
                         </h3>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md border border-purple-200 font-bold text-[12px] uppercase tracking-wider bg-purple-50 text-[#7d6aee] shrink-0">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md border border-purple-200 font-bold text-[16px] sm:text-[12px] uppercase tracking-wider bg-purple-50 text-[#7d6aee] shrink-0">
                           {item.category}
                         </span>
                       </div>
@@ -476,13 +476,13 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div>
             {/* Section Badge */}
             <div className="inline-block mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-xs font-bold tracking-wide uppercase shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-[16px] sm:text-xs font-bold tracking-wide uppercase shadow-2xs">
                 {t("home.how.badge")}
               </span>
             </div>
 
             {/* Section Title */}
-            <h2 className="text-2xl sm:text-5xl font-black text-neutral-900 tracking-tight leading-snug mb-3 lg:mb-0">
+            <h2 className="text-2xl sm:text-5xl font-black text-neutral-900 tracking-tight leading-snug mb-3 lg:mb-0 lg:max-w-[600px]">
               {t("home.how.title")}
             </h2>
             </div>
@@ -516,7 +516,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     </h3>
                     <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-[#7d6aee] stroke-[2.2] shrink-0" />
                   </div>
-                  <p className="text-[14px] sm:text-[15px] lg:text-[14px] text-neutral-600 leading-relaxed font-normal">
+                  <p className="text-[16px] sm:text-[17px] lg:text-[16px] text-neutral-600 leading-relaxed font-medium">
                     {t("home.how.1.desc")}
                   </p>
                 </div>
@@ -535,7 +535,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     </h3>
                     <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-[#7d6aee] stroke-[2.2] shrink-0" />
                   </div>
-                  <p className="text-[14px] sm:text-[15px] lg:text-[14px] text-neutral-600 leading-relaxed font-normal">
+                  <p className="text-[16px] sm:text-[17px] lg:text-[16px] text-neutral-600 leading-relaxed font-medium">
                     {t("home.how.2.desc")}
                   </p>
                 </div>
@@ -554,7 +554,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     </h3>
                     <SlidersHorizontal className="w-5 h-5 sm:w-6 sm:h-6 text-[#7d6aee] stroke-[2.2] shrink-0" />
                   </div>
-                  <p className="text-[14px] sm:text-[15px] lg:text-[14px] text-neutral-600 leading-relaxed font-normal">
+                  <p className="text-[16px] sm:text-[17px] lg:text-[16px] text-neutral-600 leading-relaxed font-medium">
                     {t("home.how.3.desc")}
                   </p>
                 </div>
@@ -573,7 +573,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     </h3>
                     <Send className="w-5 h-5 sm:w-6 sm:h-6 text-[#7d6aee] stroke-[2.2] shrink-0" />
                   </div>
-                  <p className="text-[14px] sm:text-[15px] lg:text-[14px] text-neutral-600 leading-relaxed font-normal">
+                  <p className="text-[16px] sm:text-[17px] lg:text-[16px] text-neutral-600 leading-relaxed font-medium">
                     {t("home.how.4.desc")}
                   </p>
                 </div>
@@ -589,13 +589,13 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="max-w-4xl mx-auto w-full text-left">
             {/* Section Badge */}
             <div className="inline-block mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold tracking-wide uppercase shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-[16px] sm:text-xs font-bold tracking-wide uppercase shadow-2xs">
                 {t("home.faq.badge")}
               </span>
             </div>
 
             {/* Section Title */}
-            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-snug mb-8">
+            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-snug mb-8 lg:max-w-[600px]">
               {t("home.faq.title")}
             </h2>
 
@@ -635,7 +635,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             <div
-              className="relative rounded-2xl border border-purple-100/80 mb-4 overflow-hidden aspect-[3/4] bg-neutral-100"
+              className="relative rounded-2xl border border-purple-100/80 mb-4 overflow-hidden aspect-square bg-neutral-100"
               style={{ backgroundColor: selectedDemo.frameBg }}
             >
               <img
@@ -647,12 +647,12 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             <div className="flex items-center justify-between mb-4">
               <div>
-                <span className="text-xs font-bold text-neutral-500 uppercase">{t("tpl.promoPrice")}</span>
+                <span className="text-[16px] sm:text-xs font-bold text-neutral-500 uppercase">{t("tpl.promoPrice")}</span>
                 <p className="text-xl font-black text-neutral-900">
                   {formatRupiah(selectedDemo.discountPrice)}
                 </p>
               </div>
-              <span className="inline-flex items-center px-3 py-1 rounded-lg border border-purple-200 font-bold text-xs uppercase bg-purple-50 text-[#7d6aee]">
+              <span className="inline-flex items-center px-3 py-1 rounded-lg border border-purple-200 font-bold text-[16px] sm:text-xs uppercase bg-purple-50 text-[#7d6aee]">
                 {selectedDemo.category}
               </span>
             </div>
@@ -674,7 +674,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedDemo(null)}
-                className="w-full text-xs"
+                className="w-full text-[16px] sm:text-xs"
               >
                 {t("tpl.closePreview")}
               </Button>

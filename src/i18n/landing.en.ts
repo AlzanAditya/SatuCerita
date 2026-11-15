@@ -191,8 +191,8 @@ export const landingEn: Record<keyof typeof landingId, string> = {
     "The Satu Cerita team is always ready to answer your questions, give the best recommendations, and support your needs at every step.",
   "contact.whatsapp.cta": "Chat on WhatsApp",
   "contact.gmail.cta": "Send Email",
-  "contact.instagram.cta": "Visit Instagram",
-  "contact.tiktok.cta": "Visit TikTok",
+  "contact.instagram.cta": "Visit",
+  "contact.tiktok.cta": "Visit",
 
   // ---- Policy ----
   "policy.badge": "Legal",

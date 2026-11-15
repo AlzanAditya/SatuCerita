@@ -93,7 +93,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({
             {googleOnly ? t("auth.adminTitle") : isSignUp ? t("auth.signUpTitle") : t("auth.login")}
           </h2>
           {!googleOnly ? (
-            <p className="text-[13px] sm:text-[14px] text-neutral-500 mt-0.5 sm:mt-1 font-medium">
+            <p className="text-[13px] sm:text-[16px] text-neutral-500 mt-0.5 sm:mt-1 font-medium">
               {isSignUp ? t("auth.haveAccount") : t("auth.noAccount")}
               <button
                 type="button"
@@ -104,7 +104,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({
               </button>
             </p>
           ) : (
-            <p className="text-[13px] sm:text-[14px] text-neutral-500 mt-0.5 sm:mt-1 font-medium">
+            <p className="text-[13px] sm:text-[16px] text-neutral-500 mt-0.5 sm:mt-1 font-medium">
               {t("auth.adminSubtitle")}
             </p>
           )}
@@ -242,7 +242,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({
                           text: t("auth.forgotInfo"),
                         })
                   }
-                  className="text-[13px] sm:text-[14px] text-[#7d6aee] hover:text-[#6954e5] font-bold hover:underline cursor-pointer transition-colors"
+                  className="text-[13px] sm:text-[16px] text-[#7d6aee] hover:text-[#6954e5] font-bold hover:underline cursor-pointer transition-colors"
                 >
                   {t("auth.forgot")}
                 </button>

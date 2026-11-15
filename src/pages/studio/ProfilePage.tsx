@@ -150,7 +150,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {/* Task 1: Mobile 14px for user info card */}
           <InputGroup
             leadingAddon={
-              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-[14px] sm:text-base md:text-[16px] shrink-0">
+              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-[16px] sm:text-base md:text-[16px] shrink-0">
                 {t("profile.name")}
               </InputGroup.Prefix>
             }
@@ -165,7 +165,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             }
           >
             <InputBase
-              className="font-semibold text-[14px] sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
+              className="font-semibold text-[16px] sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
               placeholder={t("profile.namePh")}
               value={profileNameInput}
               onChange={(e) => handleNameChange(e.target.value)}
@@ -175,7 +175,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {/* Input Nomor HP */}
           <InputGroup
             leadingAddon={
-              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-[14px] sm:text-base md:text-[16px] shrink-0">
+              <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-[16px] sm:text-base md:text-[16px] shrink-0">
                 {t("profile.phone")}
               </InputGroup.Prefix>
             }
@@ -190,7 +190,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             }
           >
             <InputBase
-              className="font-semibold text-[14px] sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
+              className="font-semibold text-[16px] sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
               placeholder="081234567890"
               value={profileWaInput}
               onChange={(e) => handleWaChange(e.target.value)}
@@ -200,7 +200,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {/* Task 4: Language Dropdown (replaces Email input) */}
           <div className="flex items-stretch rounded-xl border border-neutral-200 bg-white overflow-hidden focus-within:border-[#7d6aee] transition-colors">
             {/* Prefix */}
-            <div className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 flex items-center justify-start border-r border-neutral-200 font-semibold text-neutral-700 text-[14px] sm:text-base md:text-[16px] shrink-0">
+            <div className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 flex items-center justify-start border-r border-neutral-200 font-semibold text-neutral-700 text-[16px] sm:text-base md:text-[16px] shrink-0">
               <Globe className="w-4 h-4 text-neutral-400 mr-1.5 shrink-0" />
               <span>{t("profile.language")}</span>
             </div>
@@ -209,7 +209,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <button
                 type="button"
                 onClick={() => setIsLangDropdownOpen((v) => !v)}
-                className="w-full h-full flex items-center justify-between px-3 py-3 sm:py-3.5 text-[14px] sm:text-base md:text-[16px] font-semibold text-neutral-800 bg-transparent cursor-pointer focus:outline-none"
+                className="w-full h-full flex items-center justify-between px-3 py-3 sm:py-3.5 text-[16px] sm:text-base md:text-[16px] font-semibold text-neutral-800 bg-transparent cursor-pointer focus:outline-none"
               >
                 <span>{langOptions.find((o) => o.value === profileLanguage)?.label}</span>
                 <ChevronDown
@@ -226,7 +226,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         setProfileLanguage(opt.value);
                         setIsLangDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-3 text-[14px] font-semibold transition-colors cursor-pointer ${
+                      className={`w-full text-left px-4 py-3 text-[16px] font-semibold transition-colors cursor-pointer ${
                         profileLanguage === opt.value
                           ? "bg-purple-50 text-[#7d6aee]"
                           : "text-neutral-700 hover:bg-neutral-50"

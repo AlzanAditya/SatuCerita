@@ -153,7 +153,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                 title={item.label}
                 className={`w-full flex items-center ${
                   isCollapsed ? "justify-center p-2.5" : "justify-between px-3 py-2"
-                } rounded-xl text-[14px] font-semibold cursor-pointer ${
+                } rounded-xl text-[16px] font-semibold cursor-pointer ${
                   isActive
                     ? "bg-[#7d6aee] text-white shadow-2xs font-extrabold border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc]"
                     : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
@@ -161,7 +161,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               >
                 <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-2.5 min-w-0"}`}>
                   <Icon className={`w-[14px] h-[14px] shrink-0 ${isActive ? "text-white" : "text-neutral-500"}`} />
-                  {!isCollapsed && <span className="truncate text-[14px]">{item.label}</span>}
+                  {!isCollapsed && <span className="truncate text-[16px]">{item.label}</span>}
                 </div>
                 {!isCollapsed && item.badge !== undefined && item.badge > 0 && (
                   <span
@@ -192,7 +192,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               title={item.label}
               className={`w-full flex items-center ${
                 isCollapsed ? "justify-center p-2.5" : "justify-between px-3 py-2"
-              } rounded-xl text-[14px] font-semibold cursor-pointer ${
+              } rounded-xl text-[16px] font-semibold cursor-pointer ${
                 isActive
                   ? "bg-[#7d6aee] text-white shadow-2xs font-extrabold border border-[#7d6aee] border-b-[3px] border-b-[#5c47dc]"
                   : "text-neutral-600 hover:bg-neutral-100/80 hover:text-neutral-900"
@@ -200,7 +200,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             >
               <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-2.5"}`}>
                 <Icon className={`w-[14px] h-[14px] shrink-0 ${isActive ? "text-white" : "text-neutral-500"}`} />
-                {!isCollapsed && <span className="text-[14px]">{item.label}</span>}
+                {!isCollapsed && <span className="text-[16px]">{item.label}</span>}
               </div>
             </button>
           );

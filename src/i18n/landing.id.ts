@@ -89,7 +89,7 @@ export const landingId = {
 
   // ---- Home: cara pesan ----
   "home.how.badge": "CARA PESAN",
-  "home.how.title": "Cara membuat undangan digital dalam empat langkah.",
+  "home.how.title": "Cara membuat undangan dalam empat langkah.",
   "home.how.detail": "Lihat detail cara pesan",
   "home.how.1.title": "Pilih template",
   "home.how.1.desc": "Jelajahi katalog dan pratinjau setiap template secara langsung.",
@@ -194,8 +194,8 @@ export const landingId = {
     "Tim Satu Cerita selalu siap menjawab pertanyaan, memberikan rekomendasi terbaik, dan mendampingi kebutuhan Anda setiap saat.",
   "contact.whatsapp.cta": "Chat WhatsApp",
   "contact.gmail.cta": "Kirim Email",
-  "contact.instagram.cta": "Kunjungi Instagram",
-  "contact.tiktok.cta": "Kunjungi TikTok",
+  "contact.instagram.cta": "Kunjungi",
+  "contact.tiktok.cta": "Kunjungi",
 
   // ---- Kebijakan ----
   "policy.badge": "Legal",

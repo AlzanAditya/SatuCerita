@@ -68,7 +68,7 @@ export const Footer: React.FC<FooterProps> = ({
               <p className="text-lg sm:text-xl md:text-[18px] font-extrabold text-white leading-snug">
                 {t("footer.slogan")}
               </p>
-              <p className="text-base sm:text-lg md:text-[14px] font-semibold text-neutral-300 mt-2 sm:mt-2.5 leading-relaxed">
+              <p className="text-base sm:text-lg md:text-[16px] font-semibold text-neutral-300 mt-2 sm:mt-2.5 leading-relaxed">
                 {t("footer.slogan2")}
               </p>
             </div>

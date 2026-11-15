@@ -58,7 +58,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
           {/* Grid / Horizontal Swipe Card Katalog (Ignoring mobile side padding) */}
           <div className="relative -mx-4 sm:mx-0">
             <div
-              className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 pl-3.5 sm:pl-4 pr-3.5 sm:pr-4 sm:px-0 scroll-pl-0 sm:scroll-pl-0 snap-x snap-mandatory scroll-smooth touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto sm:overflow-visible pb-6 sm:pb-0 pl-3.5 sm:pl-4 pr-3.5 sm:pr-4 sm:px-0 scroll-pl-0 sm:scroll-pl-0 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               style={{ WebkitOverflowScrolling: "touch" }}
             >
               {TEMPLATES.map((item) => (
@@ -70,9 +70,9 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                     onClick={() => onNavigate(`/katalog/${item.slug}`)}
                     className="cursor-pointer"
                   >
-                    {/* Cover katalog: foto mockup 3:4 ditampilkan penuh */}
+                    {/* Cover katalog: foto mockup 1:1 ditampilkan penuh */}
                     <div
-                      className="relative w-full aspect-[3/4] rounded-xl sm:rounded-2xl border border-purple-100/80 mb-3 overflow-hidden bg-neutral-100"
+                      className="relative w-full aspect-square rounded-xl sm:rounded-2xl border border-purple-100/80 mb-3 overflow-hidden bg-neutral-100"
                       style={{ backgroundColor: item.frameBg }}
                     >
                       <img
@@ -158,7 +158,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
 
             {/* Gambar Preview Besar */}
             <div
-              className="relative rounded-2xl border border-purple-100/80 mb-4 overflow-hidden aspect-[3/4] bg-neutral-100"
+              className="relative rounded-2xl border border-purple-100/80 mb-4 overflow-hidden aspect-square bg-neutral-100"
               style={{ backgroundColor: selectedDemo.frameBg }}
             >
               <img

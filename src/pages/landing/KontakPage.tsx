@@ -114,8 +114,8 @@ export const KontakPage: React.FC<KontakPageProps> = ({
                   {item.appName}
                 </h3>
 
-                {/* 3. Kontak / Username dari Aplikasinya (Ukuran diperbesar) */}
-                <p className="text-sm sm:text-base md:text-lg font-bold text-neutral-800 mt-1.5 mb-6 break-all select-text tracking-tight">
+                {/* 3. Kontak / Username dari Aplikasinya (Ukuran diperkecil 2px & warna lebih pudar) */}
+                <p className="text-[18px] sm:text-[16px] md:text-[16px] font-semibold sm:font-bold md:font-bold text-neutral-500 mt-1.5 mb-6 break-all select-text tracking-tight">
                   {item.contactValue}
                 </p>
 
