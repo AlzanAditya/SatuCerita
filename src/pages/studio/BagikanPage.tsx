@@ -177,12 +177,16 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
         onLogoClick={() => onNavigate?.(PATHS.home)}
       />
 
-      <div className="max-w-md mx-auto md:mx-0">
-        <div className="px-4">
-          <ShareIllustration />
-        </div>
+      {/* Desktop: WhatsApp Blast di KIRI, Bagikan Link di KANAN (mobile: bagikan link dulu) */}
+      <div className="max-w-5xl mx-auto lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10 lg:items-start">
+        {/* Bagikan link: salin link, WhatsApp, Telegram, Instagram (KANAN di desktop) */}
+        <div className="lg:order-2">
+          <div className="max-w-md mx-auto md:mx-0">
+            <div className="px-4">
+              <ShareIllustration />
+            </div>
 
-        <section className="-mt-3 rounded-3xl bg-white p-5 shadow-[0_6px_24px_rgba(94,75,180,0.08)] text-center">
+            <section className="-mt-3 rounded-3xl bg-white p-5 shadow-[0_6px_24px_rgba(94,75,180,0.08)] text-center">
           <h2 className="text-base font-extrabold text-[#17112e]">{t("share.heading")}</h2>
 
           {link ? (
@@ -267,14 +271,16 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
             </>
           )}
         </section>
-      </div>
-
-      {/* WhatsApp Blast: daftar tamu + tombol bagikan per tamu */}
-      {link && (
-        <div className="max-w-2xl mx-auto md:mx-0 mt-5">
-          <WhatsappBlast storageId={selected?.id || slug} link={link} />
+          </div>
         </div>
-      )}
+
+        {/* WhatsApp Blast: daftar tamu + tombol bagikan per tamu (KIRI di desktop) */}
+        {link && (
+          <div className="lg:order-1 max-w-2xl mx-auto md:mx-0 mt-5 lg:mt-0">
+            <WhatsappBlast storageId={selected?.id || slug} link={link} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

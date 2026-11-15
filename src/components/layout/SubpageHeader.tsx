@@ -1,5 +1,6 @@
 import React from "react";
 import { Sparkles } from "lucide-react";
+import { SectionWave } from "@/components/landing/SectionDecor";
 
 interface SubpageHeaderProps {
   badgeText: string;
@@ -19,8 +20,10 @@ export const SubpageHeader: React.FC<SubpageHeaderProps> = ({
   children,
 }) => {
   return (
-    <div className="w-full bg-[#7d6aee] px-4 sm:px-6 md:px-8 py-14 sm:py-20 md:py-24 text-left select-none transition-colors shadow-xs">
-      <div className="max-w-4xl mx-auto w-full flex flex-col items-start text-left">
+    <div className="relative w-full bg-[#7d6aee] px-4 sm:px-6 md:px-8 py-14 sm:py-20 md:py-24 text-left select-none transition-colors shadow-xs overflow-hidden">
+      {/* Ombak gradasi putih di bagian bawah header */}
+      <SectionWave className="absolute bottom-0 left-0 w-full h-20 sm:h-[140px]" color="#ffffff" strength={0.14} />
+      <div className="relative z-10 max-w-4xl mx-auto w-full flex flex-col items-start text-left">
         {/* Badge: latar putih dengan teks ungu aksen persis (#7d6aee) */}
         <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-[#7d6aee] text-xs sm:text-sm font-bold tracking-wide shadow-sm mb-4 sm:mb-5 [&_svg]:text-[#7d6aee]">
           {badgeIcon || <Sparkles className="w-3.5 h-3.5 text-[#7d6aee] shrink-0" />}

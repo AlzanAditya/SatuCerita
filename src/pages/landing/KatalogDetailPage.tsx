@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import {
   OrnFlower,
@@ -68,6 +68,40 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
   const template = localizeTemplate(baseTemplate, lang);
 
   const [previewMode, setPreviewMode] = useState<"phone" | "desktop">("phone");
+  /* Ukuran viewport asli yang dirender undangan di dalam frame preview,
+     lalu diperkecil (scale) agar pas ke frame — sehingga layout di dalam
+     iframe memakai lebar mobile/desktop asli, bukan lebar frame. */
+  const frameInnerRef = useRef<HTMLDivElement | null>(null);
+  const [frameW, setFrameW] = useState(0);
+  const previewViewport =
+    previewMode === "phone"
+      ? { w: 390, h: 693 } // iPhone-ish 9:16
+      : { w: 1280, h: 800 }; // Desktop 16:10
+
+  useEffect(() => {
+    const el = frameInnerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) setFrameW(entry.contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [previewMode]);
+
+  /* Sembunyikan scrollbar di dalam iframe preview (same-origin via sandbox). */
+  const hideIframeScrollbars = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
+    try {
+      const doc = e.currentTarget.contentDocument;
+      if (!doc) return;
+      const style = doc.createElement("style");
+      style.textContent =
+        "html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}" +
+        "html,body{scrollbar-width:none;-ms-overflow-style:none}";
+      doc.head.appendChild(style);
+    } catch {
+      /* lintas domain: abaikan */
+    }
+  };
 
   const handleOrderTemplate = () => {
     const checkoutUrl = `/studio/checkout/${template.slug}`;
@@ -327,38 +361,37 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                   <div
                     className={`transition-all duration-300 relative rounded-2xl overflow-hidden border border-neutral-800 shadow-xl bg-neutral-950 ${
                       previewMode === "phone"
-                        ? "w-full max-w-[320px] aspect-[9/21] sm:max-w-[340px] border-[6px] border-neutral-900"
+                        ? "w-full max-w-[320px] aspect-[9/16] sm:max-w-[340px] border-[6px] border-neutral-900"
                         : "w-full max-w-[620px] aspect-[16/10] border border-neutral-800"
                     }`}
                   >
-                    {/* Simulated Phone Notch / Dynamic Island */}
-                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-4 bg-neutral-900 rounded-full z-30 border border-neutral-800 flex items-center justify-center">
-                      <span className="w-2 h-2 rounded-full bg-neutral-800" />
-                    </div>
+                    {/* Simulated Phone Notch / Dynamic Island (hanya mode ponsel) */}
+                    {previewMode === "phone" && (
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-4 bg-neutral-900 rounded-full z-30 border border-neutral-800 flex items-center justify-center">
+                        <span className="w-2 h-2 rounded-full bg-neutral-800" />
+                      </div>
+                    )}
 
-                    {/* Template iframe — tampil interaktif jika template tersedia */}
+                    {/* Template iframe — tampil interaktif jika template tersedia.
+                        Dirender dengan viewport asli (ponsel 390px / desktop 1280px)
+                        lalu di-scale agar pas ke frame. */}
                     {AVAILABLE_TEMPLATES.includes(template.slug.toLowerCase()) ? (
-                      <div className="relative w-full h-full">
+                      <div ref={frameInnerRef} className="absolute inset-0 overflow-hidden bg-white">
                         <iframe
                           key={`${template.slug}-${previewMode}`}
                           src={`/templates/${template.slug}/index.html`}
                           title={t("detail.iframeTitle", { title: template.title })}
-                          className="w-full h-full border-0 bg-white"
+                          className="border-0 bg-white"
+                          style={{
+                            width: previewViewport.w,
+                            height: previewViewport.h,
+                            transform: `scale(${frameW > 0 ? frameW / previewViewport.w : 0.001})`,
+                            transformOrigin: "top left",
+                          }}
                           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                          onLoad={hideIframeScrollbars}
                           loading="lazy"
                         />
-                        {/* Floating quick action to fullscreen preview */}
-                        <div className="absolute bottom-3 right-3 z-30 pointer-events-auto">
-                          <button
-                            type="button"
-                            onClick={() => onNavigate(`/templates/${template.slug}`)}
-                            title={t("detail.fullscreenTitle")}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-900 text-white text-[14px] sm:text-[11px] font-bold backdrop-blur-md shadow-lg border border-white/20 transition-all cursor-pointer hover:scale-105"
-                          >
-                            <Maximize2 className="w-3 h-3 text-purple-300" />
-                            <span>{t("detail.fullscreenShort")}</span>
-                          </button>
-                        </div>
                       </div>
                     ) : (
                       /* Fallback mockup cover jika template belum tersedia */
