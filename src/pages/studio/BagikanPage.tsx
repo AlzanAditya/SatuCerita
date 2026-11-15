@@ -6,6 +6,7 @@ import { isDemo } from "@/lib/studioDemo";
 import { TEMPLATES_DATA } from "@/data/templates";
 import { listInvitations, type InvitationSummary } from "@/lib/invitationApi";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
+import { useT } from "@/i18n";
 import { OrderItem, UserInvitation } from "./types";
 
 export interface BagikanPageProps {
@@ -16,8 +17,10 @@ export interface BagikanPageProps {
 }
 
 /** Ilustrasi ponsel + ikon bagikan (SVG inline, warna mengikuti merek). */
-const ShareIllustration: React.FC = () => (
-  <svg viewBox="0 0 320 190" className="w-full h-auto" role="img" aria-label="Ilustrasi membagikan undangan">
+const ShareIllustration: React.FC = () => {
+  const { t } = useT();
+  return (
+  <svg viewBox="0 0 320 190" className="w-full h-auto" role="img" aria-label={t("share.illustrationAria")}>
     <path d="M30 120c-8-38 18-70 62-76 30-4 44 12 76 6 40-8 74 2 92 36 14 28-2 60-40 70-50 12-120 14-150 4-24-8-34-22-40-40z" fill="#e4defa" />
     <circle cx="48" cy="70" r="14" fill="#ece8fb" />
     <circle cx="276" cy="58" r="8" fill="#ece8fb" />
@@ -36,7 +39,8 @@ const ShareIllustration: React.FC = () => (
       <path d="M232 52l12-10M238 70l16-2M232 88l12 8" />
     </g>
   </svg>
-);
+  );
+};
 
 /** Ikon resmi merek dari Simple Icons (CDN jsDelivr, versi dikunci). Glyph hitam diputihkan lewat filter CSS. */
 const SI = "https://cdn.jsdelivr.net/npm/simple-icons@16.37.0/icons";
@@ -63,6 +67,7 @@ const TelegramIcon: React.FC = () => (
 );
 
 export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orders = [], onNavigate, showToast }) => {
+  const { t } = useT();
   // Semua undangan milik user (satu pesanan lunas = satu undangan). Pilih salah satu untuk dibagikan.
   const [mine, setMine] = useState<InvitationSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
@@ -80,7 +85,7 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
 
   const selected = mine.find((i) => i.id === selectedId) ?? mine[0];
   const labelOf = (i: InvitationSummary) =>
-    i.title?.trim() || TEMPLATES_DATA.find((t) => t.slug === i.templateSlug)?.title || "Undangan";
+    i.title?.trim() || TEMPLATES_DATA.find((x) => x.slug === i.templateSlug)?.title || t("inv.defaultTitle");
 
   const slug = useMemo(() => {
     if (selected) return selected.slug;
@@ -93,7 +98,7 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
 
   const link = selected?.publicUrl || (slug ? `${SITE.url}/i/${slug}/` : "");
   const notPublished = !!selected && selected.status !== "published";
-  const text = `Kami mengundang Anda ke acara kami. Buka undangan digital kami di sini: ${link}`;
+  const text = t("share.text", { link });
 
   const copy = async (msg = "Tautan disalin!") => {
     if (!link) return;
@@ -111,7 +116,7 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
     if (!link) return;
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Undangan digital", text, url: link });
+        await navigator.share({ title: t("share.shareTitle"), text, url: link });
         return;
       } catch {
         /* dibatalkan pengguna */
@@ -131,7 +136,7 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
     {
       id: "tg",
       label: "Telegram",
-      onClick: () => open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("Undangan digital kami")}`),
+      onClick: () => open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(t("share.tgText"))}`),
       icon: (
         <span className="size-12 rounded-full bg-[#2aabee] flex items-center justify-center">
           <TelegramIcon />
@@ -150,7 +155,7 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
     },
     {
       id: "more",
-      label: "Lainnya",
+      label: t("share.more"),
       onClick: more,
       icon: (
         <span className="size-12 rounded-full bg-[#f1edff] flex items-center justify-center text-[#5a5476]">
@@ -163,8 +168,8 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
   return (
     <div className="animate-fadeIn">
       <StudioPageHeader
-        title="Bagikan"
-        subtitle="Bagikan undangan Anda ke keluarga dan teman."
+        title={t("studio.title.share")}
+        subtitle={t("share.subtitle")}
         onLogoClick={() => onNavigate?.(PATHS.home)}
       />
 
@@ -174,16 +179,16 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
         </div>
 
         <section className="-mt-3 rounded-3xl bg-white p-5 shadow-[0_6px_24px_rgba(94,75,180,0.08)] text-center">
-          <h2 className="text-base font-extrabold text-[#17112e]">Bagikan Undangan</h2>
+          <h2 className="text-base font-extrabold text-[#17112e]">{t("share.heading")}</h2>
 
           {link ? (
             <>
               <p className="mt-2 text-sm text-[#5a5476] leading-relaxed">
-                Salin tautan atau bagikan langsung melalui aplikasi favorit Anda.
+                {t("share.desc")}
               </p>
 
               {mine.length > 1 && (
-                <div className="mt-3 flex flex-wrap justify-center gap-2" role="radiogroup" aria-label="Pilih undangan">
+                <div className="mt-3 flex flex-wrap justify-center gap-2" role="radiogroup" aria-label={t("share.pickInvitation")}>
                   {mine.map((i) => {
                     const on = i.id === selected?.id;
                     return (
@@ -206,7 +211,7 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
 
               {notPublished && (
                 <p className="mt-3 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
-                  Undangan ini belum dipublikasikan. Tautan baru bisa dibuka tamu setelah Anda mempublikasikannya di halaman edit.
+                  {t("share.notPublished")}
                 </p>
               )}
 
@@ -216,7 +221,7 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
                 className="mt-4 w-full h-12 rounded-full bg-[#7d6aee] hover:bg-[#6b58e0] active:scale-[0.99] text-white font-bold text-[15px] inline-flex items-center justify-center gap-2 shadow-[0_6px_16px_rgba(125,106,238,0.35)] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7d6aee]"
               >
                 <Link2 className="w-4 h-4" />
-                Salin Tautan
+                {t("share.copyLink")}
               </button>
               <p className="mt-2 text-xs text-[#7a7494] truncate" title={link}>
                 {link.replace(/^https?:\/\//, "")}
@@ -224,7 +229,7 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
 
               <div className="mt-4 flex items-center gap-3 text-xs text-[#7a7494]">
                 <span className="flex-1 h-px bg-[#e5e0f5]" />
-                atau
+                {t("share.or")}
                 <span className="flex-1 h-px bg-[#e5e0f5]" />
               </div>
 
@@ -246,14 +251,14 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
           ) : (
             <>
               <p className="mt-2 text-sm text-[#5a5476] leading-relaxed">
-                Tautan undangan akan tersedia setelah pesanan Anda lunas.
+                {t("share.noLink")}
               </p>
               <button
                 type="button"
                 onClick={() => onNavigate?.(PATHS.katalog)}
                 className="mt-4 w-full h-12 rounded-full bg-[#7d6aee] hover:bg-[#6b58e0] text-white font-bold text-[15px] cursor-pointer shadow-[0_6px_16px_rgba(125,106,238,0.35)]"
               >
-                Pilih template
+                {t("inv.pickTemplate")}
               </button>
             </>
           )}

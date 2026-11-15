@@ -1,6 +1,16 @@
 import type { commonId } from "./common.id";
 
 export const commonEn: Record<keyof typeof commonId, string> = {
+  "common.cancel": "Cancel",
+  "common.save": "Save",
+  "common.back": "Back",
+  "common.loading": "Loading",
+  "common.close": "Close",
+  "common.retry": "Try again",
+  "auth.denied": "Access denied",
+  "auth.signOut": "Sign out",
+  "auth.noAdminAccess": "This account does not have access to the admin dashboard.",
+
   "lang.choose": "Choose language",
 
   "auth.adminTitle": "Admin Login",
@@ -30,16 +40,5 @@ export const commonEn: Record<keyof typeof commonId, string> = {
   "auth.err.pwMismatch": "Password confirmation does not match.",
   "auth.err.pwRequired": "Password is required.",
 
-  "api.err.connect": "Unable to connect to the server.",
-  "api.err.invalidCreds": "Invalid email or password.",
-  "api.err.googleOnly": "This account can only sign in with Google.",
-  "api.err.unconfirmed": "Email not confirmed yet. Please check your inbox.",
-  "api.err.wrongCreds": "Incorrect email or password.",
-  "api.err.emailFormat": "Invalid email format.",
-  "api.err.pwMin": "Password must be at least 8 characters.",
-  "api.err.nameMin": "Full name must be at least 2 characters.",
-  "api.err.emailBlocked": "This email cannot be registered.",
-  "api.err.weakPw": "Password is too weak.",
-  "api.err.signupFailed": "Sign-up failed. Please check your details and try again.",
   "api.err.generic": "Something went wrong. Please try again.",
 };

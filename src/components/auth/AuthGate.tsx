@@ -2,14 +2,18 @@ import React, { useCallback, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { fetchSession, logoutRequest, type Role, type SessionUser } from "@/lib/auth";
 import { urls } from "@/lib/urls";
+import { useT } from "@/i18n";
 
 type State = { status: "loading" } | { status: "guest" } | { status: "authed"; user: SessionUser };
 
-const Spinner = () => (
-  <div className="min-h-screen w-full flex items-center justify-center bg-white">
-    <div className="size-9 rounded-full border-4 border-[#ad9fff]/40 border-t-[#7d6aee] animate-spin" aria-label="Memuat" />
-  </div>
-);
+const Spinner = () => {
+  const { t } = useT();
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-white">
+      <div className="size-9 rounded-full border-4 border-[#ad9fff]/40 border-t-[#7d6aee] animate-spin" aria-label={t("common.loading")} />
+    </div>
+  );
+};
 
 /**
  * Guard sisi client (UX). Pengaman utama tetap di Worker (halaman) dan API (data).
@@ -17,6 +21,7 @@ const Spinner = () => (
  * - require="admin" : harus login sebagai admin
  */
 export const AuthGate: React.FC<{ require: Role; children: React.ReactNode }> = ({ require, children }) => {
+  const { t } = useT();
   const [state, setState] = useState<State>({ status: "loading" });
 
   useEffect(() => {
@@ -44,8 +49,8 @@ export const AuthGate: React.FC<{ require: Role; children: React.ReactNode }> = 
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-white p-6">
         <div className="max-w-sm text-center">
-          <h1 className="text-2xl font-black text-neutral-900">Akses ditolak</h1>
-          <p className="mt-2 text-sm text-neutral-500">Akun ini tidak memiliki akses ke dashboard admin.</p>
+          <h1 className="text-2xl font-black text-neutral-900">{t("auth.denied")}</h1>
+          <p className="mt-2 text-sm text-neutral-500">{t("auth.noAdminAccess")}</p>
           <button
             type="button"
             className="mt-5 px-5 py-2.5 rounded-xl bg-[#7d6aee] text-white text-sm font-bold cursor-pointer"
@@ -54,7 +59,7 @@ export const AuthGate: React.FC<{ require: Role; children: React.ReactNode }> = 
               window.location.replace(urls.dashLogin());
             }}
           >
-            Keluar
+            {t("auth.signOut")}
           </button>
         </div>
       </div>

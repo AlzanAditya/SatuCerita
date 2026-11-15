@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { X, ZoomIn, Crop } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useT } from "@/i18n";
 
 export interface ImageCropModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
   onClose,
   onApplyCrop,
 }) => {
+  const { t } = useT();
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -89,17 +91,17 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
         <div className="flex items-start justify-between px-5 pt-4 pb-3.5 bg-[#f5c744] border-b-2 border-neutral-900">
           <div>
             <h3 className="text-base font-black text-neutral-900 leading-snug">
-              Potong gambar
+              {t("crop.title")}
             </h3>
             <p className="text-xs font-semibold text-neutral-800/80 mt-0.5">
-              Geser dan perbesar untuk mengatur bagian foto (rasio 1:1).
+              {t("crop.hint")}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="size-8 rounded-xl bg-white/70 hover:bg-white border border-neutral-900 flex items-center justify-center text-neutral-900 cursor-pointer shrink-0 ml-3 transition-colors shadow-2xs"
-            title="Tutup"
+            title={t("common.close")}
           >
             <X className="w-4 h-4 stroke-[2.5]" />
           </button>
@@ -173,7 +175,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-xs font-bold text-neutral-700 hover:bg-neutral-200/60 cursor-pointer transition-colors"
           >
-            Batal
+            {t("common.cancel")}
           </button>
           <button
             type="button"
@@ -181,7 +183,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f5c744] hover:bg-[#e6b833] text-neutral-900 border-2 border-neutral-900 font-extrabold text-xs shadow-2xs active:translate-y-0.5 transition-all cursor-pointer"
           >
             <Crop className="w-4 h-4 stroke-[2.2]" />
-            <span>Potong &amp; unggah</span>
+            <span>{t("crop.apply")}</span>
           </button>
         </div>
       </div>

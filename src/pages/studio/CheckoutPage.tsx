@@ -14,7 +14,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PATHS } from "@/routes";
-import { getTemplateBySlug, formatRupiah } from "@/data/templates";
+import { getTemplateBySlug, formatRupiah as formatRupiahBase } from "@/data/templates";
+import { useT } from "@/i18n";
+import { localizeTemplate } from "@/i18n/templates";
 import { OrderItem, PaymentMethodId } from "@/pages/studio/types";
 import { createOrder, newIdempotencyKey, quoteOrder, openSnap, preloadSnap } from "@/lib/payments";
 
@@ -54,9 +56,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   onNavigate,
   onCreateOrder,
 }) => {
+  const { t, tr, lang } = useT();
+  const formatRupiah = (v: number) => formatRupiahBase(v, lang);
   // Extract template slug from /studio/checkout/:slug or /checkout/:slug
   const rawSlug = currentPath.replace(/^(?:\/(?:app|studio))?\/checkout\/?/, "").split("?")[0].split("#")[0];
-  const template = getTemplateBySlug(rawSlug);
+  const baseTemplate = getTemplateBySlug(rawSlug);
+  // Hanya teks tampilan (badge, deskripsi) yang dilokalkan; harga & slug tetap dari data asli.
+  const template = baseTemplate ? localizeTemplate(baseTemplate, lang) : undefined;
 
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [voucherCode, setVoucherCode] = useState("");
@@ -78,12 +84,12 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
     return (
       <div className="min-h-screen bg-[#faf9ff] flex items-center justify-center p-6">
         <div className="text-center">
-          <h2 className="text-lg font-black text-neutral-800">Template tidak ditemukan</h2>
+          <h2 className="text-lg font-black text-neutral-800">{t("checkout.templateNotFound")}</h2>
           <button
             onClick={() => onNavigate(PATHS.katalog)}
             className="mt-3 text-[#7d6aee] font-bold text-sm underline cursor-pointer"
           >
-            Kembali ke Katalog
+            {t("checkout.backToCatalog")}
           </button>
         </div>
       </div>
@@ -187,16 +193,16 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
             className="inline-flex items-center gap-1.5 text-sm font-bold text-[#7d6aee] hover:text-[#6b58e0] transition-colors cursor-pointer mb-3"
           >
             <ArrowLeft className="w-4 h-4" />
-            Kembali ke Undangan Saya
+            {t("checkout.backToMy")}
           </button>
           <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1">
-            CHECKOUT
+            {t("checkout.badge")}
           </p>
           <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
-            Konfirmasi pesanan
+            {t("checkout.title")}
           </h1>
           <p className="text-sm text-neutral-500 mt-1">
-            Periksa template pilihan Anda sebelum melanjutkan ke pembayaran.
+            {t("checkout.desc")}
           </p>
         </div>
 
@@ -242,16 +248,16 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                       className="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-[#7d6aee] hover:text-[#6b58e0] transition-colors cursor-pointer underline underline-offset-4"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      Lihat pratinjau template
+                      {t("checkout.preview")}
                     </button>
                   </div>
 
                   {/* Feature Highlights */}
                   <div className="mt-4 pt-4 border-t border-neutral-100 grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[
-                      "Edit semua isi undangan kapan saja",
-                      "Kelola tamu, RSVP, dan buku tamu digital",
-                      "Scanner QR check-in untuk hari H",
+                      t("checkout.feat1"),
+                      t("checkout.feat2"),
+                      t("checkout.feat3"),
                     ].map((feat, i) => (
                       <div key={i} className="flex items-start gap-2">
                         <CheckCircle2 className="w-4 h-4 text-[#7d6aee] shrink-0 mt-0.5" />
@@ -266,13 +272,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
             {/* Payment Method Card */}
             <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-200 border-b-[3px] border-b-neutral-300 shadow-2xs p-4 sm:p-5">
               <h3 className="text-base sm:text-lg font-black text-neutral-900 mb-4">
-                Pilih metode pembayaran
+                {t("checkout.chooseMethod")}
               </h3>
               <div className="space-y-5">
                 {PAYMENT_GROUPS.map((group) => (
                   <div key={group.title}>
                     <p className="text-[11px] font-extrabold uppercase tracking-wider text-neutral-400 mb-3">
-                      {group.title}
+                      {tr(group.title)}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {group.methods.map((method) => (
@@ -299,7 +305,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                             </div>
                             <div>
                               <p className="text-sm font-extrabold text-neutral-900">{method.label}</p>
-                              <p className="text-xs text-neutral-500 font-medium">{method.description}</p>
+                              <p className="text-xs text-neutral-500 font-medium">{tr(method.description)}</p>
                             </div>
                           </div>
                           <div
@@ -322,12 +328,12 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
           <div className="w-full lg:w-80 xl:w-88 shrink-0 space-y-4">
             <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-200 border-b-[3px] border-b-neutral-300 shadow-2xs p-5">
               <h3 className="text-base font-black text-neutral-900 mb-4">
-                Ringkasan pembayaran
+                {t("checkout.summary")}
               </h3>
 
               {/* Price Row */}
               <div className="flex items-center justify-between mb-4 pb-4 border-b border-neutral-100">
-                <span className="text-sm text-neutral-600 font-medium">Template {template.title}</span>
+                <span className="text-sm text-neutral-600 font-medium">{t("checkout.templateLine", { title: template.title })}</span>
                 <div className="text-right">
                   <p className="text-xs text-neutral-400 line-through font-medium">
                     {formatRupiah(originalPrice)}
@@ -343,7 +349,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                 <div className="flex items-center gap-1.5 mb-2">
                   <Tag className="w-4 h-4 text-neutral-500" />
                   <span className="text-sm font-semibold text-neutral-600">
-                    Punya kode voucher?
+                    {t("checkout.haveVoucher")}
                   </span>
                 </div>
                 <div className="flex gap-2">
@@ -356,7 +362,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                       setVoucherApplied(false); // kode diubah -> harus divalidasi ulang
                       setAppliedDiscount(null);
                     }}
-                    placeholder="KODE VOUCHER"
+                    placeholder={t("checkout.voucherPh")}
                     className="flex-1 border border-neutral-200 rounded-xl px-3 py-2 text-xs font-semibold placeholder:text-neutral-300 focus:outline-none focus:border-[#7d6aee] transition-colors"
                   />
                   <button
@@ -365,35 +371,35 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                     disabled={voucherChecking || submitting}
                     className="px-3 py-2 rounded-xl border border-neutral-200 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition-colors cursor-pointer shrink-0"
                   >
-                    {voucherChecking ? "Cek..." : "Pakai"}
+                    {voucherChecking ? t("checkout.checking") : t("checkout.apply")}
                   </button>
                 </div>
                 {voucherError && (
-                  <p className="text-rose-500 text-xs font-medium mt-1">{voucherError}</p>
+                  <p className="text-rose-500 text-xs font-medium mt-1">{tr(voucherError)}</p>
                 )}
                 {voucherApplied && (
                   <p className="text-emerald-600 text-xs font-bold mt-1">
-                    ✓ Voucher berhasil! Hemat {formatRupiah(discountAmount)}
+                    {t("checkout.voucherOk", { amount: formatRupiah(discountAmount) })}
                   </p>
                 )}
               </div>
 
               <div className="border-t border-dashed border-neutral-200 pt-4 mb-4">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-bold text-neutral-700">Total bayar</span>
+                  <span className="text-sm font-bold text-neutral-700">{t("checkout.total")}</span>
                   <span className="text-2xl font-black text-neutral-900">
                     {formatRupiah(finalTotal)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-neutral-400 font-medium">Metode</span>
+                  <span className="text-xs text-neutral-400 font-medium">{t("checkout.method")}</span>
                   <span className="text-xs font-bold text-neutral-600">
                     {selectedMethod
                       ? (() => {
                           const m = ALL_METHODS.find((x) => x.id === selectedMethod);
-                          return m ? `${m.label} · ${m.description}` : "";
+                          return m ? `${m.label} · ${tr(m.description)}` : "";
                         })()
-                      : "Belum dipilih"}
+                      : t("checkout.notChosen")}
                   </span>
                 </div>
               </div>
@@ -409,15 +415,15 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                 }`}
               >
                 {submitting ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : <CreditCard className="w-4.5 h-4.5" />}
-                {submitting ? "Memproses..." : "Bayar sekarang"}
+                {submitting ? t("checkout.processing") : t("checkout.payNow")}
               </Button>
               {payError && (
                 <p role="alert" className="text-rose-500 text-xs font-semibold text-center mt-2.5 leading-relaxed">
-                  {payError}
+                  {tr(payError)}
                 </p>
               )}
               <p className="text-[11px] text-neutral-400 text-center mt-2.5 leading-relaxed">
-                Instruksi pembayaran tampil di halaman berikutnya. Status berubah otomatis setelah Anda membayar. Total akhir dihitung ulang oleh server.
+                {t("checkout.note")}
               </p>
             </div>
 
@@ -426,21 +432,21 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
               <div className="flex items-start gap-2.5">
                 <ShieldCheck className="w-4 h-4 text-neutral-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-neutral-600 font-medium leading-snug">
-                  Pembayaran diproses aman lewat payment gateway resmi dan dikonfirmasi otomatis.
+                  {t("checkout.secure")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() =>
                   window.open(
-                    "https://wa.me/6285187978443?text=Halo%20Satu%20Cerita,%20saya%20butuh%20bantuan%20terkait%20pembayaran",
+                    `https://wa.me/6285187978443?text=${encodeURIComponent(t("wa.paymentHelp"))}`,
                     "_blank"
                   )
                 }
                 className="inline-flex items-center gap-2 text-xs font-bold text-neutral-700 hover:text-[#7d6aee] transition-colors cursor-pointer underline underline-offset-4"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
-                Butuh bantuan? Chat admin via WhatsApp
+                {t("checkout.help")}
               </button>
             </div>
           </div>

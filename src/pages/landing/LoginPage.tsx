@@ -4,7 +4,7 @@ import { LoginCard } from "@/components/auth/LoginCard";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { fetchSession, googleLoginUrl, loginWithEmail, signUpWithEmail } from "@/lib/auth";
 import { urls } from "@/lib/urls";
-import { useT, translateApiError, type TKey } from "@/i18n";
+import { useT, type TKey } from "@/i18n";
 
 const ERROR_KEYS: Record<string, TKey> = {
   oauth_failed: "login.oauthFailed",
@@ -20,7 +20,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   onNavigate,
   currentPath,
 }) => {
-  const { t } = useT();
+  const { t, tr } = useT();
   const [isSignUp, setIsSignUp] = useState(
     currentPath?.includes("signup") || false
   );
@@ -55,11 +55,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const handleEmail = async (p: { email: string; password: string; name: string; isSignUp: boolean }) => {
     if (p.isSignUp) {
       const r = await signUpWithEmail(p.email, p.password, p.name);
-      if (!r.ok) return { error: translateApiError(t, r.error) };
+      if (!r.ok) return { error: tr(r.error) || t("api.err.generic") };
       return { info: t("login.signUpSuccess") };
     }
     const r = await loginWithEmail(p.email, p.password);
-    if (!r.ok) return { error: translateApiError(t, r.error) };
+    if (!r.ok) return { error: tr(r.error) || t("api.err.generic") };
     window.location.assign(urls.studioHome());
   };
   const kebijakanPath = PATHS.kebijakan;

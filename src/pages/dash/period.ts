@@ -1,4 +1,6 @@
 import type { DashPeriodType } from "@/components/app/AppNavbar";
+import type { Language } from "@/context/LanguageContext";
+import { translate, monthsShort, monthsLong, weekdaysShort } from "@/i18n";
 import type {
   AdminInvitationItem,
   AdminOrderItem,
@@ -7,9 +9,6 @@ import type {
   PeriodDataResult,
 } from "./types";
 
-const BULAN_PENDEK = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-const BULAN_PANJANG = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-const HARI = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 const pad = (n: number) => String(n).padStart(2, "0");
 
 /** Waktu yang dipakai untuk menempatkan pesanan di periode: saat lunas untuk yang lunas, selain itu saat dibuat. */
@@ -30,7 +29,11 @@ function growth(cur: number, prev: number, kind: "pct" | "count"): { text: strin
 }
 
 /** Rentang periode (sekarang & pembanding) + bucket grafik, berdasarkan tanggal sebenarnya. */
-export function periodRanges(period: DashPeriodType, now: Date) {
+export function periodRanges(period: DashPeriodType, now: Date, lang: Language = "id") {
+  const BULAN_PENDEK = monthsShort(lang);
+  const BULAN_PANJANG = monthsLong(lang);
+  const HARI = weekdaysShort(lang);
+  const tt = (key: Parameters<typeof translate>[1], vars?: Record<string, string | number>) => translate(lang, key, vars);
   const y = now.getFullYear();
   const m = now.getMonth();
   const d = now.getDate();
@@ -42,9 +45,9 @@ export function periodRanges(period: DashPeriodType, now: Date) {
       return {
         cur: { from: t(y, m, d), to: t(y, m, d + 1) },
         prev: { from: t(y, m, d - 1), to: t(y, m, d) } as Range | null,
-        comparisonLabel: "vs kemarin",
-        periodTitle: `Hari Ini (${d} ${BULAN_PENDEK[m]} ${y})`,
-        chartTitle: "Grafik Pendapatan Per 4 Jam (Hari Ini)",
+        comparisonLabel: tt("dash.period.vsYesterday"),
+        periodTitle: tt("dash.period.titleToday", { d, m: BULAN_PENDEK[m], y }),
+        chartTitle: tt("dash.period.chartToday"),
         buckets: [0, 4, 8, 12, 16, 20].map((h): Bucket => ({ label: `${pad(h)}:00`, from: t(y, m, d, h), to: t(y, m, d, h + 4) })),
       };
     case "Mingguan": {
@@ -52,9 +55,9 @@ export function periodRanges(period: DashPeriodType, now: Date) {
       return {
         cur: { from: start.getTime(), to: t(y, m, d + 1) },
         prev: { from: t(y, m, d - 13), to: start.getTime() } as Range | null,
-        comparisonLabel: "vs 7 hari sebelumnya",
-        periodTitle: `7 Hari Terakhir (${start.getDate()} ${BULAN_PENDEK[start.getMonth()]} - ${d} ${BULAN_PENDEK[m]} ${y})`,
-        chartTitle: "Grafik Pendapatan Mingguan (7 Hari Terakhir)",
+        comparisonLabel: tt("dash.period.vsPrev7d"),
+        periodTitle: tt("dash.period.titleWeek", { d1: start.getDate(), m1: BULAN_PENDEK[start.getMonth()], d2: d, m2: BULAN_PENDEK[m], y }),
+        chartTitle: tt("dash.period.chartWeek"),
         buckets: Array.from({ length: 7 }, (_, i): Bucket => {
           const day = new Date(y, m, d - 6 + i);
           return { label: dayLabel(day), from: day.getTime(), to: t(day.getFullYear(), day.getMonth(), day.getDate() + 1) };
@@ -67,12 +70,12 @@ export function periodRanges(period: DashPeriodType, now: Date) {
       return {
         cur: { from: t(y, m, 1), to: t(y, m + 1, 1) },
         prev: { from: t(y, m - 1, 1), to: t(y, m, 1) } as Range | null,
-        comparisonLabel: "vs bulan lalu",
-        periodTitle: `Bulan Ini (${BULAN_PANJANG[m]} ${y})`,
-        chartTitle: `Tren Pendapatan ${BULAN_PANJANG[m]} ${y}`,
+        comparisonLabel: tt("dash.period.vsLastMonth"),
+        periodTitle: tt("dash.period.titleMonth", { month: BULAN_PANJANG[m], y }),
+        chartTitle: tt("dash.period.chartMonth", { month: BULAN_PANJANG[m], y }),
         buckets: starts.map((a, i): Bucket => {
           const next = starts[i + 1] ?? last + 1;
-          return { label: `Tgl ${a}-${next - 1}`, from: t(y, m, a), to: t(y, m, next) };
+          return { label: tt("dash.period.dayRange", { a, b: next - 1 }), from: t(y, m, a), to: t(y, m, next) };
         }),
       };
     }
@@ -81,9 +84,9 @@ export function periodRanges(period: DashPeriodType, now: Date) {
       return {
         cur: { from: t(y, q * 3, 1), to: t(y, q * 3 + 3, 1) },
         prev: { from: t(y, q * 3 - 3, 1), to: t(y, q * 3, 1) } as Range | null,
-        comparisonLabel: "vs kuartal lalu",
-        periodTitle: `Kuartal ${q + 1} ${y}`,
-        chartTitle: `Pendapatan Per Bulan (Kuartal ${q + 1} ${y})`,
+        comparisonLabel: tt("dash.period.vsLastQuarter"),
+        periodTitle: tt("dash.period.titleQuarter", { q: q + 1, y }),
+        chartTitle: tt("dash.period.chartQuarter", { q: q + 1, y }),
         buckets: [0, 1, 2].map((i): Bucket => ({ label: BULAN_PENDEK[(q * 3 + i) % 12], from: t(y, q * 3 + i, 1), to: t(y, q * 3 + i + 1, 1) })),
       };
     }
@@ -91,18 +94,18 @@ export function periodRanges(period: DashPeriodType, now: Date) {
       return {
         cur: { from: t(y, 0, 1), to: t(y + 1, 0, 1) },
         prev: { from: t(y - 1, 0, 1), to: t(y, 0, 1) } as Range | null,
-        comparisonLabel: "vs tahun lalu",
-        periodTitle: `Tahun ${y}`,
-        chartTitle: `Pendapatan Per Bulan (${y})`,
+        comparisonLabel: tt("dash.period.vsLastYear"),
+        periodTitle: tt("dash.period.titleYear", { y }),
+        chartTitle: tt("dash.period.chartYear", { y }),
         buckets: BULAN_PENDEK.map((label, i): Bucket => ({ label, from: t(y, i, 1), to: t(y, i + 1, 1) })),
       };
     default:
       return {
         cur: { from: 0, to: t(y, m + 1, 1) },
         prev: null as Range | null,
-        comparisonLabel: "sepanjang waktu",
-        periodTitle: "Semua Waktu",
-        chartTitle: "Pendapatan 6 Bulan Terakhir",
+        comparisonLabel: tt("dash.period.allTime"),
+        periodTitle: tt("dash.period.titleAll"),
+        chartTitle: tt("dash.period.chartAll"),
         buckets: Array.from({ length: 6 }, (_, k): Bucket => {
           const i = 5 - k;
           const from = new Date(y, m - i, 1);
@@ -118,9 +121,12 @@ export function buildPeriodData(
   users: AdminUserData[],
   invitations: AdminInvitationItem[],
   templates: AdminTemplateItem[],
+  lang: Language = "id",
   now: Date = new Date(),
 ): PeriodDataResult {
-  const { cur, prev, comparisonLabel, periodTitle, chartTitle, buckets } = periodRanges(period, now);
+  const { cur, prev, comparisonLabel, periodTitle, chartTitle, buckets } = periodRanges(period, now, lang);
+  const tt = (key: Parameters<typeof translate>[1], vars?: Record<string, string | number>) => translate(lang, key, vars);
+  const one = (base: string, n: number) => tt(`${base}.${n === 1 ? "one" : "other"}` as Parameters<typeof translate>[1], { n });
   const all = period === "Semua";
 
   const currentOrders = orders.filter((o) => all || inRange(orderTs(o), cur));
@@ -128,21 +134,21 @@ export function buildPeriodData(
   const sum = (list: AdminOrderItem[]) => list.filter((o) => o.status === "LUNAS").reduce((n, o) => n + o.total, 0);
   const currentRevenue = sum(currentOrders);
   const prevRevenue = sum(prevOrders);
-  const rev = all ? { text: "Akumulasi", up: true } : growth(currentRevenue, prevRevenue, "pct");
+  const rev = all ? { text: tt("dash.period.accumulated"), up: true } : growth(currentRevenue, prevRevenue, "pct");
 
   const invTs = (i: AdminInvitationItem) => Date.parse(i.createdAt) || 0;
   const curInv = invitations.filter((i) => all || inRange(invTs(i), cur)).length;
   const prevInv = prev ? invitations.filter((i) => inRange(invTs(i), prev)).length : 0;
-  const inv = all ? { text: "Semua undangan", up: true } : growth(curInv, prevInv, "count");
+  const inv = all ? { text: tt("dash.period.allInvitations"), up: true } : growth(curInv, prevInv, "count");
 
   const joinTs = (u: AdminUserData) => Date.parse(u.joinedAt) || 0;
   const newUsersCount = users.filter((u) => all || inRange(joinTs(u), cur)).length;
   const prevNewUsers = prev ? users.filter((u) => inRange(joinTs(u), prev)).length : 0;
-  let userGrowthText = `${newUsersCount} user baru`;
-  if (all) userGrowthText = `${users.length} total akun`;
+  let userGrowthText = one("dash.n.newUsers", newUsersCount);
+  if (all) userGrowthText = one("dash.n.totalAccounts", users.length);
   else if (prevNewUsers > 0) {
     const diff = ((newUsersCount - prevNewUsers) / prevNewUsers) * 100;
-    userGrowthText = `${diff >= 0 ? "+" : ""}${diff.toFixed(0)}% vs periode lalu`;
+    userGrowthText = tt("dash.period.vsLastPeriod", { delta: `${diff >= 0 ? "+" : ""}${diff.toFixed(0)}%` });
   }
 
   const chartBars = buckets.map((b) => {

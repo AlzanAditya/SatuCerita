@@ -52,11 +52,11 @@ import {
   AdminTemplateItem,
   AdminInvitationItem,
   PeriodDataResult,
-  formatIndonesianDateShort,
   pathToDashTab,
   dashTabToPath,
 } from "./types";
-import { fetchAdminOverview, downloadCsv } from "@/lib/adminApi";
+import { fetchAdminOverview, downloadCsv, fmtDate, fmtDateTime } from "@/lib/adminApi";
+import { useT, formatRupiahLang, localeOf, type TKey } from "@/i18n";
 import { buildPeriodData } from "./period";
 import { OverviewPage } from "./OverviewPage";
 import { UsersPage } from "./UsersPage";
@@ -71,11 +71,12 @@ import { ImageCropModal } from "@/components/ImageCropModal";
 export * from "./types";
 
 const OrderStatusBadge: React.FC<{ status: string }> = ({ status }) => {
+  const { t } = useT();
   if (status === "LUNAS") {
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
         <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-        Lunas
+        {t("dash.status.paid")}
       </span>
     );
   }
@@ -83,7 +84,7 @@ const OrderStatusBadge: React.FC<{ status: string }> = ({ status }) => {
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 animate-pulse">
         <Clock className="w-3 h-3 text-amber-600" />
-        Perlu Ditinjau
+        {t("dash.status.review")}
       </span>
     );
   }
@@ -91,13 +92,13 @@ const OrderStatusBadge: React.FC<{ status: string }> = ({ status }) => {
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-800">
         <Clock className="w-3 h-3 text-sky-600" />
-        Belum Bayar
+        {t("dash.status.unpaid")}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">
-      Batal
+      {t("dash.status.cancelled")}
     </span>
   );
 };
@@ -107,6 +108,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   activeTab: activeTabProp,
   onNavigate,
 }) => {
+  const { t, tn, tr, lang } = useT();
+  const rp = (n: number) => formatRupiahLang(n, lang);
   const isStandalone = useMemo(() => {
     if (typeof window === "undefined") return false;
     return (
@@ -213,10 +216,17 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   };
 
   // ===== DATA ASLI dari Supabase (Worker: GET /api/admin/overview, hanya akun admin) =====
-  const [usersList, setUsersList] = useState<AdminUserData[]>([]);
-  const [ordersList, setOrdersList] = useState<AdminOrderItem[]>([]);
+  const [usersRaw, setUsersList] = useState<AdminUserData[]>([]);
+  const [ordersRaw, setOrdersList] = useState<AdminOrderItem[]>([]);
   const [templatesList, setTemplatesList] = useState<AdminTemplateItem[]>([]);
-  const [allInvitations, setAllInvitations] = useState<AdminInvitationItem[]>([]);
+  const [invitationsRaw, setAllInvitations] = useState<AdminInvitationItem[]>([]);
+  // Tanggal tampil dirender ulang saat bahasa berganti (data mentah tetap ISO dari server).
+  const usersList = useMemo(() => usersRaw.map((u) => ({ ...u, joinedDate: fmtDate(u.joinedAt, lang) })), [usersRaw, lang]);
+  const ordersList = useMemo(() => ordersRaw.map((o) => ({ ...o, date: fmtDateTime(o.createdAt, lang) })), [ordersRaw, lang]);
+  const allInvitations = useMemo(
+    () => invitationsRaw.map((i) => ({ ...i, eventDate: i.eventDateIso ? fmtDate(i.eventDateIso, lang) : "" })),
+    [invitationsRaw, lang]
+  );
   const [dataState, setDataState] = useState<{ loading: boolean; error: string | null }>({ loading: true, error: null });
 
   const loadData = useCallback(async (silent = false) => {
@@ -246,21 +256,21 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   const invitationsList = useMemo(() => allInvitations.filter((i) => i.status === "Online"), [allInvitations]);
 
   const periodData: PeriodDataResult = useMemo(
-    () => buildPeriodData(selectedPeriod, ordersList, usersList, allInvitations, templatesList),
-    [selectedPeriod, ordersList, usersList, allInvitations, templatesList]
+    () => buildPeriodData(selectedPeriod, ordersList, usersList, allInvitations, templatesList, lang),
+    [selectedPeriod, ordersList, usersList, allInvitations, templatesList, lang]
   );
 
   const exportUsersCsv = () => {
     downloadCsv(
-      "pengguna-satucerita.csv",
-      ["Nama", "Email", "WhatsApp", "Role", "Jumlah Undangan", "Total Belanja", "Tanggal Daftar", "Status"],
+      t("dash.csv.usersFile"),
+      [t("dash.csv.name"), t("dash.csv.email"), t("dash.csv.whatsapp"), t("dash.csv.role"), t("dash.csv.invCount"), t("dash.csv.totalSpent"), t("dash.csv.joined"), t("dash.csv.status")],
       usersList.map((u) => [u.name, u.email, u.phone, u.role, u.invitationsCount, u.totalSpent, u.joinedDate, u.status])
     );
   };
   const exportOrdersCsv = () => {
     downloadCsv(
-      "pesanan-satucerita.csv",
-      ["Invoice", "Pemesan", "Email", "WhatsApp", "Template", "Paket", "Harga", "Total", "Metode", "Status", "Dibuat", "Lunas"],
+      t("dash.csv.ordersFile"),
+      [t("dash.csv.invoice"), t("dash.csv.customer"), t("dash.csv.email"), t("dash.csv.whatsapp"), t("dash.csv.template"), t("dash.csv.plan"), t("dash.csv.price"), t("dash.csv.total"), t("dash.csv.method"), t("dash.csv.status"), t("dash.csv.created"), t("dash.csv.paid")],
       ordersList.map((o) => [o.id, o.customer, o.customerEmail, o.customerPhone, o.template, o.tier, o.amount, o.total, o.paymentMethod, o.status, o.date, o.paidAt ?? ""])
     );
   };
@@ -270,43 +280,43 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   const dashboardOrderColumns: DataTableColumn<AdminOrderItem>[] = [
     {
       key: "id",
-      header: "INVOICE",
+      header: t("dash.col.invoice"),
       sortable: true,
       render: (ord) => <span className="font-mono font-bold text-neutral-800">{ord.id}</span>,
     },
     {
       key: "customer",
-      header: "PASANGAN",
+      header: t("dash.col.couple"),
       sortable: true,
       render: (ord) => <span className="font-bold text-neutral-900">{ord.customer}</span>,
     },
     {
       key: "template",
-      header: "TEMPLATE",
+      header: t("dash.col.template"),
       sortable: true,
       render: (ord) => <span className="text-neutral-600">{ord.template}</span>,
     },
     {
       key: "total",
-      header: "NOMINAL",
+      header: t("dash.col.amount"),
       sortable: true,
-      render: (ord) => <span className="font-bold text-neutral-900">Rp {ord.total.toLocaleString("id-ID")}</span>,
+      render: (ord) => <span className="font-bold text-neutral-900">{rp(ord.total)}</span>,
     },
     {
       key: "paymentMethod",
-      header: "METODE",
+      header: t("dash.col.method"),
       sortable: true,
-      render: (ord) => <span className="text-neutral-500 font-medium">{ord.paymentMethod}</span>,
+      render: (ord) => <span className="text-neutral-500 font-medium">{tr(ord.paymentMethod)}</span>,
     },
     {
       key: "status",
-      header: "STATUS",
+      header: t("dash.col.status"),
       sortable: true,
       render: (ord) => <OrderStatusBadge status={ord.status} />,
     },
     {
       key: "action",
-      header: "AKSI",
+      header: t("dash.col.action"),
       align: "right",
       render: (ord) => (
         <Button
@@ -314,7 +324,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
           size="xs"
           onClick={() => setSelectedOrderModal(ord)}
         >
-          Detail
+          {t("dash.detail")}
         </Button>
       ),
     },
@@ -323,7 +333,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   const userColumns: DataTableColumn<AdminUserData>[] = [
     {
       key: "name",
-      header: "PENGGUNA",
+      header: t("dash.col.user"),
       sortable: true,
       render: (usr) => (
         <div className="flex items-center gap-2.5">
@@ -341,7 +351,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
     {
       key: "phone",
-      header: "KONTAK WHATSAPP",
+      header: t("dash.col.whatsapp"),
       sortable: true,
       render: (usr) => (
         usr.phone ? (
@@ -360,37 +370,38 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
     {
       key: "invitationsCount",
-      header: "UNDANGAN",
+      header: t("dash.col.invitations"),
       sortable: true,
       render: (usr) => (
         <span className="font-bold text-neutral-800">
-          {usr.invitationsCount} Undangan
+          {tn("dash.n.invitations", usr.invitationsCount)}
         </span>
       ),
     },
     {
       key: "totalSpent",
-      header: "TOTAL BELANJA",
+      header: t("dash.col.totalSpent"),
       sortable: true,
       render: (usr) => (
         <span className="font-bold text-neutral-900">
-          Rp {usr.totalSpent.toLocaleString("id-ID")}
+          {rp(usr.totalSpent)}
         </span>
       ),
     },
     {
       key: "joinedDate",
-      header: "TGL DAFTAR",
+      header: t("dash.col.joinedDate"),
       sortable: true,
+      sortKey: (usr) => usr.joinedAt,
       render: (usr) => (
         <span className="text-neutral-500 text-xs">
-          {formatIndonesianDateShort(usr.joinedDate)}
+          {usr.joinedDate}
         </span>
       ),
     },
     {
       key: "status",
-      header: "STATUS",
+      header: t("dash.col.status"),
       sortable: true,
       render: (usr) => (
         <span
@@ -400,13 +411,13 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               : "bg-amber-100 text-amber-800"
           }`}
         >
-          {usr.status}
+          {tr(usr.status)}
         </span>
       ),
     },
     {
       key: "action",
-      header: "AKSI",
+      header: t("dash.col.action"),
       align: "right",
       render: (usr) => (
         <Button
@@ -414,7 +425,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
           size="xs"
           onClick={() => setSelectedUserModal(usr)}
         >
-          Detail
+          {t("dash.detail")}
         </Button>
       ),
     },
@@ -423,13 +434,13 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   const invitationColumns: DataTableColumn<AdminInvitationItem>[] = [
     {
       key: "title",
-      header: "ACARA",
+      header: t("dash.col.event"),
       sortable: true,
       render: (inv) => <span className="font-bold text-neutral-900">{inv.title}</span>,
     },
     {
       key: "couple",
-      header: "PASANGAN",
+      header: t("dash.col.couple"),
       sortable: true,
       sortKey: (inv) => `${inv.groom} ${inv.bride}`,
       render: (inv) => (
@@ -440,31 +451,32 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
     {
       key: "eventDate",
-      header: "TANGGAL",
+      header: t("dash.col.date"),
       sortable: true,
+      sortKey: (inv) => inv.eventDateIso,
       render: (inv) => (
         <span className="text-neutral-600 font-medium">
-          {inv.eventDate ? formatIndonesianDateShort(inv.eventDate) : "-"}
+          {inv.eventDate || "-"}
         </span>
       ),
     },
     {
       key: "guestCount",
-      header: "TAMU",
+      header: t("dash.col.guests"),
       sortable: true,
       sortKey: (inv) => inv.guestCount,
       render: (inv) => (
         <div>
           <span className="font-bold text-neutral-900">{inv.rsvpCount}</span>
           <span className="text-neutral-400 text-xs">
-            {inv.guestCount > 0 ? ` / ${inv.guestCount} tamu` : " hadir"} · {inv.wishesCount} ucapan
+            {inv.guestCount > 0 ? tn("dash.n.ofGuests", inv.guestCount) : t("dash.guests.attending")} · {tn("dash.n.wishes", inv.wishesCount)}
           </span>
         </div>
       ),
     },
     {
       key: "action",
-      header: "AKSI",
+      header: t("dash.col.action"),
       align: "right",
       render: (inv) => (
         <a
@@ -473,7 +485,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
           rel="noreferrer"
           className="inline-flex items-center gap-1 text-xs font-extrabold text-[#7d6aee] hover:bg-purple-100 bg-purple-50 border border-purple-200/80 border-b-[2px] border-b-purple-300 px-3 py-1.5 rounded-lg transition-all cursor-pointer active:scale-[0.98] shadow-2xs"
         >
-          <span>Buka</span>
+          <span>{t("dash.open")}</span>
           <ExternalLink className="w-3 h-3" />
         </a>
       ),
@@ -483,13 +495,13 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   const financeOrderColumns: DataTableColumn<AdminOrderItem>[] = [
     {
       key: "id",
-      header: "NO. INVOICE",
+      header: t("dash.col.invoiceNo"),
       sortable: true,
       render: (ord) => <span className="font-mono font-bold text-neutral-800">{ord.id}</span>,
     },
     {
       key: "customer",
-      header: "NAMA PASANGAN",
+      header: t("dash.col.coupleName"),
       sortable: true,
       render: (ord) => (
         <div>
@@ -500,7 +512,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
     {
       key: "template",
-      header: "TEMPLATE & PAKET",
+      header: t("dash.col.templateTier"),
       sortable: true,
       render: (ord) => (
         <div>
@@ -513,31 +525,32 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
     {
       key: "paymentMethod",
-      header: "METODE BAYAR",
+      header: t("dash.col.payMethod"),
       sortable: true,
-      render: (ord) => <span className="text-neutral-600 font-medium">{ord.paymentMethod}</span>,
+      render: (ord) => <span className="text-neutral-600 font-medium">{tr(ord.paymentMethod)}</span>,
     },
     {
       key: "total",
-      header: "TOTAL",
+      header: t("dash.col.total"),
       sortable: true,
-      render: (ord) => <span className="font-black text-neutral-900">Rp {ord.total.toLocaleString("id-ID")}</span>,
+      render: (ord) => <span className="font-black text-neutral-900">{rp(ord.total)}</span>,
     },
     {
       key: "date",
-      header: "WAKTU PESAN",
+      header: t("dash.col.orderTime"),
       sortable: true,
+      sortKey: (ord) => ord.createdAt,
       render: (ord) => <span className="text-neutral-500 text-xs">{ord.date}</span>,
     },
     {
       key: "status",
-      header: "STATUS",
+      header: t("dash.col.status"),
       sortable: true,
       render: (ord) => <OrderStatusBadge status={ord.status} />,
     },
     {
       key: "action",
-      header: "AKSI",
+      header: t("dash.col.action"),
       align: "right",
       render: (ord) => (
         <Button
@@ -545,7 +558,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
           size="xs"
           onClick={() => setSelectedOrderModal(ord)}
         >
-          Detail
+          {t("dash.detail")}
         </Button>
       ),
     },
@@ -554,7 +567,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   const templateColumns: DataTableColumn<AdminTemplateItem>[] = [
     {
       key: "thumbnail",
-      header: "PREVIEW",
+      header: t("dash.col.preview"),
       sortable: false,
       render: (tpl) => (
         <img
@@ -566,7 +579,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
     {
       key: "name",
-      header: "TEMPLATE",
+      header: t("dash.col.template"),
       sortable: true,
       render: (tpl) => (
         <span className="font-bold text-neutral-900">{tpl.name}</span>
@@ -574,7 +587,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
     {
       key: "category",
-      header: "KATEGORI",
+      header: t("dash.col.category"),
       sortable: true,
       render: (tpl) => (
         <span className="text-neutral-700 font-semibold">{tpl.category}</span>
@@ -582,68 +595,68 @@ export const AdminDash: React.FC<AdminDashProps> = ({
     },
     {
       key: "price",
-      header: "HARGA",
+      header: t("dash.col.price"),
       sortable: true,
       render: (tpl) => (
         <div>
           <span className="font-bold text-neutral-900 block">
-            {tpl.price.toLocaleString("id-ID")}
+            {tpl.price.toLocaleString(localeOf(lang))}
           </span>
           <span className="text-[10px] text-neutral-400 line-through">
-            {tpl.originalPrice.toLocaleString("id-ID")}
+            {tpl.originalPrice.toLocaleString(localeOf(lang))}
           </span>
         </div>
       ),
     },
     {
       key: "totalUsers",
-      header: "PENGGUNA",
+      header: t("dash.col.tplUsers"),
       sortable: true,
       render: (tpl) => (
         <span className="font-black text-[#7d6aee]">
-          {tpl.totalUsers.toLocaleString("id-ID")}
+          {tpl.totalUsers.toLocaleString(localeOf(lang))}
         </span>
       ),
     },
     {
       key: "totalRevenue",
-      header: "OMSET",
+      header: t("dash.col.revenue"),
       sortable: true,
       render: (tpl) => (
         <span className="font-bold text-emerald-700">
-          {tpl.totalRevenue.toLocaleString("id-ID")}
+          {tpl.totalRevenue.toLocaleString(localeOf(lang))}
         </span>
       ),
     },
     {
       key: "status",
-      header: "STATUS",
+      header: t("dash.col.status"),
       sortable: true,
       render: (tpl) => (
         <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
-          {tpl.status}
+          {tr(tpl.status)}
         </span>
       ),
     },
     {
       key: "action",
-      header: "AKSI",
+      header: t("dash.col.action"),
       align: "right",
       render: (tpl) => (
         <div className="inline-flex items-center gap-1.5">
           <Button
             variant="outline"
             size="xs"
-            onClick={() => showToast(`Membuka demo pratinjau ${tpl.name}`)}
-            title="Lihat Pratinjau Template"
+            onClick={() => showToast(t("dash.toast.previewDemo", { name: tpl.name }))}
+            title={t("dash.tpl.previewTitle")}
           >
             <Eye className="w-3.5 h-3.5" />
           </Button>
           <Button
             variant="outline"
             size="xs"
-            onClick={() => showToast(`Edit template ${tpl.name}`)}
-            title="Edit Template"
+            onClick={() => showToast(t("dash.toast.editTemplate", { name: tpl.name }))}
+            title={t("dash.tpl.editTitle")}
           >
             <Edit3 className="w-3.5 h-3.5" />
           </Button>
@@ -660,31 +673,31 @@ export const AdminDash: React.FC<AdminDashProps> = ({
   };
 
   const navItems = [
-    { id: "overview" as const, label: "Dashboard", icon: LayoutGrid },
-    { id: "users" as const, label: "Pengguna", icon: Users, badge: usersList.length },
-    { id: "analytics" as const, label: "Transaksi", icon: HeartHandshake },
-    { id: "finance" as const, label: "Keuangan", icon: Wallet, badge: ordersList.filter(o => o.status === "MENUNGGU_VERIFIKASI").length },
-    { id: "templates" as const, label: "Template", icon: Palette, badge: templatesList.length },
-    { id: "invitations" as const, label: "Berlangsung", icon: Radio, badge: invitationsList.length },
+    { id: "overview" as const, label: t("dash.nav.dashboard"), icon: LayoutGrid },
+    { id: "users" as const, label: t("dash.nav.users"), icon: Users, badge: usersList.length },
+    { id: "analytics" as const, label: t("dash.nav.transactions"), icon: HeartHandshake },
+    { id: "finance" as const, label: t("dash.nav.finance"), icon: Wallet, badge: ordersList.filter(o => o.status === "MENUNGGU_VERIFIKASI").length },
+    { id: "templates" as const, label: t("dash.nav.templates"), icon: Palette, badge: templatesList.length },
+    { id: "invitations" as const, label: t("dash.nav.live"), icon: Radio, badge: invitationsList.length },
   ];
 
   const getDashNavbarTitle = () => {
     switch (activeTab) {
       case "users":
-        return "Pengguna";
+        return t("dash.nav.users");
       case "analytics":
-        return "Transaksi";
+        return t("dash.nav.transactions");
       case "finance":
-        return "Keuangan";
+        return t("dash.nav.finance");
       case "templates":
-        return "Template";
+        return t("dash.nav.templates");
       case "invitations":
-        return "Berlangsung";
+        return t("dash.nav.live");
       case "settings":
-        return "Pengaturan";
+        return t("dash.nav.settings");
       case "overview":
       default:
-        return "Dashboard";
+        return t("dash.nav.dashboard");
     }
   };
 
@@ -702,7 +715,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
       <AppSidebar
         logoSrc="/logos/satucerita.png"
         brandName={<>Satu<span className="text-[#7d6aee]">Cerita</span></>}
-        brandSubtitle="Admin Panel"
+        brandSubtitle={t("dash.brandSubtitle")}
         onLogoClick={() => handleSelectTab("overview")}
         collapsible
         collapsed={isSidebarCollapsed}
@@ -718,7 +731,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         footerNavItems={[
           {
             id: "settings",
-            label: "Pengaturan",
+            label: t("dash.nav.settings"),
             icon: Settings,
             isActive: activeTab === "settings",
             onClick: () => handleSelectTab("settings"),
@@ -726,10 +739,10 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         ]}
         footerUser={{
           avatar: adminProfile.avatar,
-          name: adminProfile.name || "Admin",
+          name: adminProfile.name || t("dash.adminDefaultName"),
           email: adminProfile.email,
           onEdit: () => {
-            setEditAdminName("Admin");
+            setEditAdminName(t("dash.adminDefaultName"));
             setEditAdminEmail(adminProfile.email);
             setEditAdminPhone(adminProfile.phone);
             setEditAdminAvatar(adminProfile.avatar);
@@ -763,7 +776,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                   className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Template</span>
+                  <span>{t("dash.addTpl.button")}</span>
                 </button>
               ) : null
             }
@@ -781,18 +794,18 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         <main className="flex-1 min-w-0 flex flex-col p-4 sm:p-6 lg:p-8 gap-6 max-w-7xl mx-auto w-full pb-24 md:pb-8">
           {dataState.loading && (
             <div role="status" className="text-xs font-bold text-[#7d6aee] bg-purple-50 border border-purple-100 rounded-xl px-4 py-2.5">
-              Memuat data dari database…
+              {t("dash.loadingData")}
             </div>
           )}
           {dataState.error && (
             <div role="alert" className="flex items-center justify-between gap-3 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5">
-              <span>{dataState.error}</span>
+              <span>{tr(dataState.error)}</span>
               <button
                 type="button"
                 onClick={() => void loadData()}
                 className="shrink-0 px-3 py-1.5 rounded-lg bg-white border border-rose-200 text-rose-700 hover:bg-rose-100 cursor-pointer"
               >
-                Coba lagi
+                {t("common.retry")}
               </button>
             </div>
           )}
@@ -864,7 +877,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
               onSaveSettings={() => {
                 saveAdminSettingsCache(adminSettings);
-                showToast("Pengaturan rekening pembayaran berhasil disimpan ke cache!");
+                showToast(t("dash.settings.saved"));
               }}
             />
           )}
@@ -874,7 +887,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         <nav
           id="satucerita-dash-bottom-navbar"
           className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
-          aria-label="Satu Cerita Dash Navigation"
+          aria-label={t("dash.bottomNavAria")}
         >
           <div className="max-w-md mx-auto grid grid-cols-7 h-16 px-1">
             <button
@@ -883,8 +896,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               className={`flex items-center justify-center transition-all cursor-pointer relative ${
                 activeTab === "overview" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
               }`}
-              title="Dashboard"
-              aria-label="Dashboard"
+              title={t("dash.nav.dashboard")}
+              aria-label={t("dash.nav.dashboard")}
             >
               <div
                 className={`p-1.5 sm:p-2 rounded-xl transition-all ${
@@ -903,8 +916,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               className={`flex items-center justify-center transition-all cursor-pointer relative ${
                 activeTab === "users" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
               }`}
-              title="Pengguna"
-              aria-label="Pengguna"
+              title={t("dash.nav.users")}
+              aria-label={t("dash.nav.users")}
             >
               <div
                 className={`p-1.5 sm:p-2 rounded-xl transition-all ${
@@ -923,8 +936,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               className={`flex items-center justify-center transition-all cursor-pointer relative ${
                 activeTab === "analytics" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
               }`}
-              title="Transaksi"
-              aria-label="Transaksi"
+              title={t("dash.nav.transactions")}
+              aria-label={t("dash.nav.transactions")}
             >
               <div
                 className={`p-1.5 sm:p-2 rounded-xl transition-all ${
@@ -943,8 +956,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               className={`flex items-center justify-center transition-all cursor-pointer relative ${
                 activeTab === "finance" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
               }`}
-              title="Keuangan"
-              aria-label="Keuangan"
+              title={t("dash.nav.finance")}
+              aria-label={t("dash.nav.finance")}
             >
               <div
                 className={`p-1.5 sm:p-2 rounded-xl transition-all relative ${
@@ -966,8 +979,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               className={`flex items-center justify-center transition-all cursor-pointer relative ${
                 activeTab === "templates" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
               }`}
-              title="Template"
-              aria-label="Template"
+              title={t("dash.nav.templates")}
+              aria-label={t("dash.nav.templates")}
             >
               <div
                 className={`p-1.5 sm:p-2 rounded-xl transition-all ${
@@ -986,8 +999,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               className={`flex items-center justify-center transition-all cursor-pointer relative ${
                 activeTab === "invitations" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
               }`}
-              title="Berlangsung"
-              aria-label="Berlangsung"
+              title={t("dash.nav.live")}
+              aria-label={t("dash.nav.live")}
             >
               <div
                 className={`p-1.5 sm:p-2 rounded-xl transition-all relative ${
@@ -1009,8 +1022,8 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               className={`flex items-center justify-center transition-all cursor-pointer relative ${
                 activeTab === "settings" ? "text-[#7d6aee]" : "text-neutral-500 hover:text-neutral-900"
               }`}
-              title="Pengaturan"
-              aria-label="Pengaturan"
+              title={t("dash.nav.settings")}
+              aria-label={t("dash.nav.settings")}
             >
               <div
                 className={`p-1.5 sm:p-2 rounded-xl transition-all ${
@@ -1031,7 +1044,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-              <h3 className="text-base font-bold text-neutral-900">Detail Pengguna</h3>
+              <h3 className="text-base font-bold text-neutral-900">{t("dash.user.title")}</h3>
               <button
                 type="button"
                 onClick={() => setSelectedUserModal(null)}
@@ -1051,28 +1064,28 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 <h4 className="text-base font-bold text-neutral-900">{selectedUserModal.name}</h4>
                 <p className="text-xs text-neutral-500">{selectedUserModal.email}</p>
                 <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full mt-1 inline-block">
-                  Role: {selectedUserModal.role}
+                  {t("dash.user.role", { role: selectedUserModal.role })}
                 </span>
               </div>
             </div>
 
             <div className="bg-neutral-50 p-3.5 rounded-xl text-xs space-y-2 border border-neutral-100">
               <div className="flex justify-between">
-                <span className="text-neutral-500">Nomor WhatsApp:</span>
+                <span className="text-neutral-500">{t("dash.user.whatsapp")}</span>
                 <span className="font-bold text-neutral-800">{selectedUserModal.phone || "-"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Jumlah Undangan:</span>
-                <span className="font-bold text-neutral-800">{selectedUserModal.invitationsCount} Undangan</span>
+                <span className="text-neutral-500">{t("dash.user.invCount")}</span>
+                <span className="font-bold text-neutral-800">{tn("dash.n.invitations", selectedUserModal.invitationsCount)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Total Transaksi:</span>
+                <span className="text-neutral-500">{t("dash.user.totalTx")}</span>
                 <span className="font-bold text-emerald-600">
-                  Rp {selectedUserModal.totalSpent.toLocaleString("id-ID")}
+                  {rp(selectedUserModal.totalSpent)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Tanggal Bergabung:</span>
+                <span className="text-neutral-500">{t("dash.user.joined")}</span>
                 <span className="font-bold text-neutral-800">{selectedUserModal.joinedDate}</span>
               </div>
             </div>
@@ -1083,7 +1096,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 onClick={() => setSelectedUserModal(null)}
                 className="px-4 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-xs font-bold text-neutral-600 hover:bg-neutral-50 active:scale-[0.99] active:border-b-[2px] cursor-pointer transition-all"
               >
-                Tutup
+                {t("common.close")}
               </button>
               {selectedUserModal.phone ? (
                 <a
@@ -1093,10 +1106,10 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                   className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold border border-emerald-500 border-b-[3px] border-b-emerald-800 shadow-2xs active:scale-[0.99] active:border-b-[2px] flex items-center gap-1.5 cursor-pointer transition-all"
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>Hubungi WA</span>
+                  <span>{t("dash.user.contact")}</span>
                 </a>
               ) : (
-                <span className="text-xs text-neutral-400 px-2">Belum ada nomor WhatsApp</span>
+                <span className="text-xs text-neutral-400 px-2">{t("dash.user.noPhone")}</span>
               )}
             </div>
           </div>
@@ -1110,7 +1123,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <div>
                 <h3 className="text-base font-bold text-neutral-900">
-                  Detail Pesanan #{selectedOrderModal.id}
+                  {t("dash.order.title", { id: selectedOrderModal.id })}
                 </h3>
                 <span className="text-xs text-neutral-400">{selectedOrderModal.date}</span>
               </div>
@@ -1125,45 +1138,44 @@ export const AdminDash: React.FC<AdminDashProps> = ({
 
             <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100 space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-neutral-500">Pemesan:</span>
+                <span className="text-neutral-500">{t("dash.order.customer")}</span>
                 <span className="font-bold text-neutral-900">{selectedOrderModal.customer}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Email:</span>
+                <span className="text-neutral-500">{t("dash.order.email")}</span>
                 <span className="font-medium text-neutral-700">{selectedOrderModal.customerEmail}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">WhatsApp:</span>
+                <span className="text-neutral-500">{t("dash.order.whatsapp")}</span>
                 <span className="font-medium text-neutral-700">{selectedOrderModal.customerPhone || "-"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Template / Paket:</span>
+                <span className="text-neutral-500">{t("dash.order.tplPlan")}</span>
                 <span className="font-bold text-neutral-900">
                   {selectedOrderModal.template}
                   {selectedOrderModal.tier ? ` (${selectedOrderModal.tier})` : ""}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Metode Pembayaran:</span>
-                <span className="font-bold text-[#7d6aee]">{selectedOrderModal.paymentMethod}</span>
+                <span className="text-neutral-500">{t("dash.order.method")}</span>
+                <span className="font-bold text-[#7d6aee]">{tr(selectedOrderModal.paymentMethod)}</span>
               </div>
               <div className="flex justify-between text-sm font-extrabold border-t border-neutral-200 pt-2 mt-2">
-                <span className="text-neutral-900">Total Pembayaran:</span>
+                <span className="text-neutral-900">{t("dash.order.totalPay")}</span>
                 <span className="text-emerald-600">
-                  Rp {selectedOrderModal.total.toLocaleString("id-ID")}
+                  {rp(selectedOrderModal.total)}
                 </span>
               </div>
             </div>
 
             {selectedOrderModal.status === "MENUNGGU_VERIFIKASI" && (
               <div className="p-3 rounded-xl bg-amber-50 text-amber-800 text-xs font-medium border border-amber-200 leading-relaxed">
-                Pesanan ini ditahan otomatis (nominal pembayaran tidak cocok atau ditandai fraud challenge). Periksa transaksinya di dashboard Midtrans;
-                status baru berubah lunas lewat notifikasi pembayaran Midtrans.
+                {t("dash.order.reviewNote")}
               </div>
             )}
             {selectedOrderModal.status === "MENUNGGU_BAYAR" && (
               <div className="p-3 rounded-xl bg-sky-50 text-sky-800 text-xs font-medium border border-sky-200">
-                Pembeli belum menyelesaikan pembayaran. Status berubah otomatis saat Midtrans mengirim notifikasi.
+                {t("dash.order.unpaidNote")}
               </div>
             )}
 
@@ -1173,7 +1185,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 onClick={() => setSelectedOrderModal(null)}
                 className="px-4 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-xs font-bold text-neutral-600 hover:bg-neutral-50 active:scale-[0.99] active:border-b-[2px] cursor-pointer transition-all"
               >
-                Tutup
+                {t("common.close")}
               </button>
             </div>
           </div>
@@ -1185,7 +1197,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-100 border-b-[4px] border-b-purple-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-              <h3 className="text-base font-bold text-neutral-900">Tambah Template Baru</h3>
+              <h3 className="text-base font-bold text-neutral-900">{t("dash.addTpl.title")}</h3>
               <button
                 type="button"
                 onClick={() => setIsAddTemplateModalOpen(false)}
@@ -1198,11 +1210,11 @@ export const AdminDash: React.FC<AdminDashProps> = ({
             <div className="space-y-3">
               <div>
                 <label className="text-xs font-semibold text-neutral-700 block mb-1">
-                  Nama Template
+                  {t("dash.addTpl.name")}
                 </label>
                 <input
                   type="text"
-                  placeholder="Contoh: Golden Serenade Royal"
+                  placeholder={t("dash.addTpl.namePh")}
                   className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
                 />
               </div>
@@ -1210,18 +1222,18 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-neutral-700 block mb-1">
-                    Kategori
+                    {t("dash.addTpl.category")}
                   </label>
                   <select className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 bg-white">
-                    <option>Floral &amp; Elegant</option>
-                    <option>Luxury &amp; Modern</option>
-                    <option>Tradisional Adat</option>
-                    <option>Minimalist Clean</option>
+                    <option>{t("dash.addTpl.cat1")}</option>
+                    <option>{t("dash.addTpl.cat2")}</option>
+                    <option>{t("dash.addTpl.cat3")}</option>
+                    <option>{t("dash.addTpl.cat4")}</option>
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-neutral-700 block mb-1">
-                    Tier Paket
+                    {t("dash.addTpl.tier")}
                   </label>
                   <select className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 bg-white">
                     <option>Gold Tier</option>
@@ -1233,7 +1245,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-700 block mb-1">
-                  Harga Promo (Rp)
+                  {t("dash.addTpl.promo")}
                 </label>
                 <input
                   type="number"
@@ -1249,17 +1261,17 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 onClick={() => setIsAddTemplateModalOpen(false)}
                 className="px-4 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-xs font-bold text-neutral-600 hover:bg-neutral-50 active:scale-[0.99] active:border-b-[2px] cursor-pointer transition-all"
               >
-                Batal
+                {t("common.cancel")}
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  showToast("Template baru berhasil ditambahkan ke katalog!");
+                  showToast(t("dash.addTpl.saved"));
                   setIsAddTemplateModalOpen(false);
                 }}
                 className="px-5 py-2.5 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] cursor-pointer transition-all"
               >
-                Simpan Template
+                {t("dash.addTpl.save")}
               </button>
             </div>
           </div>
@@ -1274,7 +1286,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               <div className="flex items-center gap-2">
                 <Pencil className="w-4 h-4 text-[#7d6aee]" />
                 <h3 className="text-base font-bold text-neutral-900">
-                  Edit Profil Administrator
+                  {t("dash.profile.title")}
                 </h3>
               </div>
               <button
@@ -1291,7 +1303,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 <div className="relative group">
                   <img
                     src={editAdminAvatar}
-                    alt="Preview Avatar Admin"
+                    alt={t("dash.profile.avatarAlt")}
                     className="size-20 rounded-full object-cover border-2 border-[#7d6aee] shadow-sm mb-3"
                   />
                   <label className="absolute bottom-3 right-0 size-7 bg-[#7d6aee] hover:bg-[#6b58e0] text-white rounded-full flex items-center justify-center cursor-pointer shadow-md transition-transform active:scale-95">
@@ -1309,7 +1321,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 </div>
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-xs font-bold text-neutral-700 hover:bg-neutral-50 cursor-pointer shadow-2xs active:scale-[0.99] active:border-b-[2px] transition-all">
                   <Upload className="w-3.5 h-3.5 text-[#7d6aee]" />
-                  <span>Ganti Foto Profil</span>
+                  <span>{t("dash.profile.changePhoto")}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -1324,7 +1336,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-800 block mb-1">
-                  Nama Administrator
+                  {t("dash.profile.name")}
                 </label>
                 <input
                   type="text"
@@ -1336,13 +1348,13 @@ export const AdminDash: React.FC<AdminDashProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-800 block mb-1">
-                  Email
+                  {t("dash.profile.email")}
                 </label>
                 <input
                   type="email"
                   value={editAdminEmail}
                   readOnly
-                  title="Email admin terkunci dan tidak dapat diubah"
+                  title={t("dash.profile.emailLocked")}
                   onChange={() => {}}
                   className="w-full bg-white border border-neutral-200 border-b-[2px] border-b-neutral-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
                 />
@@ -1350,7 +1362,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-800 block mb-1">
-                  Nomor WhatsApp Administrator
+                  {t("dash.profile.phone")}
                 </label>
                 <input
                   type="text"
@@ -1360,7 +1372,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                   className="w-full bg-white border border-neutral-200 border-b-[2px] border-b-neutral-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
                 />
                 <p className="text-[11px] text-neutral-400 mt-1">
-                  Nomor WhatsApp ini disimpan di cache browser dan digunakan untuk notifikasi sistem.
+                  {t("dash.profile.phoneHelp")}
                 </p>
               </div>
             </div>
@@ -1371,14 +1383,14 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 onClick={() => setIsEditAdminProfileOpen(false)}
                 className="px-4 py-2 rounded-xl bg-white border border-neutral-200 border-b-[3px] border-b-neutral-300/80 text-xs font-bold text-neutral-600 hover:bg-neutral-50 active:scale-[0.99] active:border-b-[2px] cursor-pointer transition-all"
               >
-                Batal
+                {t("common.cancel")}
               </button>
               <button
                 type="button"
                 onClick={async () => {
                   const res = await updateProfile({ name: editAdminName, phone: editAdminPhone });
                   if (!res.ok || !res.user) {
-                    showToast(res.error || "Gagal menyimpan profil admin.");
+                    showToast(res.error ? tr(res.error) : t("dash.profile.saveFailed"));
                     return;
                   }
                   setSessionUser(res.user);
@@ -1387,11 +1399,11 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                     setCache(adminAvatarKey, editAdminAvatar);
                   }
                   setIsEditAdminProfileOpen(false);
-                  showToast("Profil admin berhasil disimpan!");
+                  showToast(t("dash.profile.saved"));
                 }}
                 className="px-5 py-2.5 rounded-xl bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] cursor-pointer transition-all"
               >
-                Simpan ke Cache
+                {t("dash.profile.saveCache")}
               </button>
             </div>
           </div>
@@ -1416,10 +1428,10 @@ export const AdminDash: React.FC<AdminDashProps> = ({
               <LogOut className="w-6 h-6" />
             </div>
             <h3 className="text-base font-extrabold text-neutral-900 tracking-tight">
-              Keluar dari Admin Dashboard?
+              {t("dash.logout.title")}
             </h3>
             <p className="text-xs text-neutral-500 font-medium mt-1 leading-relaxed">
-              Sesi login administrator Anda akan diakhiri dan diarahkan kembali ke halaman masuk.
+              {t("dash.logout.body")}
             </p>
 
             <div className="grid grid-cols-2 gap-2 mt-5">
@@ -1429,7 +1441,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 onClick={() => setIsLogoutModalOpen(false)}
                 className="w-full justify-center"
               >
-                Batal
+                {t("common.cancel")}
               </Button>
               <Button
                 variant="danger"
@@ -1437,7 +1449,7 @@ export const AdminDash: React.FC<AdminDashProps> = ({
                 onClick={handlePerformLogout}
                 className="w-full justify-center"
               >
-                Ya, Keluar
+                {t("dash.logout.confirm")}
               </Button>
             </div>
           </div>

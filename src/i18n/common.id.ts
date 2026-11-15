@@ -4,6 +4,17 @@
  * `common.en.ts` WAJIB punya key yang sama (dicek TypeScript).
  */
 export const commonId = {
+  // Umum
+  "common.cancel": "Batal",
+  "common.save": "Simpan",
+  "common.back": "Kembali",
+  "common.loading": "Memuat",
+  "common.close": "Tutup",
+  "common.retry": "Coba lagi",
+  "auth.denied": "Akses ditolak",
+  "auth.signOut": "Keluar",
+  "auth.noAdminAccess": "Akun ini tidak memiliki akses ke dashboard admin.",
+
   // Language switcher
   "lang.choose": "Pilih Bahasa",
 
@@ -35,17 +46,6 @@ export const commonId = {
   "auth.err.pwMismatch": "Konfirmasi kata sandi tidak sama.",
   "auth.err.pwRequired": "Kata sandi wajib diisi.",
 
-  // Pesan error dari API/Worker (dipetakan lewat translateApiError)
-  "api.err.connect": "Tidak dapat terhubung ke server.",
-  "api.err.invalidCreds": "Email atau kata sandi tidak valid.",
-  "api.err.googleOnly": "Akun ini hanya bisa masuk lewat Google.",
-  "api.err.unconfirmed": "Email belum dikonfirmasi. Cek kotak masuk Anda.",
-  "api.err.wrongCreds": "Email atau kata sandi salah.",
-  "api.err.emailFormat": "Format email tidak valid.",
-  "api.err.pwMin": "Kata sandi minimal 8 karakter.",
-  "api.err.nameMin": "Nama lengkap minimal 2 karakter.",
-  "api.err.emailBlocked": "Email ini tidak dapat didaftarkan.",
-  "api.err.weakPw": "Kata sandi terlalu lemah.",
-  "api.err.signupFailed": "Pendaftaran gagal. Periksa data Anda lalu coba lagi.",
+  // Pesan error dari API/Worker diterjemahkan lewat peta frasa (phrases.ts)
   "api.err.generic": "Terjadi kesalahan. Coba lagi.",
 } as const;

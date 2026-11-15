@@ -6,13 +6,15 @@ import { landingId } from "./landing.id";
 import { landingEn } from "./landing.en";
 import { studioId } from "./studio.id";
 import { studioEn } from "./studio.en";
+import { dashId } from "./dash.id";
+import { dashEn } from "./dash.en";
+import { trPhrase } from "./phrases";
 
 /**
- * Gabungan kamus semua area. Saat step Dash dikerjakan,
- * cukup tambahkan `dashId/dashEn` di sini.
+ * Gabungan kamus semua area (common, landing, studio, dash).
  */
-const ID = { ...commonId, ...landingId, ...studioId } as const;
-const EN: Record<keyof typeof ID, string> = { ...commonEn, ...landingEn, ...studioEn };
+const ID = { ...commonId, ...landingId, ...studioId, ...dashId } as const;
+const EN: Record<keyof typeof ID, string> = { ...commonEn, ...landingEn, ...studioEn, ...dashEn };
 
 export type TKey = keyof typeof ID;
 export type TVars = Record<string, string | number>;
@@ -35,7 +37,15 @@ export function translate(lang: Language, key: TKey, vars?: TVars): string {
 export function useT() {
   const { lang } = useLanguage();
   const t = useCallback<TFunc>((key, vars) => translate(lang, key, vars), [lang]);
-  return useMemo(() => ({ t, lang }), [t, lang]);
+  /** Terjemahkan teks Indonesia dari luar komponen (label editor, pesan error server, dll). */
+  const tr = useCallback((text: string | undefined | null) => trPhrase(lang, text ?? ""), [lang]);
+  /** Jumlah satu/banyak: `tn("dash.n.orders", 3)` memakai key `dash.n.orders.one` / `.other`. */
+  const tn = useCallback(
+    (base: string, n: number, vars?: TVars) =>
+      translate(lang, `${base}.${n === 1 ? "one" : "other"}` as TKey, { n, ...vars }),
+    [lang]
+  );
+  return useMemo(() => ({ t, tr, tn, lang }), [t, tr, tn, lang]);
 }
 
 /** Locale BCP-47 untuk format angka/tanggal. */
@@ -46,27 +56,45 @@ export function formatRupiahLang(val: number, lang: Language): string {
   return "Rp " + val.toLocaleString(localeOf(lang));
 }
 
-/**
- * Pesan error dari Worker/API selalu berbahasa Indonesia. Petakan ke key
- * kamus supaya tampil sesuai bahasa aktif; pesan yang tidak dikenal
- * dikembalikan apa adanya.
- */
-const API_ERROR_KEYS: Record<string, TKey> = {
-  "Tidak dapat terhubung ke server.": "api.err.connect",
-  "Email atau kata sandi tidak valid.": "api.err.invalidCreds",
-  "Akun ini hanya bisa masuk lewat Google.": "api.err.googleOnly",
-  "Email belum dikonfirmasi. Cek kotak masuk Anda.": "api.err.unconfirmed",
-  "Email atau kata sandi salah.": "api.err.wrongCreds",
-  "Format email tidak valid.": "api.err.emailFormat",
-  "Kata sandi minimal 8 karakter.": "api.err.pwMin",
-  "Nama lengkap minimal 2 karakter.": "api.err.nameMin",
-  "Email ini tidak dapat didaftarkan.": "api.err.emailBlocked",
-  "Kata sandi terlalu lemah.": "api.err.weakPw",
-  "Pendaftaran gagal. Periksa data Anda lalu coba lagi.": "api.err.signupFailed",
+/** Tanggal pendek WIB, mis. "24 Sep 2026" (id) / "Sep 24, 2026" (en). */
+const MONTHS: Record<Language, string[]> = {
+  id: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
+  en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
 };
 
-export function translateApiError(t: TFunc, message: string | undefined): string {
-  if (!message) return t("api.err.generic");
-  const key = API_ERROR_KEYS[message];
-  return key ? t(key) : message;
+function wib(iso: string): Date | null {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return new Date(d.getTime() + 7 * 3600_000);
 }
+
+export function formatShortDate(iso: string, lang: Language): string {
+  const w = wib(iso);
+  if (!w) return iso;
+  const day = w.getUTCDate();
+  const mon = MONTHS[lang][w.getUTCMonth()];
+  const year = w.getUTCFullYear();
+  return lang === "en" ? `${mon} ${day}, ${year}` : `${day} ${mon} ${year}`;
+}
+
+/** Tanggal + jam WIB. id: "24 Sep 2026, 14.30 WIB" / en: "Sep 24, 2026, 14:30 WIB". */
+export function formatDateTimeWib(iso: string, lang: Language): string {
+  const w = wib(iso);
+  if (!w) return iso;
+  const p = (n: number) => String(n).padStart(2, "0");
+  const sep = lang === "en" ? ":" : ".";
+  return `${formatShortDate(iso, lang)}, ${p(w.getUTCHours())}${sep}${p(w.getUTCMinutes())} WIB`;
+}
+
+/** Nama bulan & hari singkat/panjang mengikuti bahasa (untuk label grafik dan judul periode). */
+const MONTHS_LONG: Record<Language, string[]> = {
+  id: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+  en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+};
+const WEEKDAYS_SHORT: Record<Language, string[]> = {
+  id: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+  en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+};
+export const monthsShort = (lang: Language) => MONTHS[lang];
+export const monthsLong = (lang: Language) => MONTHS_LONG[lang];
+export const weekdaysShort = (lang: Language) => WEEKDAYS_SHORT[lang];

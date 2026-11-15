@@ -15,9 +15,10 @@ export interface DashLoginPageProps {
 export const DashLoginPage: React.FC<DashLoginPageProps> = ({
   onNavigate,
 }) => {
-  const { t } = useT();
 
-  const [notice, setNotice] = useState<{ type: "error"; text: string } | null>(null);
+  const { t } = useT();
+  const [noticeKey, setNoticeKey] = useState<"dash.login.forbidden" | "dash.login.failed" | null>(null);
+  const notice = noticeKey ? { type: "error" as const, text: t(noticeKey) } : null;
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.search) {
@@ -29,8 +30,8 @@ export const DashLoginPage: React.FC<DashLoginPageProps> = ({
     }
     const err = new URLSearchParams(window.location.search).get("error");
     if (err === "forbidden")
-      setNotice({ type: "error", text: t("st.dash.login.forbidden") });
-    else if (err) setNotice({ type: "error", text: t("st.dash.login.failed") });
+      setNoticeKey("dash.login.forbidden");
+    else if (err) setNoticeKey("dash.login.failed");
     // Sudah login sebagai admin -> langsung ke dashboard
     fetchSession().then((u) => u?.role === "admin" && window.location.replace(urls.dashHome()));
   }, []);
@@ -84,7 +85,7 @@ export const DashLoginPage: React.FC<DashLoginPageProps> = ({
                 Satu Cerita
               </span>
               <span className="text-[10px] text-white/80 font-bold uppercase tracking-wider mt-0.5">
-                {t("st.dash.login.adminPortal")}
+                {t("dash.login.portal")}
               </span>
             </div>
           </button>

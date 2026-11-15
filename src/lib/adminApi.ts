@@ -8,30 +8,30 @@ import type {
   AdminUserData,
 } from "@/pages/dash/types";
 import { avatarFallback } from "@/lib/auth";
+import type { Language } from "@/context/LanguageContext";
+import { formatShortDate } from "@/i18n";
 
 const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || "";
 
-const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 const pad = (n: number) => String(n).padStart(2, "0");
 
-/** "14 Nov 2026" (WIB). */
-export function fmtDate(iso: string): string {
+/** id: "14 Nov 2026" / en: "Nov 14, 2026" (WIB). */
+export function fmtDate(iso: string, lang: Language = "id"): string {
   const d = new Date(iso);
   if (!iso || Number.isNaN(d.getTime())) return "";
-  const w = new Date(d.getTime() + 7 * 3600_000);
-  return `${w.getUTCDate()} ${BULAN[w.getUTCMonth()]} ${w.getUTCFullYear()}`;
+  return formatShortDate(iso, lang);
 }
-/** "14 Nov 2026, 14:20" (WIB). */
-export function fmtDateTime(iso: string): string {
+/** id: "14 Nov 2026, 14:20" / en: "Nov 14, 2026, 14:20" (WIB). */
+export function fmtDateTime(iso: string, lang: Language = "id"): string {
   const d = new Date(iso);
   if (!iso || Number.isNaN(d.getTime())) return "";
   const w = new Date(d.getTime() + 7 * 3600_000);
-  return `${fmtDate(iso)}, ${pad(w.getUTCHours())}:${pad(w.getUTCMinutes())}`;
+  return `${fmtDate(iso, lang)}, ${pad(w.getUTCHours())}:${pad(w.getUTCMinutes())}`;
 }
 
 type RawUser = Omit<AdminUserData, "joinedDate" | "avatar"> & { avatar: string };
 type RawOrder = Omit<AdminOrderItem, "date">;
-type RawInvitation = Omit<AdminInvitationItem, "eventDate"> & { eventDate: string };
+type RawInvitation = Omit<AdminInvitationItem, "eventDate" | "eventDateIso"> & { eventDate: string };
 
 interface RawOverview {
   generatedAt: string;
@@ -61,7 +61,7 @@ export async function fetchAdminOverview(): Promise<{ ok: true; data: AdminData 
         users: raw.users.map((u) => ({ ...u, joinedDate: fmtDate(u.joinedAt), avatar: u.avatar || avatarFallback(u.name) })),
         orders: raw.orders.map((o) => ({ ...o, date: fmtDateTime(o.createdAt) })),
         templates: raw.templates ?? [],
-        invitations: (raw.invitations ?? []).map((i) => ({ ...i, eventDate: i.eventDate ? fmtDate(`${i.eventDate}T00:00:00+07:00`) : "" })),
+        invitations: (raw.invitations ?? []).map((i) => ({ ...i, eventDateIso: i.eventDate ? `${i.eventDate}T00:00:00+07:00` : "", eventDate: i.eventDate ? fmtDate(`${i.eventDate}T00:00:00+07:00`) : "" })),
       },
     };
   } catch {

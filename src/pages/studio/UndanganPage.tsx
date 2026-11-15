@@ -2,12 +2,12 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, Clock, Pencil, ChevronRight, Plus, Heart, RefreshCw } from "lucide-react";
 import { PATHS } from "@/routes";
 import { urls } from "@/lib/urls";
-import { TEMPLATES_DATA, formatRupiah } from "@/data/templates";
+import { TEMPLATES_DATA } from "@/data/templates";
 import { isDemo } from "@/lib/studioDemo";
 import { EDIT_STEPS, FINAL_PROGRESS, isEditFinished } from "@/lib/editSteps";
 import { listInvitations, previewUrl, type InvitationSummary } from "@/lib/invitationApi";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
-import { useT } from "@/i18n";
+import { useT, formatRupiahLang, type TKey } from "@/i18n";
 import { UserInvitation, OrderItem } from "./types";
 
 export interface UndanganPageProps {
@@ -61,7 +61,8 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
   pendingOrders = [],
   userName,
 }) => {
-  const { t } = useT();
+  const { t, lang } = useT();
+  const formatRupiah = (v: number) => formatRupiahLang(v, lang);
   const demo = isDemo();
   const [load, setLoad] = useState<Load>(demo ? "ready" : "loading");
   const [fromApi, setFromApi] = useState<InvitationSummary[]>([]);
@@ -91,7 +92,7 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
         return {
           key: inv.id,
           id: inv.id,
-          title: inv.title?.trim() || (tpl ? t("st.undangan.fallbackTitle", { nama: tpl.title }) : t("st.undangan.fallback")),
+          title: inv.title?.trim() || (tpl ? t("inv.defaultTitleOf", { title: tpl.title }) : t("inv.defaultTitle")),
           cover: tpl?.image ?? "",
           templateSlug: inv.templateSlug,
           doneSteps: inv.progressStep ?? 0,
@@ -121,7 +122,7 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
       return;
     }
     if (!c.templateSlug) {
-      showToast?.(t("st.undangan.toast.previewUnavailable"));
+      showToast?.("Pratinjau belum tersedia untuk undangan ini.");
       return;
     }
     window.open(urls.landing(`/preview/${c.templateSlug}`), "_blank", "noopener");
@@ -132,8 +133,8 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
   return (
     <div className="animate-fadeIn">
       <StudioPageHeader
-        title={firstName ? t("st.undangan.welcome", { nama: firstName }) : t("st.undangan.welcomePlain")}
-        subtitle={t("st.undangan.welcomeSub")}
+        title={firstName ? t("inv.welcomeNamed", { name: firstName }) : t("inv.welcome")}
+        subtitle={t("inv.subtitle")}
         onLogoClick={() => onNavigate(PATHS.home)}
       />
 
@@ -146,8 +147,8 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-extrabold text-amber-900">
                 {pendingOrders.length > 1
-                  ? t("st.undangan.pendingMany", { jumlah: pendingOrders.length })
-                  : t("st.undangan.pendingOne")}
+                  ? t("inv.unpaidMany", { n: pendingOrders.length })
+                  : t("inv.unpaidOne")}
               </h4>
               <p className="text-xs text-amber-800 mt-0.5 truncate">
                 {pendingOrders[0].templateName} · {formatRupiah(pendingOrders[0].total)}
@@ -158,13 +159,13 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
               onClick={() => onNavigate(`/studio/order/${pendingOrders[0].invoiceNo}`)}
               className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-neutral-900 font-bold text-xs cursor-pointer shrink-0"
             >
-              {t("st.undangan.pay")}
+              {t("inv.pay")}
             </button>
           </div>
         )}
 
         {load === "loading" && cards.length === 0 && (
-          <div className={`${shell} p-4 animate-pulse`} aria-busy="true" aria-label={t("st.undangan.aria.loading")}>
+          <div className={`${shell} p-4 animate-pulse`} aria-busy="true" aria-label={t("inv.loading")}>
             <div className="h-4 w-36 rounded bg-[#ece8fb]" />
             <div className="mt-3 aspect-[16/10] rounded-2xl bg-[#ece8fb]" />
             <div className="mt-5 h-4 w-44 rounded bg-[#ece8fb]" />
@@ -174,9 +175,9 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
 
         {load === "error" && cards.length === 0 && (
           <section className={`${shell} p-8 text-center flex flex-col items-center`}>
-            <h2 className="text-lg font-black text-[#17112e]">{t("st.undangan.loadFailed")}</h2>
+            <h2 className="text-lg font-black text-[#17112e]">{t("inv.loadFailed")}</h2>
             <p className="mt-1.5 text-sm text-[#5a5476] max-w-xs leading-relaxed">
-              {t("st.undangan.loadFailedDesc")}
+              {t("inv.checkConnection")}
             </p>
             <button
               type="button"
@@ -184,14 +185,14 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
               className="mt-5 h-11 px-5 rounded-full bg-[#7d6aee] hover:bg-[#6b58e0] text-white font-bold text-sm inline-flex items-center gap-2 cursor-pointer"
             >
               <RefreshCw className="w-4 h-4" />
-              {t("st.common.retry")}
+              {t("common.retry")}
             </button>
           </section>
         )}
 
         {cards.length > 1 && (
           <h2 className="px-1 text-xs font-bold uppercase tracking-wider text-[#7a7494]">
-            {t("st.undangan.myCount", { jumlah: cards.length })}
+            {t("inv.myCount", { n: cards.length })}
           </h2>
         )}
 
@@ -209,9 +210,9 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
             <div className="size-16 rounded-2xl bg-[#f1edff] flex items-center justify-center">
               <Heart className="w-8 h-8 text-[#7d6aee]" />
             </div>
-            <h2 className="mt-4 text-lg font-black text-[#17112e]">{t("st.undangan.empty.title")}</h2>
+            <h2 className="mt-4 text-lg font-black text-[#17112e]">{t("inv.emptyTitle")}</h2>
             <p className="mt-1.5 text-sm text-[#5a5476] max-w-xs leading-relaxed">
-              {t("st.undangan.empty.desc")}
+              {t("inv.emptyDesc")}
             </p>
             <button
               type="button"
@@ -219,7 +220,7 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
               className="mt-5 h-12 px-6 rounded-full bg-[#7d6aee] hover:bg-[#6b58e0] text-white font-bold text-[15px] inline-flex items-center gap-2 shadow-[0_6px_16px_rgba(125,106,238,0.35)] cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              {t("st.undangan.empty.cta")}
+              {t("inv.pickTemplate")}
             </button>
           </section>
         )}
@@ -251,13 +252,13 @@ const InvitationProgressCard: React.FC<{
         onClick={onPreview}
         className="w-full flex items-center justify-between text-left cursor-pointer"
       >
-        <h2 className="text-[15px] font-extrabold text-[#17112e]">{t("st.undangan.previewCard")}</h2>
+        <h2 className="text-[15px] font-extrabold text-[#17112e]">{t("inv.previewTitle")}</h2>
         <ChevronRight className="w-5 h-5 text-[#7a7494]" />
       </button>
       <button
         type="button"
         onClick={onPreview}
-        aria-label={`Buka preview ${card.title}`}
+        aria-label={t("inv.previewAria", { title: card.title })}
         className="mt-3 relative block w-full aspect-[16/10] rounded-2xl overflow-hidden cursor-pointer bg-gradient-to-br from-[#b8abff] to-[#7d6aee]"
       >
         {card.cover && (
@@ -275,7 +276,7 @@ const InvitationProgressCard: React.FC<{
               card.status === "published" ? "bg-emerald-500/90 text-white" : "bg-white/85 text-[#5b49c9]"
             }`}
           >
-            {card.status === "published" ? "Tayang" : "Draft"}
+            {card.status === "published" ? t("inv.published") : t("inv.draft")}
           </span>
         )}
         <span className="absolute inset-x-0 bottom-0 p-4 text-center text-white text-lg font-bold italic drop-shadow">
@@ -286,11 +287,11 @@ const InvitationProgressCard: React.FC<{
       {/* Progres edit: bar dan langkah digabung */}
       <div className="mt-5 px-1">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-[15px] font-extrabold text-[#17112e]">Progres Edit Undangan</h3>
+          <h3 className="text-[15px] font-extrabold text-[#17112e]">{t("inv.progressTitle")}</h3>
           {finished ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
               <Check className="w-3.5 h-3.5" strokeWidth={3} />
-              Selesai
+              {t("inv.done")}
             </span>
           ) : (
             <span className="text-base font-black text-[#17112e] tabular-nums">{percent}%</span>
@@ -299,7 +300,7 @@ const InvitationProgressCard: React.FC<{
 
         <ol
           className="mt-4 relative grid grid-cols-5"
-          aria-label={finished ? "Progres edit undangan: selesai" : `Progres edit undangan: ${percent}%`}
+          aria-label={finished ? t("inv.progressAriaDone") : t("inv.progressAria", { percent })}
         >
           <span aria-hidden className="absolute top-[13px] left-[10%] right-[10%] h-1 -translate-y-1/2 rounded-full bg-[#e1dbf8]" />
           <span
@@ -332,7 +333,7 @@ const InvitationProgressCard: React.FC<{
                     isCurrent ? "font-bold text-[#6b58e0]" : "text-[#5a5476]"
                   }`}
                 >
-                  {st.title}
+                  {t(`edit.step.${i + 1}.title` as TKey)}
                 </span>
               </li>
             );
@@ -346,7 +347,7 @@ const InvitationProgressCard: React.FC<{
         className="mt-5 w-full h-12 rounded-full bg-[#7d6aee] hover:bg-[#6b58e0] active:scale-[0.99] text-white font-bold text-[15px] inline-flex items-center justify-center gap-2 shadow-[0_6px_16px_rgba(125,106,238,0.35)] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7d6aee]"
       >
         <Pencil className="w-4 h-4" />
-        Edit Undangan
+        {t("studio.title.edit")}
       </button>
     </article>
   );

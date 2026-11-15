@@ -17,6 +17,8 @@ import { InputBase } from "@/components/ui/input";
 import { InputGroup } from "@/components/ui/input-group";
 import { PATHS } from "@/routes";
 import { UserProfileData } from "@/lib/cache";
+import { useT } from "@/i18n";
+import { useLanguage } from "@/context/LanguageContext";
 
 export interface ProfilePageProps {
   userProfile: UserProfileData;
@@ -48,7 +50,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const [profileNameInput, setProfileNameInput] = useState(userProfile.name);
   const [profileWaInput, setProfileWaInput] = useState(() => getInitialWaDigits(userProfile.phone));
-  const [profileLanguage, setProfileLanguage] = useState<"id" | "en">("id");
+  // Bahasa dihubungkan ke pilihan bahasa global (berlaku untuk landing, studio, dan dash).
+  const { lang: profileLanguage, setLang: setProfileLanguage } = useLanguage();
+  const { t } = useT();
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -87,8 +91,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               type="button"
               onClick={onOpenEditModal}
               className="absolute -bottom-0.5 -right-0.5 size-6 sm:size-7 rounded-full bg-white text-[#7d6aee] hover:bg-purple-50 shadow-md border border-purple-200/60 flex items-center justify-center transition-all cursor-pointer active:scale-95"
-              title="Edit Profil"
-              aria-label="Edit Profil"
+              title={t("studio.editProfile.title")}
+              aria-label={t("studio.editProfile.title")}
             >
               <Pencil className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#7d6aee]" />
             </button>
@@ -113,7 +117,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               {invitationsCount}
             </strong>
             <span className="text-[10px] text-purple-100 font-semibold uppercase tracking-wider">
-              Undangan
+              {t("profile.invitations")}
             </span>
           </div>
           <div className="p-2.5 rounded-xl bg-white/15 backdrop-blur-xs border border-white/10">
@@ -121,7 +125,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               {ordersCount}
             </strong>
             <span className="text-[10px] text-purple-100 font-semibold uppercase tracking-wider">
-              Pesanan
+              {t("profile.orders")}
             </span>
           </div>
           <div className="p-2.5 rounded-xl bg-white/15 backdrop-blur-xs border border-white/10">
@@ -129,7 +133,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               {rsvpCount}
             </strong>
             <span className="text-[10px] text-purple-100 font-semibold uppercase tracking-wider">
-              Tamu RSVP
+              {t("profile.rsvp")}
             </span>
           </div>
         </div>
@@ -138,7 +142,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       {/* Card INFORMASI PENGGUNA */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs space-y-3.5">
         <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block px-1 pb-0.5">
-          INFORMASI PENGGUNA
+          {t("profile.infoTitle")}
         </span>
 
         <div className="space-y-3">
@@ -147,7 +151,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <InputGroup
             leadingAddon={
               <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-[14px] sm:text-base md:text-[16px] shrink-0">
-                Nama
+                {t("profile.name")}
               </InputGroup.Prefix>
             }
             trailingAddon={
@@ -162,7 +166,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           >
             <InputBase
               className="font-semibold text-[14px] sm:text-base md:text-[16px] text-neutral-800 py-3 sm:py-3.5"
-              placeholder="Masukkan nama lengkap"
+              placeholder={t("profile.namePh")}
               value={profileNameInput}
               onChange={(e) => handleNameChange(e.target.value)}
             />
@@ -172,7 +176,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <InputGroup
             leadingAddon={
               <InputGroup.Prefix className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 justify-start text-left font-semibold text-neutral-700 text-[14px] sm:text-base md:text-[16px] shrink-0">
-                Nomor HP
+                {t("profile.phone")}
               </InputGroup.Prefix>
             }
             trailingAddon={
@@ -198,7 +202,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             {/* Prefix */}
             <div className="w-[92px] sm:w-[116px] px-2.5 sm:px-3.5 py-3 sm:py-3.5 flex items-center justify-start border-r border-neutral-200 font-semibold text-neutral-700 text-[14px] sm:text-base md:text-[16px] shrink-0">
               <Globe className="w-4 h-4 text-neutral-400 mr-1.5 shrink-0" />
-              <span>Bahasa</span>
+              <span>{t("profile.language")}</span>
             </div>
             {/* Dropdown */}
             <div className="relative flex-1">
@@ -241,7 +245,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       {/* Menu Bantuan & Informasi */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs space-y-1">
         <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block px-2 pb-1.5">
-          Bantuan & Informasi
+          {t("profile.helpTitle")}
         </span>
 
         <button
@@ -254,14 +258,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <FileText className="w-4.5 h-4.5" />
             </div>
             <strong className="text-sm sm:text-base font-bold text-neutral-800 block">
-              Cara Pesan Undangan
+              {t("profile.howToOrder")}
             </strong>
           </div>
           <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#7d6aee] transition-colors" />
         </button>
 
         <a
-          href="https://wa.me/6285187978443?text=Halo%20Satu%20Cerita,%20saya%20butuh%20bantuan%20terkait%20akun%20saya"
+          href={`https://wa.me/6285187978443?text=${encodeURIComponent(t("wa.accountHelp"))}`}
           target="_blank"
           rel="noopener noreferrer"
           className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-purple-50/60 transition-colors text-left cursor-pointer group"
@@ -271,7 +275,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <Phone className="w-4.5 h-4.5" />
             </div>
             <strong className="text-sm sm:text-base font-bold text-neutral-800 block">
-              Hubungi Customer Service Kami
+              {t("profile.csContact")}
             </strong>
           </div>
           <ExternalLink className="w-4 h-4 text-neutral-400 group-hover:text-emerald-600 transition-colors" />
@@ -287,7 +291,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <HelpCircle className="w-4.5 h-4.5" />
             </div>
             <strong className="text-sm sm:text-base font-bold text-neutral-800 block">
-              Kontak & Media Sosial Kami
+              {t("profile.social")}
             </strong>
           </div>
           <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#7d6aee] transition-colors" />
@@ -303,10 +307,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 cursor-pointer"
         >
           <LogOut className="w-4 h-4 text-white" />
-          <span>Log out</span>
+          <span>{t("profile.logout")}</span>
         </Button>
         <p className="text-[11px] text-center text-neutral-400 font-medium mt-2">
-          Anda perlu masuk kembali untuk mengelola undangan
+          {t("profile.logoutNote")}
         </p>
       </div>
     </div>

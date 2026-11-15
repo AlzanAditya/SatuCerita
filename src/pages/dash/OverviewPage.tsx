@@ -11,6 +11,16 @@ import { DashPeriodType } from "@/components/app/AppNavbar";
 import { Button } from "@/components/ui/Button";
 import { DataTable, DataTableColumn } from "@/components/ui/DataTable";
 import { DashTabType, PeriodDataResult, AdminOrderItem } from "./types";
+import { useT, formatRupiahLang, localeOf, type TKey } from "@/i18n";
+
+const PERIOD_OPTIONS: [DashPeriodType, TKey][] = [
+  ["Harian", "period.daily"],
+  ["Mingguan", "period.weekly"],
+  ["Bulanan", "period.monthly"],
+  ["Kuartalan", "period.quarterly"],
+  ["Tahunan", "period.yearly"],
+  ["Semua", "period.all"],
+];
 
 export interface OverviewPageProps {
   periodData: PeriodDataResult;
@@ -29,22 +39,24 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
   ordersList,
   onSelectTab,
 }) => {
+  const { t, tn, lang } = useT();
+  const rp = (n: number) => formatRupiahLang(n, lang);
   return (
     <div className="space-y-6 animate-fadeIn md:animate-none">
       {/* Header Tab 1 Ringkasan & Filter Periode Desktop */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-2xl border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs">
         <div>
           <h1 className="text-base sm:text-lg font-black text-neutral-900 tracking-tight">
-            Ringkasan Kinerja Platform
+            {t("dash.overview.title")}
           </h1>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">
-            Data langsung dari database untuk periode: <span className="font-bold text-[#7d6aee]">{periodData.periodTitle}</span>
+            {t("dash.overview.subtitle")} <span className="font-bold text-[#7d6aee]">{periodData.periodTitle}</span>
           </p>
         </div>
 
         {/* Filter Periode Desktop */}
         <div className="hidden md:flex items-center gap-1.5 p-1 bg-purple-50/70 border border-purple-200 rounded-xl">
-          {(["Harian", "Mingguan", "Bulanan", "Kuartalan", "Tahunan", "Semua"] as DashPeriodType[]).map((p) => (
+          {PERIOD_OPTIONS.map(([p, labelKey]) => (
             <button
               key={p}
               type="button"
@@ -55,7 +67,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                   : "text-neutral-600 hover:text-neutral-900 hover:bg-white/80"
               }`}
             >
-              {p}
+              {t(labelKey)}
             </button>
           ))}
         </div>
@@ -66,9 +78,9 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-semibold text-neutral-500">Total Undangan</p>
+              <p className="text-xs font-semibold text-neutral-500">{t("dash.overview.totalInvitations")}</p>
               <p className="text-xl sm:text-2xl font-black text-neutral-900 mt-1">
-                {periodData.totalInvitationsCount.toLocaleString("id-ID")}
+                {periodData.totalInvitationsCount.toLocaleString(localeOf(lang))}
               </p>
             </div>
             <div className="p-2.5 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white shadow-2xs">
@@ -85,9 +97,9 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-semibold text-neutral-500">Perlu Verifikasi</p>
+              <p className="text-xs font-semibold text-neutral-500">{t("dash.overview.needReview")}</p>
               <p className="text-xl sm:text-2xl font-black text-amber-600 mt-1">
-                {periodData.pendingOrders.length} Pesanan
+                {tn("dash.n.orders", periodData.pendingOrders.length)}
               </p>
             </div>
             <div className="p-2.5 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white shadow-2xs">
@@ -95,16 +107,16 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             </div>
           </div>
           <div className="mt-3 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md inline-block border border-amber-200/60 border-b-[2px] border-b-amber-300/80">
-            {periodData.pendingOrders.length > 0 ? "Tinjau di dashboard Midtrans" : "Tidak ada pesanan yang ditahan"}
+            {periodData.pendingOrders.length > 0 ? t("dash.overview.reviewHint") : t("dash.overview.noHeld")}
           </div>
         </div>
 
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-semibold text-neutral-500">Omset {periodData.periodTitle}</p>
+              <p className="text-xs font-semibold text-neutral-500">{t("dash.overview.revenueOf", { period: periodData.periodTitle })}</p>
               <p className="text-xl sm:text-2xl font-black text-neutral-900 mt-1">
-                Rp {periodData.currentRevenue.toLocaleString("id-ID")}
+                {rp(periodData.currentRevenue)}
               </p>
             </div>
             <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow-2xs">
@@ -121,9 +133,9 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-all">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-semibold text-neutral-500">Pengguna Terdaftar</p>
+              <p className="text-xs font-semibold text-neutral-500">{t("dash.overview.registeredUsers")}</p>
               <p className="text-xl sm:text-2xl font-black text-neutral-900 mt-1">
-                {periodData.newUsersCount} Pengguna
+                {tn("dash.n.users", periodData.newUsersCount)}
               </p>
             </div>
             <div className="p-2.5 rounded-xl bg-gradient-to-tr from-purple-500 to-[#7d6aee] text-white shadow-2xs">
@@ -145,7 +157,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                 {periodData.chartTitle}
               </h2>
               <p className="text-xs text-neutral-400">
-                Total {periodData.currentOrders.length} transaksi pada periode ini
+                {tn("dash.n.totalTx", periodData.currentOrders.length)}
               </p>
             </div>
             <button
@@ -153,7 +165,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
               onClick={() => onSelectTab("analytics")}
               className="text-xs font-extrabold text-[#7d6aee] hover:underline flex items-center gap-1 cursor-pointer"
             >
-              Lihat Transaksi <ChevronRight className="w-3.5 h-3.5" />
+              {t("dash.overview.viewTx")} <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
@@ -167,7 +179,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                 <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
                   <div className="relative w-full flex justify-center">
                     <span className="absolute -top-7 hidden group-hover:block bg-neutral-900 text-white text-[10px] font-bold py-0.5 px-1.5 rounded shadow z-10 whitespace-nowrap">
-                      Rp {bar.revenue.toLocaleString("id-ID")} ({bar.count} order)
+                      {rp(bar.revenue)} ({tn("dash.n.orderShort", bar.count)})
                     </span>
                     <div
                       style={{ height: `${heightPercent}%` }}
@@ -186,9 +198,9 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             })}
           </div>
           <div className="flex items-center justify-between text-[11px] text-neutral-400 mt-2 px-2">
-            <span>Periode: {periodData.periodTitle}</span>
+            <span>{t("dash.overview.periodLabel", { period: periodData.periodTitle })}</span>
             <span className="font-bold text-[#7d6aee]">
-              Total Omset: Rp {periodData.currentRevenue.toLocaleString("id-ID")}
+              {t("dash.overview.totalRevenue", { amount: rp(periodData.currentRevenue) })}
             </span>
           </div>
         </div>
@@ -197,11 +209,11 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div className="bg-white rounded-2xl p-5 border border-purple-100 border-b-[3px] border-b-purple-200/80 shadow-2xs flex flex-col justify-between">
           <div>
             <h2 className="text-sm sm:text-base font-extrabold text-neutral-900 pb-3 border-b border-neutral-100">
-              Template Terlaris ({periodData.periodTitle})
+              {t("dash.overview.bestSellers", { period: periodData.periodTitle })}
             </h2>
             <div className="mt-4 space-y-3">
               {periodData.popularTemplates.length === 0 && (
-                <p className="text-xs text-neutral-400 py-6 text-center">Belum ada penjualan pada periode ini.</p>
+                <p className="text-xs text-neutral-400 py-6 text-center">{t("dash.overview.noSales")}</p>
               )}
               {periodData.popularTemplates.slice(0, 3).map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-neutral-50 transition-colors">
@@ -234,7 +246,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             onClick={() => onSelectTab("templates")}
             className="w-full mt-4 justify-center cursor-pointer"
           >
-            Kelola Semua Template &rarr;
+            {t("dash.overview.manageAll")}
           </Button>
         </div>
       </div>
@@ -244,10 +256,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div className="p-4 sm:p-5 border-b border-neutral-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="font-extrabold text-sm sm:text-base text-neutral-900">
-              Pesanan Terkini ({periodData.periodTitle})
+              {t("dash.overview.latest", { period: periodData.periodTitle })}
             </h2>
             <p className="text-xs text-neutral-400">
-              Transaksi terbaru pada periode ini beserta statusnya.
+              {t("dash.overview.latestSub")}
             </p>
           </div>
           <button
@@ -255,14 +267,14 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             onClick={() => onSelectTab("finance")}
             className="text-xs font-extrabold text-[#7d6aee] hover:underline cursor-pointer"
           >
-            Buka Menu Keuangan &rarr;
+            {t("dash.overview.openFinance")}
           </button>
         </div>
 
         <DataTable
           columns={dashboardOrderColumns}
           data={periodData.currentOrders.length > 0 ? periodData.currentOrders.slice(0, 5) : ordersList.slice(0, 5)}
-          emptyMessage="Tidak ada pesanan pada periode ini."
+          emptyMessage={t("dash.overview.noOrders")}
         />
       </div>
     </div>

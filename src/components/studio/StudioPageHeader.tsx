@@ -5,6 +5,7 @@
  */
 import React, { useState } from "react";
 import { Bell } from "lucide-react";
+import { useT } from "@/i18n";
 
 export interface StudioPageHeaderProps {
   title: string;
@@ -19,6 +20,7 @@ export const StudioPageHeader: React.FC<StudioPageHeaderProps> = ({
   onLogoClick,
   onBellClick,
 }) => {
+  const { t } = useT();
   const [unread, setUnread] = useState(true);
 
   return (
@@ -45,7 +47,7 @@ export const StudioPageHeader: React.FC<StudioPageHeaderProps> = ({
             setUnread(false);
             onBellClick?.();
           }}
-          aria-label="Notifikasi"
+          aria-label={t("studio.navbar.notifications")}
           className="relative size-10 rounded-full flex items-center justify-center text-[#5b49c9] hover:bg-white/70 cursor-pointer focus-visible:outline-2 focus-visible:outline-[#7d6aee]"
         >
           <Bell className="w-5 h-5" strokeWidth={1.8} />

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { PATHS } from "@/routes";
 import { Bell, Pencil, ChevronDown, ArrowLeft } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
+import { useT } from "@/i18n";
 
 export type DashPeriodType =
   | "Harian"
@@ -47,6 +48,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
   onBack,
   userProfile: propUserProfile,
 }) => {
+  const { t } = useT();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasUnreadNotification, setHasUnreadNotification] = useState(true);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -70,22 +72,22 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
     if (title) return title;
     switch (activeTab) {
       case "home":
-        return "Undangan";
+        return t("studio.title.home");
       case "task":
       case "proses":
       case "pesanan":
-        return "Pesanan";
+        return t("studio.title.orders");
       case "profile":
       case "profil":
-        return "Profil";
+        return t("studio.tab.profile");
       case "katalog":
-        return "Katalog Template";
+        return t("studio.nav.catalog");
       case "bagikan":
-        return "Bagikan";
+        return t("studio.title.share");
       case "ucapan":
-        return "Ucapan";
+        return t("studio.title.wishes");
       default:
-        return "Satu Cerita Studio";
+        return t("studio.title.studio");
     }
   };
 
@@ -117,7 +119,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
 
   // Tanpa data bawaan: profil selalu dikirim dari akun yang login (lihat UserApp / AdminDash)
   const defaultUser = {
-    name: "Pengguna",
+    name: t("studio.navbar.user"),
     email: "",
     avatarInitial: "P",
     avatar: "",
@@ -152,8 +154,8 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
           type="button"
           onClick={() => setHasUnreadNotification(false)}
           className="size-9 sm:size-10 rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-neutral-100 transition-colors cursor-pointer relative"
-          title="Notifikasi"
-          aria-label="Lihat Notifikasi"
+          title={t("studio.navbar.notifications")}
+          aria-label={t("studio.navbar.viewNotifications")}
         >
           <Bell className="w-5 h-5" />
           {hasUnreadNotification && (
@@ -168,15 +170,15 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
               <select
                 value={period}
                 onChange={(e) => onPeriodChange(e.target.value as DashPeriodType)}
-                aria-label="Pilih Periode Dashboard"
+                aria-label={t("studio.navbar.choosePeriod")}
                 className="appearance-none bg-purple-50 hover:bg-purple-100 text-[#7d6aee] font-extrabold text-xs py-1.5 pl-3 pr-7 rounded-xl border border-purple-200 border-b-[2px] border-b-purple-300 shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#7d6aee]/30 transition-all cursor-pointer"
               >
-                <option value="Harian">Harian</option>
-                <option value="Mingguan">Mingguan</option>
-                <option value="Bulanan">Bulanan</option>
-                <option value="Kuartalan">Kuartalan</option>
-                <option value="Tahunan">Tahunan</option>
-                <option value="Semua">Semua</option>
+                <option value="Harian">{t("period.daily")}</option>
+                <option value="Mingguan">{t("period.weekly")}</option>
+                <option value="Bulanan">{t("period.monthly")}</option>
+                <option value="Kuartalan">{t("period.quarterly")}</option>
+                <option value="Tahunan">{t("period.yearly")}</option>
+                <option value="Semua">{t("period.all")}</option>
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-[#7d6aee] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2.5]" />
             </div>
@@ -189,8 +191,8 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({
             type="button"
             onClick={onBack}
             className="size-9 sm:size-10 rounded-lg border-[1.5px] border-current flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-neutral-100 transition-colors cursor-pointer shrink-0"
-            title="Kembali"
-            aria-label="Kembali"
+            title={t("common.back")}
+            aria-label={t("common.back")}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>

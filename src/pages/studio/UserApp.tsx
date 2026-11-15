@@ -39,6 +39,7 @@ export const UserApp: React.FC<UserAppProps> = ({
   onNavigate,
   currentPath = "/studio/home",
 }) => {
+  const { t, tr } = useT();
   const isStandalone = useMemo(
     () =>
       typeof window !== "undefined" &&
@@ -84,7 +85,6 @@ export const UserApp: React.FC<UserAppProps> = ({
 
   // User Profile
   const { user, setUser, signOut } = useAuth();
-  const { t } = useT();
   const avatarKey = `satucerita_avatar_${user.id}`;
   const [avatarOverride, setAvatarOverride] = useState<string>(() => getCache<string>(avatarKey, ""));
   const userProfile: UserProfileData = {
@@ -110,7 +110,7 @@ export const UserApp: React.FC<UserAppProps> = ({
       setCropImageSrc(dataUrl);
       setIsCropModalOpen(true);
     } catch (_err) {
-      showToast(t("st.app.toast.imageReadFailed"));
+      showToast("Gagal membaca file gambar.");
     }
   };
 
@@ -120,8 +120,9 @@ export const UserApp: React.FC<UserAppProps> = ({
 
   // Toast Notice
   const [toastNotice, setToastNotice] = useState<string | null>(null);
+  // Semua toast dari halaman anak berbahasa Indonesia -> diterjemahkan di sini lewat tr().
   const showToast = (msg: string) => {
-    setToastNotice(msg);
+    setToastNotice(tr(msg));
     setTimeout(() => setToastNotice(null), 3000);
   };
 
@@ -179,14 +180,14 @@ export const UserApp: React.FC<UserAppProps> = ({
       const res = await updateProfile({ name: u.name, phone: hasPhone ? u.phone : "" });
       if (seq !== saveSeq.current) return;
       if (res.ok && res.user) setUser(res.user);
-      else showToast(res.error || t("st.app.toast.profileSaveFailed"));
+      else showToast(res.error || "Gagal menyimpan profil.");
     }, 900);
   };
 
   const handleSaveProfile = async () => {
     const res = await updateProfile({ name: editName, phone: editPhone });
     if (!res.ok || !res.user) {
-      showToast(res.error || t("st.app.toast.profileSaveFailed"));
+      showToast(res.error || "Gagal menyimpan profil.");
       return;
     }
     setUser(res.user);
@@ -195,7 +196,7 @@ export const UserApp: React.FC<UserAppProps> = ({
       setCache(avatarKey, editAvatarUrl);
     }
     setIsEditProfileOpen(false);
-    showToast(t("st.app.toast.profileUpdated"));
+    showToast("Profil berhasil diperbarui!");
   };
 
   // Perform logout
@@ -219,16 +220,16 @@ export const UserApp: React.FC<UserAppProps> = ({
 
   // Determine App Bar Title
   const getAppNavbarTitle = () => {
-    if (activeTab === "edit") return t("st.app.title.edit");
-    if (activeTab === "checkout") return t("st.app.title.checkout");
-    if (activeTab === "order") return t("st.app.title.order");
-    if (selectedOrderId) return t("st.app.title.order");
-    if (activeTab === "home") return t("st.app.title.home");
-    if (activeTab === "proses") return t("st.app.title.proses");
-    if (activeTab === "bagikan") return t("st.app.title.bagikan");
-    if (activeTab === "ucapan") return t("st.app.title.ucapan");
-    if (activeTab === "profile") return t("st.app.title.profile");
-    return t("st.app.title.default");
+    if (activeTab === "edit") return t("studio.title.edit");
+    if (activeTab === "checkout") return t("studio.title.checkout");
+    if (activeTab === "order") return t("studio.title.orderDetail");
+    if (selectedOrderId) return t("studio.title.orderDetail");
+    if (activeTab === "home") return t("studio.title.home");
+    if (activeTab === "proses") return t("studio.title.orders");
+    if (activeTab === "bagikan") return t("studio.title.share");
+    if (activeTab === "ucapan") return t("studio.title.wishes");
+    if (activeTab === "profile") return t("studio.title.profile");
+    return t("studio.title.studio");
   };
 
   // Pending orders count for notification
@@ -238,7 +239,7 @@ export const UserApp: React.FC<UserAppProps> = ({
   const sidebarNavItems = [
     {
       id: "home",
-      label: t("st.app.side.home"),
+      label: t("studio.nav.myInvitations"),
       icon: Home,
       isActive: !selectedOrderId && activeTab === "home",
       badge: invitations.length > 0 ? invitations.length : undefined,
@@ -249,7 +250,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
     {
       id: "ucapan",
-      label: t("st.app.side.ucapan"),
+      label: t("studio.nav.wishes"),
       icon: MessageSquare,
       isActive: !selectedOrderId && activeTab === "ucapan",
       onClick: () => {
@@ -259,7 +260,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
     {
       id: "proses",
-      label: t("st.app.side.orders"),
+      label: t("studio.nav.orders"),
       icon: ShoppingBag,
       isActive: selectedOrderId != null || activeTab === "proses",
       badge: orders.filter((o) => o.status === "pending").length || undefined,
@@ -270,7 +271,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
     {
       id: "bagikan",
-      label: t("st.app.side.bagikan"),
+      label: t("studio.nav.share"),
       icon: Send,
       isActive: !selectedOrderId && activeTab === "bagikan",
       onClick: () => {
@@ -280,7 +281,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
     {
       id: "profile",
-      label: t("st.app.side.profile"),
+      label: t("studio.nav.profile"),
       icon: UserRound,
       isActive: !selectedOrderId && activeTab === "profile",
       onClick: () => {
@@ -290,7 +291,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     },
     {
       id: "katalog",
-      label: t("st.app.side.katalog"),
+      label: t("studio.nav.catalog"),
       icon: LayoutGrid,
       isActive: false,
       onClick: () => {
@@ -359,11 +360,11 @@ export const UserApp: React.FC<UserAppProps> = ({
                 {getAppNavbarTitle()}
               </h1>
               <p className="text-xs text-neutral-400">
-                {activeTab === "home" && t("st.app.desc.home")}
-                {activeTab === "proses" && t("st.app.desc.proses")}
-                {activeTab === "bagikan" && t("st.app.desc.bagikan")}
-                {activeTab === "ucapan" && t("st.app.desc.ucapan")}
-                {activeTab === "profile" && t("st.app.desc.profile")}
+                {activeTab === "home" && t("studio.sub.home")}
+                {activeTab === "proses" && t("studio.sub.orders")}
+                {activeTab === "bagikan" && t("studio.sub.share")}
+                {activeTab === "ucapan" && t("studio.sub.wishes")}
+                {activeTab === "profile" && t("studio.sub.profile")}
               </p>
             </div>
 
@@ -377,7 +378,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-[#7d6aee] text-xs font-bold transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>{t("st.app.newInvite")}</span>
+                <span>{t("studio.createNew")}</span>
               </button>
             </div>
           </header>
@@ -470,7 +471,7 @@ export const UserApp: React.FC<UserAppProps> = ({
           <nav
             id="satucerita-app-bottom-navbar"
             className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-purple-100 backdrop-blur-lg shadow-lg select-none"
-            aria-label={t("st.app.aria.nav")}
+            aria-label="Satu Cerita Studio Navigation"
           >
             <div className="max-w-md mx-auto grid grid-cols-5 h-16 px-1">
               {/* 1. Beranda */}
@@ -485,7 +486,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label={t("st.app.nav.home")}
+                aria-label={t("studio.tab.home")}
               >
                 <Home className="w-5 h-5" />
                 <span
@@ -495,7 +496,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  {t("st.app.nav.home")}
+                  {t("studio.tab.home")}
                 </span>
               </button>
 
@@ -511,7 +512,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label={t("st.app.nav.ucapan")}
+                aria-label={t("studio.tab.wishes")}
               >
                 <MessageSquare className="w-5 h-5" />
                 <span
@@ -521,7 +522,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  {t("st.app.nav.ucapan")}
+                  {t("studio.tab.wishes")}
                 </span>
               </button>
 
@@ -537,7 +538,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label={t("st.app.nav.orders")}
+                aria-label={t("studio.tab.orders")}
               >
                 <ShoppingBag className="w-5 h-5" />
                 <span
@@ -547,7 +548,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  {t("st.app.nav.orders")}
+                  {t("studio.tab.orders")}
                 </span>
               </button>
 
@@ -563,7 +564,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label={t("st.app.nav.bagikan")}
+                aria-label={t("studio.tab.share")}
               >
                 <Send className="w-5 h-5" />
                 <span
@@ -573,7 +574,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  {t("st.app.nav.bagikan")}
+                  {t("studio.tab.share")}
                 </span>
               </button>
 
@@ -589,7 +590,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     ? "text-[#7d6aee] font-bold"
                     : "text-neutral-500 hover:text-neutral-900 font-semibold"
                 }`}
-                aria-label={t("st.app.nav.profile")}
+                aria-label={t("studio.tab.profile")}
               >
                 <UserRound className="w-5 h-5" />
                 <span
@@ -599,7 +600,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : "font-semibold"
                   }`}
                 >
-                  {t("st.app.nav.profile")}
+                  {t("studio.tab.profile")}
                 </span>
               </button>
             </div>
@@ -612,7 +613,7 @@ export const UserApp: React.FC<UserAppProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-purple-100 overflow-hidden flex flex-col">
             <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-neutral-100">
-              <h3 className="text-base font-bold text-neutral-900">{t("st.modal.editProfile")}</h3>
+              <h3 className="text-base font-bold text-neutral-900">{t("studio.editProfile.title")}</h3>
               <button
                 type="button"
                 onClick={() => setIsEditProfileOpen(false)}
@@ -627,12 +628,12 @@ export const UserApp: React.FC<UserAppProps> = ({
               <div className="flex flex-col items-center">
                 <img
                   src={editAvatarUrl}
-                  alt="Preview Avatar"
+                  alt={t("studio.editProfile.avatarAlt")}
                   className="size-20 rounded-full object-cover border-2 border-[#7d6aee] shadow-sm mb-3"
                 />
                 <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 text-xs font-bold text-neutral-700 hover:bg-neutral-50 cursor-pointer shadow-2xs">
                   <Crop className="w-3.5 h-3.5 text-[#7d6aee]" />
-                  <span>{t("st.modal.uploadCrop")}</span>
+                  <span>{t("studio.editProfile.upload")}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -644,7 +645,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-800 block mb-1">
-                  {t("st.modal.fullName")}
+                  {t("studio.editProfile.name")}
                 </label>
                 <input
                   type="text"
@@ -656,7 +657,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-800 block mb-1">
-                  {t("st.modal.email")}
+                  {t("studio.editProfile.email")}
                 </label>
                 <input
                   type="email"
@@ -669,7 +670,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-800 block mb-1">
-                  {t("st.modal.whatsapp")}
+                  {t("studio.editProfile.whatsapp")}
                 </label>
                 <input
                   type="text"
@@ -686,14 +687,14 @@ export const UserApp: React.FC<UserAppProps> = ({
                 size="sm"
                 onClick={() => setIsEditProfileOpen(false)}
               >
-                {t("st.common.cancel")}
+                {t("common.cancel")}
               </Button>
               <Button
                 variant="primary"
                 size="sm"
                 onClick={handleSaveProfile}
               >
-                {t("st.common.save")}
+                {t("common.save")}
               </Button>
             </div>
           </div>
@@ -718,10 +719,10 @@ export const UserApp: React.FC<UserAppProps> = ({
               <LogOut className="w-6 h-6" />
             </div>
             <h3 className="text-base font-extrabold text-neutral-900 tracking-tight">
-              {t("st.modal.logoutTitle")}
+              {t("studio.logout.title")}
             </h3>
             <p className="text-xs text-neutral-500 font-medium mt-1 leading-relaxed">
-              {t("st.modal.logoutDesc")}
+              {t("studio.logout.desc")}
             </p>
 
             <div className="grid grid-cols-2 gap-2 mt-5">
@@ -730,14 +731,14 @@ export const UserApp: React.FC<UserAppProps> = ({
                 size="sm"
                 onClick={() => setIsLogoutModalOpen(false)}
               >
-                {t("st.common.cancel")}
+                {t("common.cancel")}
               </Button>
               <Button
                 variant="danger"
                 size="sm"
                 onClick={handlePerformLogout}
               >
-                {t("st.modal.logoutYes")}
+                {t("studio.logout.confirm")}
               </Button>
             </div>
           </div>

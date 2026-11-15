@@ -188,6 +188,8 @@ export interface AdminInvitationItem {
   groom: string;
   /** Tanggal tampil, mis. "18 Sep 2027" (kosong bila belum diisi). */
   eventDate: string;
+  /** ISO (tengah malam WIB) untuk merender ulang tanggal sesuai bahasa & mengurutkan; kosong bila belum diisi. */
+  eventDateIso: string;
   template: string;
   slug: string;
   guestCount: number;

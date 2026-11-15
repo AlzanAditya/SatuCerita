@@ -31,7 +31,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-[#7d6aee]" />
               <h3 className="text-sm font-extrabold text-neutral-900">
-                {t("st.dash.set.adminProfile")}
+                {t("dash.settings.adminProfile")}
               </h3>
             </div>
             <button
@@ -40,7 +40,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               className="text-xs font-extrabold text-[#7d6aee] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <Pencil className="w-3.5 h-3.5" />
-              <span>{t("st.dash.set.editProfile")}</span>
+              <span>{t("dash.settings.editProfile")}</span>
             </button>
           </div>
 
@@ -62,7 +62,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
           <div className="space-y-2 text-xs text-neutral-500">
             <p>
-              {t("st.dash.set.cacheNote")}
+              {t("dash.settings.cacheNote")}
             </p>
           </div>
         </div>
@@ -73,18 +73,18 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             <div className="flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-[#7d6aee]" />
               <h3 className="text-sm font-extrabold text-neutral-900">
-                {t("st.dash.set.payment")}
+                {t("dash.settings.payment")}
               </h3>
             </div>
             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-              {t("st.dash.set.active")}
+              {t("dash.settings.active")}
             </span>
           </div>
 
           <div className="space-y-3">
             <div>
               <label className="text-xs font-semibold text-neutral-700 block mb-1">
-                {t("st.dash.set.bankBca")}
+                {t("dash.settings.bank")}
               </label>
               <input
                 type="text"
@@ -98,7 +98,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
             <div>
               <label className="text-xs font-semibold text-neutral-700 block mb-1">
-                {t("st.dash.set.qris")}
+                {t("dash.settings.qris")}
               </label>
               <input
                 type="text"
@@ -115,7 +115,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               onClick={onSaveSettings}
               className="w-full py-2.5 bg-[#7d6aee] hover:bg-[#6b58e0] text-white text-xs font-extrabold rounded-xl border border-[#6b58e0] border-b-[3px] border-b-[#513ecb] shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] active:translate-y-[1px] transition-all cursor-pointer"
             >
-              {t("st.dash.set.save")}
+              {t("dash.settings.save")}
             </button>
           </div>
         </div>
@@ -128,7 +128,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             onClick={onOpenLogoutModal}
             className="w-full py-3.5 rounded-xl sm:rounded-2xl flex items-center justify-center cursor-pointer font-bold"
           >
-            {t("st.modal.logoutYes")}
+            {t("auth.signOut")}
           </Button>
         </div>
       </div>

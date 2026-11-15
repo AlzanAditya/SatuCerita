@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { useT } from "@/i18n";
 
 export interface DataTableColumn<T> {
   key: string;
@@ -73,7 +74,7 @@ export function DataTable<T>({
   columns,
   data,
   rowKey,
-  emptyMessage = "Tidak ada data yang tersedia",
+  emptyMessage,
   className = "",
   tableClassName = "",
   headerClassName = "",
@@ -82,6 +83,7 @@ export function DataTable<T>({
   defaultSortColumn = null,
   defaultSortDirection = null,
 }: DataTableProps<T>) {
+  const { t } = useT();
   // 3-state sorting: asc -> desc -> null (default)
   const [sortColumn, setSortColumn] = useState<string | null>(defaultSortColumn);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(
@@ -263,7 +265,7 @@ export function DataTable<T>({
                   colSpan={columns.length}
                   className="py-10 text-center text-neutral-400 text-xs sm:text-sm font-medium"
                 >
-                  {emptyMessage}
+                  {emptyMessage ?? t("dash.table.empty")}
                 </td>
               </tr>
             )}

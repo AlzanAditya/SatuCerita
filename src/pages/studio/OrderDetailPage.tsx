@@ -13,8 +13,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { OrderItem } from "@/pages/studio/types";
-import { formatRupiah } from "@/data/templates";
-import { formatOrderDate, getOrder, openSnap, orderEventsUrl, preloadSnap, syncOrder } from "@/lib/payments";
+import { formatRupiah as formatRupiahBase } from "@/data/templates";
+import { useT, formatDateTimeWib, type TKey } from "@/i18n";
+import { getOrder, openSnap, orderEventsUrl, preloadSnap, syncOrder } from "@/lib/payments";
 import { createOrderWatcher, type WatcherMode } from "@/lib/orderStream";
 import { PAYMENT_INSTRUCTIONS } from "@/lib/paymentInstructions";
 
@@ -36,13 +37,13 @@ function formatCountdown(ms: number): string {
   return `${h}:${m}:${s}`;
 }
 
-const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  paid: { label: "Lunas", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  pending: { label: "Menunggu bayar", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  expired: { label: "Kedaluwarsa", cls: "bg-neutral-100 text-neutral-600 border-neutral-200" },
-  cancelled: { label: "Dibatalkan", cls: "bg-neutral-100 text-neutral-600 border-neutral-200" },
-  failed: { label: "Gagal", cls: "bg-rose-50 text-rose-700 border-rose-200" },
-  needs_review: { label: "Perlu ditinjau", cls: "bg-sky-50 text-sky-700 border-sky-200" },
+const STATUS_BADGE: Record<string, { key: TKey; cls: string }> = {
+  paid: { key: "order.status.paid", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  pending: { key: "order.status.pending", cls: "bg-amber-50 text-amber-700 border-amber-200" },
+  expired: { key: "order.status.expired", cls: "bg-neutral-100 text-neutral-600 border-neutral-200" },
+  cancelled: { key: "order.status.cancelled", cls: "bg-neutral-100 text-neutral-600 border-neutral-200" },
+  failed: { key: "order.status.failed", cls: "bg-rose-50 text-rose-700 border-rose-200" },
+  needs_review: { key: "order.status.needsReviewLong", cls: "bg-sky-50 text-sky-700 border-sky-200" },
 };
 
 export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
@@ -52,6 +53,9 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
   onOrderUpdate,
   showToast,
 }) => {
+  const { t, tr, lang } = useT();
+  const formatRupiah = (v: number) => formatRupiahBase(v, lang);
+  const formatOrderDate = (iso: string) => formatDateTimeWib(iso, lang);
   // Extract invoice from /studio/order/:invoiceNo or /order/:invoiceNo
   const invoiceNo = currentPath.replace(/^(?:\/(?:app|studio))?\/order\/?/, "").split("?")[0].split("#")[0];
 
@@ -215,7 +219,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
   if (!order && !notFound && !apiError) {
     return (
       <div className="min-h-screen bg-[#faf9ff] flex items-center justify-center p-6">
-        <Loader2 className="w-6 h-6 text-[#7d6aee] animate-spin" aria-label="Memuat pesanan" />
+        <Loader2 className="w-6 h-6 text-[#7d6aee] animate-spin" aria-label={t("od.loading")} />
       </div>
     );
   }
@@ -229,10 +233,10 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
               <XCircle className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
               <div>
                 <h2 className="text-base font-black text-rose-800">
-                  {notFound ? "Pesanan tidak ditemukan" : "Gagal memuat pesanan"}
+                  {notFound ? t("od.notFound") : t("od.loadFailed")}
                 </h2>
                 <p className="text-xs text-rose-700 font-medium mt-1 leading-snug">
-                  {apiError?.message || "Terjadi kesalahan saat memuat data pesanan."}
+                  {tr(apiError?.message || "Terjadi kesalahan saat memuat data pesanan.")}
                 </p>
               </div>
             </div>
@@ -243,7 +247,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
               onClick={() => onNavigate(`${prefix}/pesanan`)}
               className="text-[#7d6aee] font-bold text-sm underline cursor-pointer"
             >
-              Kembali ke Pesanan
+              {t("od.backToOrders")}
             </button>
           </div>
         </div>
@@ -267,7 +271,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
           className="inline-flex items-center gap-1.5 text-sm font-bold text-[#7d6aee] hover:text-[#6b58e0] transition-colors cursor-pointer mb-5"
         >
           <ArrowLeft className="w-4 h-4" />
-          Kembali ke pesanan
+          {t("od.backLower")}
         </button>
 
         {/* Header */}
@@ -277,13 +281,13 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
               {order.invoiceNo}
             </p>
             <h1 className="text-2xl font-black text-neutral-900 tracking-tight">
-              Detail pesanan
+              {t("od.title")}
             </h1>
           </div>
           <span
             className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wide border shrink-0 ${badge.cls}`}
           >
-            {badge.label}
+            {t(badge.key)}
           </span>
         </div>
 
@@ -297,9 +301,9 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                   <Clock className="w-5 h-5 text-neutral-900" />
                 </div>
                 <div>
-                  <h2 className="text-base font-black text-neutral-900">Menunggu pembayaran</h2>
+                  <h2 className="text-base font-black text-neutral-900">{t("od.awaiting")}</h2>
                   <p className="text-xs font-medium text-neutral-800/80 leading-snug mt-0.5">
-                    Selesaikan pembayaran sebelum batas waktu. Status akan diperbarui otomatis setelah pembayaran diterima.
+                    {t("od.awaitingDesc")}
                   </p>
                 </div>
               </div>
@@ -307,7 +311,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
               {/* Countdown */}
               <div className="bg-white/30 rounded-xl px-4 py-3 mb-4 text-center">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800/70 mb-1">
-                  SISA WAKTU PEMBAYARAN
+                  {t("od.timeLeft")}
                 </p>
                 <p className="text-3xl font-black tracking-widest text-neutral-900 font-mono">
                   {formatCountdown(timeLeft)}
@@ -317,13 +321,13 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
               {/* Instruksi pembayaran sesuai metode */}
               <div className="flex items-center gap-2 mb-3">
                 <Building2 className="w-5 h-5 shrink-0" />
-                <h3 className="text-base font-black">Bayar dengan {methodLabel}</h3>
+                <h3 className="text-base font-black">{t("od.payWith", { method: methodLabel })}</h3>
               </div>
 
               {isVa && order.vaNumber && (
                 <div className="bg-white/30 rounded-xl p-4 mb-3">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800/70 mb-1">
-                    NOMOR VIRTUAL ACCOUNT{order.bank ? ` · ${order.bank.toUpperCase()}` : ""}
+                    {t("od.vaNumber")}{order.bank ? ` · ${order.bank.toUpperCase()}` : ""}
                   </p>
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-xl sm:text-2xl font-black font-mono tracking-wide text-neutral-900 break-all">
@@ -335,7 +339,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-neutral-900/30 bg-white/40 font-bold text-xs shrink-0 cursor-pointer hover:bg-white/60 transition-colors"
                     >
                       <Copy className="w-3.5 h-3.5" />
-                      Salin
+                      {t("od.copy")}
                     </button>
                   </div>
                 </div>
@@ -345,12 +349,12 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                 <div className="bg-white/30 rounded-xl p-4 mb-3 space-y-3">
                   {order.billerCode && (
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800/70 mb-1">KODE PERUSAHAAN</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800/70 mb-1">{t("od.companyCode")}</p>
                       <span className="text-lg font-black font-mono">{order.billerCode}</span>
                     </div>
                   )}
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800/70 mb-1">KODE PEMBAYARAN</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-800/70 mb-1">{t("od.paymentCode")}</p>
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-xl font-black font-mono break-all">{order.billKey}</span>
                       <button
@@ -359,7 +363,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-neutral-900/30 bg-white/40 font-bold text-xs shrink-0 cursor-pointer hover:bg-white/60 transition-colors"
                       >
                         <Copy className="w-3.5 h-3.5" />
-                        Salin
+                        {t("od.copy")}
                       </button>
                     </div>
                   </div>
@@ -368,7 +372,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
 
               {safeHttps(order.qrUrl) && (
                 <div className="bg-white rounded-xl p-3 mb-3 flex justify-center">
-                  <img src={safeHttps(order.qrUrl)} alt="Kode QR pembayaran" className="size-44 object-contain" />
+                  <img src={safeHttps(order.qrUrl)} alt={t("od.qrAlt")} className="size-44 object-contain" />
                 </div>
               )}
 
@@ -378,7 +382,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 px-4 py-2.5 mb-3 rounded-xl border-2 border-neutral-900/30 bg-white/40 font-bold text-sm hover:bg-white/60 transition-colors"
                 >
-                  Buka aplikasi {methodLabel}
+                  {t("od.openApp", { method: methodLabel })}
                 </a>
               )}
 
@@ -390,7 +394,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-3 rounded-xl bg-neutral-900 text-white font-extrabold text-sm cursor-pointer hover:bg-neutral-800 transition-colors disabled:opacity-60"
                 >
                   {snapOpening && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {order.paymentReady ? "Buka kembali halaman pembayaran" : "Lanjutkan pembayaran"}
+                  {order.paymentReady ? t("od.reopen") : t("od.continue")}
                 </button>
               )}
 
@@ -398,8 +402,8 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                 <div className="bg-white/30 rounded-xl p-4 mb-3 flex items-center gap-3" role="status">
                   <Loader2 className="w-5 h-5 animate-spin shrink-0" />
                   <p className="text-xs font-semibold text-neutral-800/80 leading-relaxed">
-                    Menyiapkan instruksi pembayaran. Halaman ini otomatis menampilkan nomor pembayaran begitu siap.
-                    Jika tak kunjung muncul, pilih Ganti metode pembayaran.
+                    {t("od.preparing")}
+                    {t("od.preparingHint")}
                   </p>
                 </div>
               )}
@@ -410,11 +414,11 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                   {PAYMENT_INSTRUCTIONS[order.paymentMethod]?.map((g) => (
                     <details key={g.title} className="group bg-white/30 rounded-xl px-4 py-2.5">
                       <summary className="cursor-pointer text-sm font-extrabold list-none flex items-center justify-between">
-                        {g.title}
+                        {tr(g.title)}
                         <span className="text-xs font-bold text-neutral-800/60 group-open:rotate-180 transition-transform">▾</span>
                       </summary>
                       <ol className="list-decimal pl-5 mt-2 space-y-1 text-xs font-medium text-neutral-800/90 leading-relaxed">
-                        {g.steps.map((st, i) => <li key={i}>{st}</li>)}
+                        {g.steps.map((st, i) => <li key={i}>{tr(st)}</li>)}
                       </ol>
                     </details>
                   ))}
@@ -423,7 +427,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
 
               {/* Total */}
               <div className="bg-white/30 rounded-xl px-4 py-3 mb-4 flex items-center justify-between">
-                <span className="text-sm font-bold">Total bayar</span>
+                <span className="text-sm font-bold">{t("checkout.total")}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-black font-mono">{formatRupiah(order.total)}</span>
                   <button
@@ -437,7 +441,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
               </div>
 
               <p className="text-xs font-medium text-neutral-800/70 leading-relaxed mb-4">
-                Nominal harus persis sama dengan total di atas. Status berubah otomatis setelah pembayaran kami terima.
+                {t("od.amountNote")}
               </p>
 
               {/* Actions */}
@@ -449,7 +453,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                   className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-neutral-900/30 bg-white/40 font-bold text-sm cursor-pointer hover:bg-white/60 transition-colors disabled:opacity-50"
                 >
                   <RefreshCw className={`w-4 h-4 ${isVerifying ? "animate-spin" : ""}`} />
-                  {isVerifying ? "Memeriksa..." : "Cek status"}
+                  {isVerifying ? t("od.checking") : t("od.checkStatus")}
                 </button>
                 <button
                   type="button"
@@ -457,16 +461,16 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                   className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-neutral-900/30 bg-white/40 font-bold text-sm cursor-pointer hover:bg-white/60 transition-colors"
                 >
                   <ArrowLeftRight className="w-4 h-4" />
-                  Ganti metode pembayaran
+                  {t("od.changeMethod")}
                 </button>
               </div>
               <p className="text-[11px] text-neutral-800/70 font-semibold mt-3 text-center flex items-center justify-center gap-1.5" role="status" aria-live="polite">
                 <span className={`inline-block size-2 rounded-full ${mode === "sse" ? "bg-emerald-600 animate-pulse" : "bg-neutral-800/40"}`} />
                 {mode === "sse"
-                  ? "Terhubung. Status berubah otomatis begitu pembayaran diterima."
+                  ? t("od.live.sse")
                   : mode === "poll"
-                    ? "Memantau pembayaran otomatis (mode cadangan)."
-                    : "Menghubungkan pemantauan status..."}
+                    ? t("od.live.poll")
+                    : t("od.live.connecting")}
               </p>
             </div>
           )}
@@ -476,10 +480,13 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
             <div className="bg-emerald-50 border border-emerald-200 border-b-[3px] border-b-emerald-300 rounded-2xl p-5 flex items-start gap-3">
               <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
               <div>
-                <h2 className="text-base font-black text-emerald-800">Pembayaran Berhasil!</h2>
+                <h2 className="text-base font-black text-emerald-800">{t("od.paidTitle")}</h2>
                 <p className="text-xs text-emerald-700 font-medium mt-1 leading-snug">
-                  Pembayaran {formatRupiah(order.total)} via {methodLabel}
-                  {order.paidAt ? ` diterima pada ${formatOrderDate(order.paidAt)}` : " telah diterima"}. Tim kami akan segera memproses undangan Anda.
+                  {t("od.paidDesc", {
+                    amount: formatRupiah(order.total),
+                    method: methodLabel,
+                    when: order.paidAt ? t("od.receivedOn", { date: formatOrderDate(order.paidAt) }) : t("od.received"),
+                  })}
                 </p>
               </div>
             </div>
@@ -491,10 +498,10 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
               <XCircle className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
               <div>
                 <h2 className="text-base font-black text-rose-800">
-                  {order.status === "expired" ? "Pesanan Kedaluwarsa" : order.status === "failed" ? "Pembayaran Gagal" : "Pesanan Dibatalkan"}
+                  {order.status === "expired" ? t("od.expiredTitle") : order.status === "failed" ? t("od.failedTitle") : t("od.cancelledTitle")}
                 </h2>
                 <p className="text-xs text-rose-700 font-medium mt-1 leading-snug">
-                  Silakan buat pesanan baru jika masih ingin melanjutkan.
+                  {t("od.endedDesc")}
                 </p>
                 <button
                   type="button"
@@ -502,7 +509,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
                   className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-rose-200 text-rose-700 text-xs font-bold cursor-pointer hover:bg-rose-100 transition-colors"
                 >
                   <ArrowLeftRight className="w-3.5 h-3.5" />
-                  Pesan lagi
+                  {t("od.orderAgain")}
                 </button>
               </div>
             </div>
@@ -512,9 +519,9 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
             <div className="bg-sky-50 border border-sky-200 border-b-[3px] border-b-sky-300 rounded-2xl p-5 flex items-start gap-3">
               <AlertTriangle className="w-6 h-6 text-sky-600 shrink-0 mt-0.5" />
               <div>
-                <h2 className="text-base font-black text-sky-800">Sedang Ditinjau</h2>
+                <h2 className="text-base font-black text-sky-800">{t("od.reviewTitle")}</h2>
                 <p className="text-xs text-sky-700 font-medium mt-1 leading-snug">
-                  Ada pembayaran yang perlu kami cek manual. Hubungi admin dengan menyebut kode {order.invoiceNo}.
+                  {t("od.reviewDesc", { invoice: order.invoiceNo })}
                 </p>
               </div>
             </div>
@@ -522,26 +529,26 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
 
           {order.environment === "sandbox" && (
             <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-2.5 text-[11px] font-bold text-amber-800">
-              Mode uji coba (Sandbox): tidak ada uang sungguhan yang berpindah.
+              {t("od.sandbox")}
             </div>
           )}
 
           {/* Rincian Card */}
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-200 border-b-[3px] border-b-neutral-300 shadow-2xs p-5">
-            <h3 className="text-base font-black text-neutral-900 mb-4">Rincian</h3>
+            <h3 className="text-base font-black text-neutral-900 mb-4">{t("od.details")}</h3>
             <div className="space-y-0 divide-y divide-neutral-100">
               {[
-                { label: "Kode", value: order.invoiceNo, mono: true },
-                { label: "Template", value: `${order.templateName} · ${order.templateCategory}` },
-                { label: "Jumlah", value: formatRupiah(order.total) },
-                { label: "Pembayaran", value: "Midtrans", badge: order.environment === "production" ? "PRODUCTION" : "SANDBOX" },
-                { label: "Metode", value: methodLabel },
-                { label: "Dibuat", value: formatOrderDate(order.date) },
+                { label: t("od.row.code"), value: order.invoiceNo, mono: true },
+                { label: t("od.row.template"), value: `${order.templateName} · ${order.templateCategory}` },
+                { label: t("od.row.amount"), value: formatRupiah(order.total) },
+                { label: t("od.row.payment"), value: "Midtrans", badge: order.environment === "production" ? "PRODUCTION" : "SANDBOX" },
+                { label: t("od.row.method"), value: methodLabel },
+                { label: t("od.row.created"), value: formatOrderDate(order.date) },
                 {
-                  label: "Dibayar",
+                  label: t("od.row.paid"),
                   value: order.status === "paid" && order.paidAt ? formatOrderDate(order.paidAt) : "—",
                 },
-                { label: "Batas bayar", value: formatOrderDate(order.dueDate) },
+                { label: t("od.row.due"), value: formatOrderDate(order.dueDate) },
               ].map((row, i) => (
                 <div key={i} className="flex items-start justify-between gap-4 py-3">
                   <span className="text-xs font-semibold text-neutral-500 shrink-0">{row.label}</span>

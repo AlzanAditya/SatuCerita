@@ -4,34 +4,27 @@ import { PATHS } from "@/routes";
 import { SITE } from "@/config/site";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { OrderItem } from "./types";
+import { useT, formatShortDate, type TKey } from "@/i18n";
 
 type Filter = "semua" | "aktif" | "selesai";
 
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "semua", label: "Semua" },
-  { id: "aktif", label: "Aktif" },
-  { id: "selesai", label: "Selesai" },
+const FILTERS: { id: Filter; key: TKey }[] = [
+  { id: "semua", key: "orders.filterAll" },
+  { id: "aktif", key: "orders.filterActive" },
+  { id: "selesai", key: "orders.filterDone" },
 ];
 
 // Aktif = masih berjalan (belum dibayar / sedang ditinjau). Selesai = sudah lunas atau sudah berakhir.
 const isActive = (o: OrderItem) => o.status === "pending" || o.status === "needs_review";
 
-const STATUS_BADGE: Record<string, { label: string; cls: string; dot: string }> = {
-  pending: { label: "Menunggu bayar", cls: "bg-[#fff3d6] text-[#8a5a00]", dot: "bg-[#f0a500]" },
-  needs_review: { label: "Ditinjau", cls: "bg-[#e0f1ff] text-[#0b5a8f]", dot: "bg-[#2b9be0]" },
-  paid: { label: "Lunas", cls: "bg-[#ddf6e8] text-[#17794a]", dot: "bg-[#2fb36d]" },
-  expired: { label: "Kedaluwarsa", cls: "bg-[#ece8fb] text-[#5a5476]", dot: "bg-[#a39cc4]" },
-  cancelled: { label: "Dibatalkan", cls: "bg-[#ece8fb] text-[#5a5476]", dot: "bg-[#a39cc4]" },
-  failed: { label: "Gagal", cls: "bg-[#ffe3e6] text-[#a3202f]", dot: "bg-[#e5484d]" },
+const STATUS_BADGE: Record<string, { key: TKey; cls: string; dot: string }> = {
+  pending: { key: "order.status.pending", cls: "bg-[#fff3d6] text-[#8a5a00]", dot: "bg-[#f0a500]" },
+  needs_review: { key: "order.status.needsReview", cls: "bg-[#e0f1ff] text-[#0b5a8f]", dot: "bg-[#2b9be0]" },
+  paid: { key: "order.status.paid", cls: "bg-[#ddf6e8] text-[#17794a]", dot: "bg-[#2fb36d]" },
+  expired: { key: "order.status.expired", cls: "bg-[#ece8fb] text-[#5a5476]", dot: "bg-[#a39cc4]" },
+  cancelled: { key: "order.status.cancelled", cls: "bg-[#ece8fb] text-[#5a5476]", dot: "bg-[#a39cc4]" },
+  failed: { key: "order.status.failed", cls: "bg-[#ffe3e6] text-[#a3202f]", dot: "bg-[#e5484d]" },
 };
-
-const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-function shortDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const w = new Date(d.getTime() + 7 * 3600_000); // WIB
-  return `${w.getUTCDate()} ${BULAN[w.getUTCMonth()]} ${w.getUTCFullYear()}`;
-}
 
 export interface PesananPageProps {
   orders: OrderItem[];
@@ -42,6 +35,7 @@ export interface PesananPageProps {
 }
 
 export const PesananPage: React.FC<PesananPageProps> = ({ orders, onNavigate }) => {
+  const { t, lang } = useT();
   const [filter, setFilter] = useState<Filter>("semua");
 
   const filtered = useMemo(() => {
@@ -54,20 +48,18 @@ export const PesananPage: React.FC<PesananPageProps> = ({ orders, onNavigate }) 
     (window.location.hostname.startsWith("studio.") || window.location.hostname.startsWith("app."));
   const prefix = isStandalone ? "" : "/studio";
 
-  const helpHref = `https://wa.me/${SITE.contact.whatsapp}?text=${encodeURIComponent(
-    "Halo Satu Cerita, saya butuh bantuan terkait pesanan saya."
-  )}`;
+  const helpHref = `https://wa.me/${SITE.contact.whatsapp}?text=${encodeURIComponent(t("wa.orderSupport"))}`;
 
   return (
     <div className="animate-fadeIn">
       <StudioPageHeader
-        title="Pesanan"
-        subtitle="Riwayat dan status pesanan undangan Anda."
+        title={t("studio.title.orders")}
+        subtitle={t("orders.subtitle")}
         onLogoClick={() => onNavigate(PATHS.home)}
       />
 
       <div className="space-y-4">
-        <div role="tablist" aria-label="Filter pesanan" className="grid grid-cols-3 gap-2">
+        <div role="tablist" aria-label={t("orders.filterAria")} className="grid grid-cols-3 gap-2">
           {FILTERS.map((f) => {
             const on = filter === f.id;
             return (
@@ -81,7 +73,7 @@ export const PesananPage: React.FC<PesananPageProps> = ({ orders, onNavigate }) 
                   on ? "bg-[#7d6aee] text-white shadow-[0_4px_12px_rgba(125,106,238,0.3)]" : "bg-[#e9e4fb] text-[#5a5476] hover:bg-[#e0daf8]"
                 }`}
               >
-                {f.label}
+                {t(f.key)}
               </button>
             );
           })}
@@ -93,12 +85,12 @@ export const PesananPage: React.FC<PesananPageProps> = ({ orders, onNavigate }) 
               <ShoppingBag className="w-8 h-8 text-[#7d6aee]" />
             </div>
             <h2 className="mt-4 text-lg font-black text-[#17112e]">
-              {orders.length === 0 ? "Belum ada pesanan" : "Tidak ada pesanan di sini"}
+              {orders.length === 0 ? t("orders.none") : t("orders.noneHere")}
             </h2>
             <p className="mt-1.5 text-sm text-[#5a5476] max-w-xs leading-relaxed">
               {orders.length === 0
-                ? "Pesanan template dan add-on Anda akan tercatat di halaman ini."
-                : "Coba pilih filter lain untuk melihat pesanan Anda."}
+                ? t("orders.noneDesc")
+                : t("orders.tryFilter")}
             </p>
             {orders.length === 0 && (
               <button
@@ -106,7 +98,7 @@ export const PesananPage: React.FC<PesananPageProps> = ({ orders, onNavigate }) 
                 onClick={() => onNavigate(PATHS.katalog)}
                 className="mt-5 h-12 px-6 rounded-full bg-[#7d6aee] hover:bg-[#6b58e0] text-white font-bold text-[15px] cursor-pointer shadow-[0_6px_16px_rgba(125,106,238,0.35)]"
               >
-                Jelajahi katalog
+                {t("orders.browse")}
               </button>
             )}
           </div>
@@ -127,11 +119,11 @@ export const PesananPage: React.FC<PesananPageProps> = ({ orders, onNavigate }) 
                         #{o.invoiceNo}
                       </span>
                       <span className="block mt-0.5 text-xs text-[#5a5476] truncate">
-                        Dipesan pada {shortDate(o.date)}
+                        {t("orders.orderedOn", { date: formatShortDate(o.date, lang) })}
                       </span>
                     </span>
                     <span className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${b.cls}`}>
-                      {b.label}
+                      {t(b.key)}
                     </span>
                     <ChevronRight className="w-4 h-4 text-[#7a7494] shrink-0" />
                   </button>
@@ -144,15 +136,15 @@ export const PesananPage: React.FC<PesananPageProps> = ({ orders, onNavigate }) 
         <aside className="rounded-2xl bg-[#e9e4fb] p-4 flex items-start gap-3">
           <Info className="w-5 h-5 text-[#7a7494] mt-0.5 shrink-0" />
           <div className="min-w-0">
-            <h3 className="text-[15px] font-extrabold text-[#17112e]">Butuh bantuan?</h3>
-            <p className="text-xs text-[#5a5476] mt-0.5">Hubungi kami melalui pusat bantuan.</p>
+            <h3 className="text-[15px] font-extrabold text-[#17112e]">{t("orders.needHelp")}</h3>
+            <p className="text-xs text-[#5a5476] mt-0.5">{t("orders.helpDesc")}</p>
             <a
               href={helpHref}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-[#6b58e0] hover:underline"
             >
-              Hubungi <ChevronRight className="w-4 h-4" />
+              {t("orders.contact")} <ChevronRight className="w-4 h-4" />
             </a>
           </div>
         </aside>

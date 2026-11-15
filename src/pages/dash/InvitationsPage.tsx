@@ -17,7 +17,7 @@ export const InvitationsPage: React.FC<InvitationsPageProps> = ({
   searchQuery,
   setSearchQuery,
 }) => {
-  const { t } = useT();
+  const { t, tn } = useT();
   const filtered = invitationsList.filter(
     (inv) =>
       inv.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -33,7 +33,7 @@ export const InvitationsPage: React.FC<InvitationsPageProps> = ({
           <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder={t("st.dash.inv.searchPh")}
+            placeholder={t("dash.invitations.search")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-neutral-200 border-b-[2px] border-b-neutral-300 focus:outline-none focus:border-[#7d6aee] focus:border-b-[#7d6aee]"
@@ -41,7 +41,7 @@ export const InvitationsPage: React.FC<InvitationsPageProps> = ({
         </div>
 
         <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200 border-b-[2px] border-b-emerald-300 shadow-2xs self-start sm:self-auto">
-          Total: <strong className="text-neutral-900">{filtered.length} {t("st.dash.inv.totalOnline")}</strong>
+          {t("dash.users.totalLabel")} <strong className="text-neutral-900">{tn("dash.n.onlineInvitations", filtered.length)}</strong>
         </span>
       </div>
 
@@ -49,7 +49,7 @@ export const InvitationsPage: React.FC<InvitationsPageProps> = ({
       <DataTable
         columns={invitationColumns}
         data={filtered}
-        emptyMessage={t("st.dash.inv.empty")}
+        emptyMessage={t("dash.invitations.empty")}
       />
     </div>
   );

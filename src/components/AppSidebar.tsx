@@ -4,6 +4,7 @@
  */
 import React from "react";
 import { PanelLeft, PanelLeftOpen } from "lucide-react";
+import { useT } from "@/i18n";
 
 export interface SidebarNavItem {
   id: string;
@@ -58,6 +59,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   collapsed = false,
   onToggleCollapse,
 }) => {
+  const { t } = useT();
   const isCollapsed = collapsible && collapsed;
 
   return (
@@ -74,9 +76,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               <button
                 type="button"
                 onClick={onToggleCollapse}
-                title="Buka Sidebar"
+                title={t("studio.sidebar.open")}
                 className="relative size-10 rounded-xl overflow-hidden shrink-0 border border-purple-100 shadow-2xs group cursor-pointer focus:outline-none"
-                aria-label="Buka Sidebar"
+                aria-label={t("studio.sidebar.open")}
               >
                 <img
                   src={logoSrc}
@@ -122,9 +124,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                 <button
                   type="button"
                   onClick={onToggleCollapse}
-                  title="Tutup Sidebar"
+                  title={t("studio.sidebar.close")}
                   className="p-1.5 text-neutral-400 hover:text-[#7d6aee] hover:bg-purple-50 rounded-lg cursor-pointer shrink-0 transition-colors"
-                  aria-label="Tutup Sidebar"
+                  aria-label={t("studio.sidebar.close")}
                 >
                   <PanelLeft className="w-4 h-4 stroke-[2.2]" />
                 </button>
@@ -242,9 +244,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onLogout(); }}
-                title="Keluar dari akun"
+                title={t("studio.sidebar.logoutTitle")}
                 className="p-2 rounded-xl text-neutral-400 hover:text-rose-600 hover:bg-rose-50 shrink-0 cursor-pointer"
-                aria-label="Tombol Logout"
+                aria-label={t("studio.sidebar.logoutAria")}
               >
                 {/* Logout icon */}
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
