@@ -3,6 +3,16 @@ import { Navbar } from "@/components/layout/Navbar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Footer } from "@/components/layout/Footer";
 import { SubpageHeader } from "@/components/layout/SubpageHeader";
+import {
+  OrnFlower,
+  OrnHeart,
+  OrnHeartFill,
+  OrnLetter,
+  OrnMusic,
+  OrnRings,
+  OrnStar,
+  SectionWave,
+} from "@/components/landing/SectionDecor";
 import { MessageCircle } from "lucide-react";
 import { useT } from "@/i18n";
 import type { TKey } from "@/i18n";
@@ -89,8 +99,15 @@ export const KontakPage: React.FC<KontakPageProps> = ({
       />
 
       {/* 3. Konten Utama: Card Kontak Sederhana (WhatsApp, Gmail, Instagram, TikTok) */}
-      <main className="flex-1 bg-[#faf9ff] py-12 sm:py-16 md:py-20 select-none">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8">
+      <main className="relative flex-1 bg-[#faf9ff] py-12 sm:py-16 md:py-20 select-none overflow-hidden">
+        {/* Ombak gradasi di bawah + ornamen di tepi */}
+        <SectionWave className="absolute bottom-0 left-0 w-full h-[100px] sm:h-[180px]" color="#7d6aee" strength={0.09} />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 text-[#7d6aee]">
+          <OrnLetter className="absolute top-[16%] right-[4%] w-11 h-11 opacity-[0.13] -rotate-6" />
+          <OrnFlower className="absolute bottom-[24%] left-[5%] w-11 h-11 opacity-[0.12] rotate-12" />
+          <OrnStar className="hidden lg:block absolute top-[44%] left-[2%] w-6 h-6 opacity-[0.18]" />
+        </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 md:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
             {CONTACT_ITEMS.map((item) => (
               <div

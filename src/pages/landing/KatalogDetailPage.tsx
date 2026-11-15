@@ -1,5 +1,15 @@
 import React, { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
+import {
+  OrnFlower,
+  OrnHeart,
+  OrnHeartFill,
+  OrnLetter,
+  OrnMusic,
+  OrnRings,
+  OrnStar,
+  SectionWave,
+} from "@/components/landing/SectionDecor";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Footer } from "@/components/layout/Footer";
 import {
@@ -223,8 +233,15 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
       {/* 1. Navbar Satu Cerita Asli */}
       <Navbar currentPath={currentPath} onNavigate={onNavigate} />
 
-      <main className="flex-1 py-8 sm:py-12 md:py-14 select-none">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="relative flex-1 py-8 sm:py-12 md:py-14 select-none overflow-hidden">
+        {/* Ombak gradasi di bawah + ornamen di tepi */}
+        <SectionWave className="absolute bottom-0 left-0 w-full h-[100px] sm:h-[180px]" color="#7d6aee" strength={0.09} />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 text-[#7d6aee]">
+          <OrnLetter className="absolute top-[14%] right-[3%] w-11 h-11 opacity-[0.13] rotate-6" />
+          <OrnStar className="hidden lg:block absolute top-[38%] left-[1.5%] w-6 h-6 opacity-[0.18]" />
+          <OrnHeartFill className="absolute bottom-[26%] right-[6%] w-5 h-5 opacity-[0.14]" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Two Column Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
             {/* SISI KIRI: Pratinjau Langsung */}
@@ -240,7 +257,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                 >
                   {t("detail.preview.title")}
                 </h1>
-                <p className="mt-1 text-sm sm:text-base text-neutral-600 leading-relaxed font-normal">
+                <p className="mt-1 text-[16px] sm:text-base text-neutral-600 leading-relaxed font-normal">
                   {t("detail.preview.desc")}
                 </p>
               </div>
@@ -257,7 +274,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                     type="button"
                     aria-pressed={previewMode === "phone"}
                     onClick={() => setPreviewMode("phone")}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[14px] sm:text-xs font-bold transition-all cursor-pointer ${
                       previewMode === "phone"
                         ? "bg-[#7d6aee] text-white shadow-xs"
                         : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50"
@@ -270,7 +287,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                     type="button"
                     aria-pressed={previewMode === "desktop"}
                     onClick={() => setPreviewMode("desktop")}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[14px] sm:text-xs font-bold transition-all cursor-pointer ${
                       previewMode === "desktop"
                         ? "bg-[#7d6aee] text-white shadow-xs"
                         : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50"
@@ -285,7 +302,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate(`/templates/${template.slug}`)}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-purple-50 text-neutral-800 border border-purple-200 border-b-[3px] border-b-purple-300 font-bold text-xs shadow-2xs transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-purple-50 text-neutral-800 border border-purple-200 border-b-[3px] border-b-purple-300 font-bold text-[14px] sm:text-xs shadow-2xs transition-all cursor-pointer"
                 >
                   <Maximize2 className="w-3.5 h-3.5 text-[#7d6aee]" />
                   <span>{t("detail.fullscreen")}</span>
@@ -296,20 +313,22 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
               <div
                 className="relative w-full rounded-2xl sm:rounded-3xl border border-purple-200 border-b-[4px] border-b-purple-300 bg-white p-3 sm:p-5 shadow-2xs transition-all"
               >
-                {/* Device Window Dots */}
-                <div className="flex items-center gap-1.5 pb-1 mb-2.5 w-full">
-                  <span className="w-3 h-3 rounded-full bg-[#EE5B4F]" />
-                  <span className="w-3 h-3 rounded-full bg-[#F5C744]" />
-                  <span className="w-3 h-3 rounded-full bg-[#22C55E]" />
-                </div>
+                {/* Device Window Dots (hanya mode desktop — mobile memakai frame handphone) */}
+                {previewMode === "desktop" && (
+                  <div className="flex items-center gap-1.5 pb-1 mb-2.5 w-full">
+                    <span className="w-3 h-3 rounded-full bg-[#EE5B4F]" />
+                    <span className="w-3 h-3 rounded-full bg-[#F5C744]" />
+                    <span className="w-3 h-3 rounded-full bg-[#22C55E]" />
+                  </div>
+                )}
 
                 {/* Device Mockup Frame */}
                 <div className="flex justify-center w-full py-2">
                   <div
                     className={`transition-all duration-300 relative rounded-2xl overflow-hidden border border-neutral-800 shadow-xl bg-neutral-950 ${
                       previewMode === "phone"
-                        ? "w-full max-w-[320px] aspect-[9/16] sm:max-w-[340px]"
-                        : "w-full max-w-[620px] aspect-[16/10]"
+                        ? "w-full max-w-[320px] aspect-[9/21] sm:max-w-[340px] border-[6px] border-neutral-900"
+                        : "w-full max-w-[620px] aspect-[16/10] border border-neutral-800"
                     }`}
                   >
                     {/* Simulated Phone Notch / Dynamic Island */}
@@ -334,7 +353,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                             type="button"
                             onClick={() => onNavigate(`/templates/${template.slug}`)}
                             title={t("detail.fullscreenTitle")}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-900 text-white text-[11px] font-bold backdrop-blur-md shadow-lg border border-white/20 transition-all cursor-pointer hover:scale-105"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-900 text-white text-[14px] sm:text-[11px] font-bold backdrop-blur-md shadow-lg border border-white/20 transition-all cursor-pointer hover:scale-105"
                           >
                             <Maximize2 className="w-3 h-3 text-purple-300" />
                             <span>{t("detail.fullscreenShort")}</span>
@@ -352,12 +371,12 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30" />
                         <div className="relative z-20 w-full h-full p-6 flex flex-col justify-between text-white text-center">
                           <div className="pt-4">
-                            <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[9px] uppercase tracking-widest font-bold">
+                            <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[14px] sm:text-[9px] uppercase tracking-widest font-bold">
                               {template.category} Wedding Invitation
                             </span>
                           </div>
                           <div className="my-auto space-y-2 py-4">
-                            <p className="text-[11px] font-serif uppercase tracking-widest text-purple-200">
+                            <p className="text-[14px] sm:text-[11px] font-serif uppercase tracking-widest text-purple-200">
                               The Wedding Celebration Of
                             </p>
                             <h2 className="text-2xl sm:text-3xl font-serif font-black tracking-wide leading-tight drop-shadow-md">
@@ -365,7 +384,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                             </h2>
                             <div className="flex items-center justify-center gap-2 pt-1">
                               <span className="h-[1px] w-6 bg-white/50" />
-                              <p className="text-xs font-mono font-bold tracking-widest text-amber-300">
+                              <p className="text-[14px] sm:text-xs font-mono font-bold tracking-widest text-amber-300">
                                 {template.date}
                               </p>
                               <span className="h-[1px] w-6 bg-white/50" />
@@ -375,7 +394,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                             <button
                               type="button"
                               onClick={() => onNavigate(`/templates/${template.slug}`)}
-                              className="px-5 py-2 rounded-xl bg-white text-neutral-900 font-bold text-xs shadow-md hover:bg-neutral-100 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                              className="px-5 py-2 rounded-xl bg-white text-neutral-900 font-bold text-[14px] sm:text-xs shadow-md hover:bg-neutral-100 transition-all inline-flex items-center gap-1.5 cursor-pointer"
                             >
                               <span>{t("detail.openFullPreview")}</span>
                               <ArrowRight className="w-3.5 h-3.5" />
@@ -394,7 +413,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
               {/* Card 1: Harga & Pemesanan (Tanpa separator garis pemisah di dalam card) */}
               <div className="relative bg-white rounded-2xl sm:rounded-3xl border border-purple-200 border-b-[4px] border-b-purple-300 p-6 sm:p-8 shadow-2xs">
                 {/* Floating Discount Sticker */}
-                <div className="absolute -top-3.5 -right-2 z-10 rotate-6 bg-[#EE5B4F] text-white px-3 py-1 font-black text-xs sm:text-sm rounded-lg shadow-sm border border-white/40 select-none">
+                <div className="absolute -top-3.5 -right-2 z-10 rotate-6 bg-[#EE5B4F] text-white px-3 py-1 font-black text-[14px] sm:text-xs sm:text-sm rounded-lg shadow-sm border border-white/40 select-none">
                   {template.discountBadge}
                 </div>
 
@@ -405,17 +424,17 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
 
                 {/* Categories & Badges (Tanpa separator border bawah) */}
                 <div className="mt-3 mb-5 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-md border border-purple-200 font-bold text-xs uppercase tracking-wider bg-purple-50 text-[#7d6aee]">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-md border border-purple-200 font-bold text-[14px] sm:text-xs uppercase tracking-wider bg-purple-50 text-[#7d6aee]">
                     {template.category}
                   </span>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-md border border-amber-200 font-bold text-xs uppercase tracking-wider bg-amber-50 text-amber-700">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-md border border-amber-200 font-bold text-[14px] sm:text-xs uppercase tracking-wider bg-amber-50 text-amber-700">
                     {template.badge}
                   </span>
                 </div>
 
                 {/* Harga Template */}
                 <div>
-                  <h2 className="text-xs font-black uppercase tracking-widest text-neutral-500">
+                  <h2 className="text-[14px] sm:text-xs font-black uppercase tracking-widest text-neutral-500">
                     {t("detail.priceTitle")}
                   </h2>
                   <div className="mt-4 sm:mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -426,7 +445,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                       {formatRupiah(template.originalPrice)}
                     </span>
                   </div>
-                  <p className="mt-2 text-xs font-bold uppercase tracking-wider text-neutral-500">
+                  <p className="mt-2 text-[14px] sm:text-xs font-bold uppercase tracking-wider text-neutral-500">
                     {t("detail.oncePerInvite")}
                   </p>
                 </div>
@@ -442,7 +461,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                   <ArrowRight className="w-5 h-5 stroke-[2.5]" />
                 </Button>
 
-                <p className="mt-3 text-xs text-neutral-500 text-left leading-relaxed">
+                <p className="mt-3 text-[14px] sm:text-xs text-neutral-500 text-left leading-relaxed">
                   {t("detail.redirectNote")}
                 </p>
 
@@ -466,7 +485,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                 <h2 className="text-lg sm:text-xl font-black text-neutral-900 tracking-tight">
                   {t("detail.sections.title")}
                 </h2>
-                <p className="mt-1 text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal">
+                <p className="mt-1 text-[14px] sm:text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal">
                   {t("detail.sections.desc")}
                 </p>
 
@@ -477,7 +496,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                     return (
                       <li
                         key={idx}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold shadow-2xs transition-all ${config.badgeClasses}`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[14px] sm:text-xs font-bold shadow-2xs transition-all ${config.badgeClasses}`}
                       >
                         {config.icon}
                         <span>{label}</span>
@@ -496,7 +515,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                   <h3 className="text-sm font-black text-neutral-900">
                     {t("detail.language.title")}
                   </h3>
-                  <p className="text-xs sm:text-sm font-semibold text-neutral-600 mt-0.5">
+                  <p className="text-[14px] sm:text-xs sm:text-sm font-semibold text-neutral-600 mt-0.5">
                     {template.languageLabels.join(" · ")}
                   </p>
                 </div>

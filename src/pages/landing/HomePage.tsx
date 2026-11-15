@@ -1,6 +1,16 @@
 import React, { useState } from "react";
 import { PATHS } from "@/routes";
 import { Navbar } from "@/components/layout/Navbar";
+import {
+  OrnFlower,
+  OrnHeart,
+  OrnHeartFill,
+  OrnLetter,
+  OrnMusic,
+  OrnRings,
+  OrnStar,
+  SectionWave,
+} from "@/components/landing/SectionDecor";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Footer } from "@/components/layout/Footer";
 import { SubpageHeader } from "@/components/layout/SubpageHeader";
@@ -88,8 +98,46 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* SECTION 1: HERO & PHONE SHOWCASE                         */}
         {/* Di desktop: Header dan Template Cards berada dalam SATU BARIS */}
         {/* ========================================================= */}
-        <section className="w-full bg-[#7d6aee]/[0.06] border-b border-[#7d6aee]/15 px-4 sm:px-6 md:px-8 lg:px-12 py-10 sm:py-14 lg:py-16 select-none transition-colors">
-          <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+        <section className="relative w-full bg-[#7d6aee]/[0.06] border-b border-[#7d6aee]/15 px-4 sm:px-6 md:px-8 lg:px-12 py-10 sm:py-14 lg:py-16 select-none transition-colors overflow-hidden">
+          {/* Ornamen latar: hati, surat, bintang, bunga — halus, di tepi, tidak menghalangi konten */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 text-[#7d6aee]">
+            {/* Surat / amplop — kiri atas */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="absolute top-[7%] left-[3%] w-10 h-10 opacity-[0.16] -rotate-12">
+              <rect x="3" y="5.5" width="18" height="13" rx="2.5" />
+              <path d="m3.8 7.5 8.2 5.7 8.2-5.7" />
+            </svg>
+
+            {/* Hati — kanan atas */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="absolute top-[9%] right-[5%] w-12 h-12 opacity-[0.15] rotate-6">
+              <path d="M12 20.5C7 16 3.5 12.8 3.5 8.9 3.5 6.2 5.6 4 8.2 4c1.6 0 3 .8 3.8 2 .8-1.2 2.2-2 3.8-2 2.6 0 4.7 2.2 4.7 4.9 0 3.9-3.5 7.1-8.5 11.6Z" />
+            </svg>
+
+            {/* Bintang kilau — kiri tengah (desktop saja) */}
+            <svg viewBox="0 0 24 24" fill="currentColor" className="hidden sm:block absolute top-[48%] left-[1.5%] w-7 h-7 opacity-[0.2]">
+              <path d="M12 2c.6 4.8 2.4 7.4 8 8-5.6.6-7.4 3.2-8 8-.6-4.8-2.4-7.4-8-8 5.6-.6 7.4-3.2 8-8Z" />
+            </svg>
+
+            {/* Bunga — kiri bawah */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="absolute bottom-[8%] left-[11%] w-14 h-14 opacity-[0.13] rotate-12">
+              <circle cx="12" cy="6.8" r="3" />
+              <circle cx="16.9" cy="10.2" r="3" />
+              <circle cx="15.1" cy="15.9" r="3" />
+              <circle cx="8.9" cy="15.9" r="3" />
+              <circle cx="7.1" cy="10.2" r="3" />
+              <circle cx="12" cy="11.8" r="2" />
+            </svg>
+
+            {/* Hati kecil — kanan bawah */}
+            <svg viewBox="0 0 24 24" fill="currentColor" className="absolute bottom-[13%] right-[2.5%] w-6 h-6 opacity-[0.16] rotate-6">
+              <path d="M12 20.5C7 16 3.5 12.8 3.5 8.9 3.5 6.2 5.6 4 8.2 4c1.6 0 3 .8 3.8 2 .8-1.2 2.2-2 3.8-2 2.6 0 4.7 2.2 4.7 4.9 0 3.9-3.5 7.1-8.5 11.6Z" />
+            </svg>
+
+            {/* Bintang kecil — kanan tengah (desktop saja) */}
+            <svg viewBox="0 0 24 24" fill="currentColor" className="hidden lg:block absolute top-[38%] right-[1%] w-5 h-5 opacity-[0.22]">
+              <path d="M12 2c.6 4.8 2.4 7.4 8 8-5.6.6-7.4 3.2-8 8-.6-4.8-2.4-7.4-8-8 5.6-.6 7.4-3.2 8-8Z" />
+            </svg>
+          </div>
+          <div className="relative z-10 max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
             {/* SISI KIRI (DESKTOP): Header & CTA Buttons */}
             <div className="lg:col-span-7 flex flex-col items-start text-left">
               {/* Judul Hero */}
@@ -127,35 +175,53 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             {/* SISI KANAN (DESKTOP): Komponen Card Template Mockup (Lebih pendek & menyebar) */}
             <div className="lg:col-span-5 flex items-center justify-center w-full py-4">
-              <div className="relative w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[340px] aspect-[4/3.2] flex items-center justify-center">
-                {/* Left Tilted Phone (Menjauh ke kiri) - cover template */}
-                <div className="absolute -left-8 sm:-left-12 top-2 w-[58%] aspect-square bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] -rotate-12 transform origin-bottom-left transition-transform hover:-rotate-14">
-                  <div className="w-full h-full rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[1].frameBg }}>
-                    <img src={heroCovers[1].image} alt={heroCovers[1].title} className="w-full h-full object-cover" />
-                  </div>
+              <div className="relative w-full max-w-[336px] sm:max-w-[384px] lg:max-w-[408px] aspect-[4/4.7] flex items-center justify-center">
+                {/* Left Tilted Phone (Menjauh ke kiri) - cover template — layer paling belakang, muncul pertama */}
+                <div className="absolute -left-8 sm:-left-12 top-[9%] w-[58%] sc-hero-in" style={{ animationDelay: "0s" }}>
+                  <div className="bg-white rounded-xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] -rotate-12 transform origin-bottom-left transition-transform hover:-rotate-14">
+                    <div className="w-full aspect-[3/4] rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[1].frameBg }}>
+                      <img src={heroCovers[1].image} alt={heroCovers[1].title} className="w-full h-full object-cover" />
+                    </div>
+                    {/* Caption judul undangan di bawah cover */}
+                    <p className="mt-1.5 w-full rounded-xl border border-neutral-200 py-1 text-center text-[12px] sm:text-sm font-bold text-neutral-700 tracking-tight select-none">
+                      {heroCovers[1].title}
+                    </p>
 
-                  {/* Red Badge across bottom left */}
-                  <div className="absolute -bottom-2 -left-2 z-30 bg-[#EE5B4F] text-white rounded-lg px-2 py-0.5 font-bold text-[9px] shadow-sm -rotate-3 select-none">
-                    {t("home.mock.live")}
+                    {/* Red Badge across bottom left */}
+                    <div className="absolute -bottom-2 -left-2 z-30 bg-[#EE5B4F] text-white rounded-lg px-2 py-0.5 font-bold text-[12px] shadow-sm -rotate-3 select-none">
+                      {t("home.mock.live")}
+                    </div>
                   </div>
                 </div>
 
-                {/* Right Tilted Phone (Menjauh ke kanan) - cover template */}
-                <div className="absolute -right-8 sm:-right-12 top-0 w-[58%] aspect-square bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] rotate-12 transform origin-bottom-right transition-transform hover:rotate-14">
-                  <div className="w-full h-full rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[2].frameBg }}>
-                    <img src={heroCovers[2].image} alt={heroCovers[2].title} className="w-full h-full object-cover" />
+                {/* Right Tilted Phone (Menjauh ke kanan) - cover template — layer belakang, muncul kedua */}
+                <div className="absolute -right-8 sm:-right-12 top-[7%] w-[58%] sc-hero-in" style={{ animationDelay: "0.25s" }}>
+                  <div className="bg-white rounded-xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] rotate-12 transform origin-bottom-right transition-transform hover:rotate-14">
+                    <div className="w-full aspect-[3/4] rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[2].frameBg }}>
+                      <img src={heroCovers[2].image} alt={heroCovers[2].title} className="w-full h-full object-cover" />
+                    </div>
+                    {/* Caption judul undangan di bawah cover */}
+                    <p className="mt-1.5 w-full rounded-xl border border-neutral-200 py-1 text-center text-[12px] sm:text-sm font-bold text-neutral-700 tracking-tight select-none">
+                      {heroCovers[2].title}
+                    </p>
                   </div>
                 </div>
 
-                {/* Center Front Phone - cover template */}
-                <div className="relative z-20 w-[62%] aspect-square bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-2 shadow-[0_16px_36px_rgba(125,106,238,0.16)] flex flex-col">
-                  <div className="w-full h-full rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[0].frameBg }}>
-                    <img src={heroCovers[0].image} alt={heroCovers[0].title} className="w-full h-full object-cover" />
-                  </div>
+                {/* Center Front Phone - cover template — layer depan, muncul terakhir */}
+                <div className="relative z-20 w-[62%] sc-hero-in" style={{ animationDelay: "0.5s" }}>
+                  <div className="bg-white rounded-xl border border-purple-100 p-2 shadow-[0_16px_36px_rgba(125,106,238,0.16)] flex flex-col">
+                    <div className="w-full aspect-[3/4] rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[0].frameBg }}>
+                      <img src={heroCovers[0].image} alt={heroCovers[0].title} className="w-full h-full object-cover" />
+                    </div>
+                    {/* Caption judul undangan di bawah cover */}
+                    <p className="mt-1.5 w-full rounded-xl border border-neutral-200 py-1 text-center text-[12px] sm:text-sm font-bold text-neutral-700 tracking-tight select-none">
+                      {heroCovers[0].title}
+                    </p>
 
-                  {/* Top-right Pill Badge: satucerita.id/nama-kalian */}
-                  <div className="absolute -top-2.5 -right-3 z-40 bg-[#7D6AEE] text-white rounded-lg px-2.5 py-1 font-bold text-[9px] shadow-[0_2px_8px_rgba(125,106,238,0.3)] rotate-3 select-none">
-                    {t("home.mock.url")}
+                    {/* Top-right Pill Badge: satucerita.app/i/nama-kalian */}
+                    <div className="absolute -top-2.5 -right-3 z-40 bg-[#7D6AEE] text-white rounded-lg px-2.5 py-1 font-bold text-[12px] shadow-[0_2px_8px_rgba(125,106,238,0.3)] rotate-3 select-none">
+                      {t("home.mock.url")}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -166,11 +232,19 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* ========================================================= */}
         {/* SECTION 2: KENAPA SATUCERITA (LATAR SAMA DENGAN HERO)     */}
         {/* ========================================================= */}
-        <section className="w-full bg-[#7d6aee]/[0.06] py-14 sm:py-20 px-4 sm:px-6 md:px-8 text-left border-t border-[#7d6aee]/15">
-          <div className="max-w-6xl mx-auto w-full text-left">
+        <section className="relative w-full bg-[#7d6aee]/[0.06] py-14 sm:py-20 px-4 sm:px-6 md:px-8 text-left border-t border-[#7d6aee]/15 overflow-hidden">
+          {/* Ornamen latar + ombak gradasi */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 text-[#7d6aee]">
+            <OrnRings className="absolute top-[9%] right-[4%] w-16 h-16 opacity-[0.13] rotate-6" />
+            <OrnFlower className="hidden sm:block absolute top-[16%] left-[9%] w-12 h-12 opacity-[0.12] rotate-12" />
+            <OrnStar className="hidden lg:block absolute top-[44%] left-[2%] w-6 h-6 opacity-[0.2]" />
+            <OrnMusic className="absolute bottom-[24%] left-[6%] w-9 h-9 opacity-[0.13] -rotate-6" />
+          </div>
+          <SectionWave className="absolute bottom-0 left-0 w-full h-[100px] sm:h-[180px]" color="#7d6aee" strength={0.1} />
+          <div className="relative z-10 max-w-6xl mx-auto w-full text-left">
             {/* Section Badge */}
             <div className="inline-block mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-[16px] sm:text-xs font-bold tracking-wide uppercase shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-[12px] sm:text-[14px] font-bold tracking-wide uppercase shadow-2xs">
                 {t("home.why.badge")}
               </span>
             </div>
@@ -313,14 +387,21 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* ========================================================= */}
         {/* SECTION 3: TEMPLATE PILIHAN (UNGU AKSEN & TEKS PUTIH)     */}
         {/* ========================================================= */}
-        <section className="w-full bg-[#7d6aee] py-14 sm:py-20 px-4 sm:px-6 md:px-8 text-white text-left">
-          <div className="max-w-6xl mx-auto w-full text-left">
+        <section className="relative w-full bg-[#7d6aee] py-14 sm:py-20 px-4 sm:px-6 md:px-8 text-white text-left overflow-hidden">
+          {/* Ornamen latar + ombak gradasi */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 text-white">
+            <OrnStar className="absolute top-[8%] left-[3%] w-7 h-7 opacity-[0.18]" />
+            <OrnHeart className="hidden lg:block absolute top-[38%] right-[2%] w-10 h-10 opacity-[0.15] rotate-6" />
+            <OrnMusic className="absolute bottom-[22%] left-[5%] w-8 h-8 opacity-[0.14] rotate-3" />
+          </div>
+          <SectionWave className="absolute bottom-0 left-0 w-full h-[100px] sm:h-[180px]" color="#ffffff" strength={0.16} />
+          <div className="relative z-10 max-w-6xl mx-auto w-full text-left">
             {/* Header: badge, judul, deskripsi (kiri) + tombol (kanan, desktop) */}
             <div className="lg:flex lg:items-end lg:justify-between lg:gap-8 lg:mb-6">
             <div>
             {/* Section Badge */}
             <div className="inline-block mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-[16px] sm:text-xs font-bold tracking-wide uppercase shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-[12px] sm:text-[14px] font-bold tracking-wide uppercase shadow-2xs">
                 {t("home.tpl.badge")}
               </span>
             </div>
@@ -353,38 +434,38 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveCategory("ALL")}
-                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-[16px] sm:text-xs transition-all cursor-pointer ${activeCategory === "ALL"
+                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-[12px] sm:text-[16px] transition-all cursor-pointer ${activeCategory === "ALL"
                     ? "bg-white text-[#7d6aee] border-white shadow-xs"
                     : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
                     }`}
                 >
                   <span>{t("home.tpl.filterAll")}</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[16px] sm:text-[10px] ${activeCategory === "ALL" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{HOME_TEMPLATES.length}</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[12px] sm:text-[10px] ${activeCategory === "ALL" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{HOME_TEMPLATES.length}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveCategory("ELYSIAN")}
-                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-[16px] sm:text-xs transition-all cursor-pointer ${activeCategory === "ELYSIAN"
+                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-[12px] sm:text-[16px] transition-all cursor-pointer ${activeCategory === "ELYSIAN"
                     ? "bg-white text-[#7d6aee] border-white shadow-xs"
                     : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
                     }`}
                 >
                   <span>Elysian</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[16px] sm:text-[10px] ${activeCategory === "ELYSIAN" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{countByCategory("ELYSIAN")}</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[12px] sm:text-[10px] ${activeCategory === "ELYSIAN" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{countByCategory("ELYSIAN")}</span>
                 </button>
 
                 {countByCategory("DELUXE") > 0 && (
                   <button
                     type="button"
                     onClick={() => setActiveCategory("DELUXE")}
-                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-[16px] sm:text-xs transition-all cursor-pointer ${activeCategory === "DELUXE"
+                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border font-bold text-[12px] sm:text-[16px] transition-all cursor-pointer ${activeCategory === "DELUXE"
                       ? "bg-white text-[#7d6aee] border-white shadow-xs"
                       : "bg-white/15 text-white border-white/25 hover:bg-white/25 shadow-2xs"
                       }`}
                   >
                     <span>Deluxe</span>
-                    <span className={`px-1.5 py-0.2 rounded-full text-[16px] sm:text-[10px] ${activeCategory === "DELUXE" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{countByCategory("DELUXE")}</span>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[12px] sm:text-[10px] ${activeCategory === "DELUXE" ? "bg-purple-100 text-[#7d6aee]" : "bg-white/20 text-white"}`}>{countByCategory("DELUXE")}</span>
                   </button>
                 )}
               </div>
@@ -443,7 +524,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onNavigate(`/templates/${item.id}`)}
+                        onClick={() => onNavigate(`/katalog/${item.id}`)}
                         className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                       >
                         <Eye className="w-4 h-4 stroke-[2.2]" />
@@ -469,14 +550,22 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* ========================================================= */}
         {/* SECTION 4: CARA PESAN (LATAR SAMA DENGAN HERO)            */}
         {/* ========================================================= */}
-        <section className="w-full bg-[#7d6aee]/[0.06] py-14 sm:py-20 px-4 sm:px-6 text-left border-y border-[#7d6aee]/15">
-          <div className="max-w-6xl mx-auto w-full text-left">
+        <section className="relative w-full bg-[#7d6aee]/[0.06] py-14 sm:py-20 px-4 sm:px-6 text-left border-y border-[#7d6aee]/15 overflow-hidden">
+          {/* Ornamen latar + ombak gradasi */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 text-[#7d6aee]">
+            <OrnLetter className="absolute top-[9%] right-[5%] w-11 h-11 opacity-[0.15] rotate-6" />
+            <OrnFlower className="absolute bottom-[20%] left-[4%] w-12 h-12 opacity-[0.13] -rotate-12" />
+            <OrnStar className="hidden lg:block absolute top-[42%] left-[1.5%] w-6 h-6 opacity-[0.2]" />
+            <OrnHeartFill className="hidden sm:block absolute bottom-[28%] right-[8%] w-5 h-5 opacity-[0.16]" />
+          </div>
+          <SectionWave className="absolute bottom-0 left-0 w-full h-[100px] sm:h-[180px]" color="#7d6aee" strength={0.1} />
+          <div className="relative z-10 max-w-6xl mx-auto w-full text-left">
             {/* Header: badge & judul (kiri) + tombol (kanan, desktop) */}
             <div className="lg:flex lg:items-end lg:justify-between lg:gap-8 lg:mb-8">
             <div>
             {/* Section Badge */}
             <div className="inline-block mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-[16px] sm:text-xs font-bold tracking-wide uppercase shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-[12px] sm:text-[14px] font-bold tracking-wide uppercase shadow-2xs">
                 {t("home.how.badge")}
               </span>
             </div>
@@ -585,11 +674,18 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* ========================================================= */}
         {/* SECTION 5: FAQ ACCORDION (UNGU & TEKS PUTIH)               */}
         {/* ========================================================= */}
-        <section className="w-full bg-[#7d6aee] py-14 sm:py-20 px-4 sm:px-6 text-white text-left">
-          <div className="max-w-4xl mx-auto w-full text-left">
+        <section className="relative w-full bg-[#7d6aee] py-14 sm:py-20 px-4 sm:px-6 text-white text-left overflow-hidden">
+          {/* Ornamen latar + ombak gradasi */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 text-white">
+            <OrnHeart className="absolute top-[10%] left-[4%] w-9 h-9 opacity-[0.15] -rotate-6" />
+            <OrnStar className="absolute bottom-[18%] right-[4%] w-6 h-6 opacity-[0.2]" />
+            <OrnMusic className="hidden lg:block absolute top-[36%] right-[6%] w-7 h-7 opacity-[0.14] rotate-3" />
+          </div>
+          <SectionWave className="absolute bottom-0 left-0 w-full h-20 sm:h-[140px]" color="#ffffff" strength={0.14} />
+          <div className="relative z-10 max-w-4xl mx-auto w-full text-left">
             {/* Section Badge */}
             <div className="inline-block mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-[16px] sm:text-xs font-bold tracking-wide uppercase shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-[12px] sm:text-[14px] font-bold tracking-wide uppercase shadow-2xs">
                 {t("home.faq.badge")}
               </span>
             </div>

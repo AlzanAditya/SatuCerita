@@ -4,6 +4,16 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { Footer } from "@/components/layout/Footer";
 import { SubpageHeader } from "@/components/layout/SubpageHeader";
 import {
+  OrnFlower,
+  OrnHeart,
+  OrnHeartFill,
+  OrnLetter,
+  OrnMusic,
+  OrnRings,
+  OrnStar,
+  SectionWave,
+} from "@/components/landing/SectionDecor";
+import {
   LayoutGrid,
   Eye,
   ArrowRight,
@@ -46,8 +56,15 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
       />
 
       {/* 3. Konten Utama: Katalog Template Mengikuti Style App Satu Cerita */}
-      <main className="flex-1 bg-[#faf9ff] py-10 sm:py-14 md:py-16 select-none">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8">
+      <main className="relative flex-1 bg-[#faf9ff] py-10 sm:py-14 md:py-16 select-none overflow-hidden">
+        {/* Ombak gradasi di bawah + ornamen di tepi */}
+        <SectionWave className="absolute bottom-0 left-0 w-full h-[100px] sm:h-[180px]" color="#7d6aee" strength={0.09} />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 text-[#7d6aee]">
+          <OrnRings className="absolute top-[18%] right-[4%] w-14 h-14 opacity-[0.12] rotate-6" />
+          <OrnStar className="hidden lg:block absolute top-[42%] left-[2%] w-6 h-6 opacity-[0.18]" />
+          <OrnFlower className="absolute bottom-[24%] left-[5%] w-11 h-11 opacity-[0.12] -rotate-12" />
+        </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 md:px-8">
           {/* Header Ringkas: Menampilkan N template */}
           <div className="mb-6 sm:mb-8 text-left">
             <h2 className="text-base sm:text-lg font-black text-neutral-800 tracking-tight">
@@ -110,7 +127,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onNavigate(`/templates/${item.slug}`)}
+                      onClick={() => onNavigate(`/katalog/${item.slug}`)}
                       className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                     >
                       <Eye className="w-4 h-4 stroke-[2.2]" />

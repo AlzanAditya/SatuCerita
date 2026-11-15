@@ -44,7 +44,7 @@ export const landingEn: Record<keyof typeof landingId, string> = {
   "home.mock.invitation": "Invitation",
   "home.mock.open": "Open",
   "home.mock.dearGuest": "Dear Invited Guest",
-  "home.mock.url": "satucerita.id/your-names",
+  "home.mock.url": "satucerita.app/i/your-names",
 
   // ---- Home: why ----
   "home.why.badge": "WHY SATUCERITA",

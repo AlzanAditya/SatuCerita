@@ -47,7 +47,7 @@ export const landingId = {
   "home.mock.invitation": "Undangan",
   "home.mock.open": "Buka",
   "home.mock.dearGuest": "Kepada Yth. Tamu Undangan",
-  "home.mock.url": "satucerita.id/nama-kalian",
+  "home.mock.url": "satucerita.app/i/nama-kalian",
 
   // ---- Home: kenapa ----
   "home.why.badge": "KENAPA SATUCERITA",

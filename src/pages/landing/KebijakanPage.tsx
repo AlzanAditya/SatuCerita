@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
+import {
+  OrnFlower,
+  OrnHeart,
+  OrnHeartFill,
+  OrnLetter,
+  OrnMusic,
+  OrnRings,
+  OrnStar,
+  SectionWave,
+} from "@/components/landing/SectionDecor";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Footer } from "@/components/layout/Footer";
 import { ChevronRight } from "lucide-react";
@@ -62,7 +72,14 @@ export const KebijakanPage: React.FC<KebijakanPageProps> = ({
           Teks berwarna putih, dan badge putih dengan teks ungu.
         */}
         <section className="relative overflow-hidden bg-[#7d6aee] py-14 sm:py-20 md:py-24 select-none shadow-xs">
-          <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          {/* Ombak gradasi di bawah + ornamen di tepi */}
+          <SectionWave className="absolute bottom-0 left-0 w-full h-20 sm:h-[140px]" color="#ffffff" strength={0.14} />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 text-white">
+            <OrnStar className="absolute top-[10%] left-[4%] w-6 h-6 opacity-[0.18]" />
+            <OrnHeart className="hidden lg:block absolute top-[30%] right-[5%] w-9 h-9 opacity-[0.15] rotate-6" />
+            <OrnMusic className="absolute bottom-[24%] left-[8%] w-8 h-8 opacity-[0.14] rotate-3" />
+          </div>
+          <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="flex max-w-3xl flex-col gap-3.5 sm:gap-4 items-start text-left">
               {/* Badge: Legal */}
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-[#7d6aee] text-xs sm:text-sm font-bold tracking-wider uppercase shadow-xs">
