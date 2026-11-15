@@ -3,6 +3,7 @@
  * Browser tidak pernah menulis langsung ke database/R2.
  */
 import type { PublicManifest } from "../../shared/templates/types";
+import { STUDIO_KEYS, markStudioStale, peekStudio, setStudio } from "@/lib/studioCache";
 
 const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || "";
 
@@ -35,12 +36,23 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<ApiResult<
 }
 const json = (method: string, body: unknown): RequestInit => ({ method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
-export const listInvitations = () => call<{ invitations: InvitationSummary[] }>("/api/invitations");
+export const listInvitations = async () => {
+  const r = await call<{ invitations: InvitationSummary[] }>("/api/invitations");
+  if (r.ok && Array.isArray(r.data.invitations)) setStudio(STUDIO_KEYS.invitations, r.data.invitations);
+  return r;
+};
 export const getInvitation = (id: string) =>
   call<{ invitation: InvitationDetail; manifest: PublicManifest; media: MediaItem[] }>(`/api/invitations/${id}`);
-export const saveInvitation = (id: string, patch: { content?: Content; progressStep?: number; slug?: string; title?: string }) =>
-  call<{ invitation: InvitationSummary }>(`/api/invitations/${id}`, json("PUT", patch));
-export const publishInvitation = (id: string) => call<{ invitation: InvitationSummary }>(`/api/invitations/${id}/publish`, { method: "POST" });
+export const saveInvitation = async (id: string, patch: { content?: Content; progressStep?: number; slug?: string; title?: string }) => {
+  const r = await call<{ invitation: InvitationSummary }>(`/api/invitations/${id}`, json("PUT", patch));
+  if (r.ok) markStudioStale(STUDIO_KEYS.invitations);
+  return r;
+};
+export const publishInvitation = async (id: string) => {
+  const r = await call<{ invitation: InvitationSummary }>(`/api/invitations/${id}/publish`, { method: "POST" });
+  if (r.ok) markStudioStale(STUDIO_KEYS.invitations);
+  return r;
+};
 export const uploadMedia = (id: string, slot: string, blob: Blob) =>
   call<{ media: MediaItem }>(`/api/invitations/${id}/media?slot=${encodeURIComponent(slot)}`, { method: "POST", headers: { "Content-Type": blob.type }, body: blob });
 export const deleteMedia = (id: string, mediaId: string) => call<{ ok: true }>(`/api/invitations/${id}/media/${mediaId}`, { method: "DELETE" });
@@ -73,6 +85,17 @@ export interface OwnerWish {
 export interface WishInvitation { id: string; slug: string; title: string | null }
 
 /** Semua ucapan dari undangan yang sudah dipublikasikan milik user yang login. */
-export const listMyWishes = () => call<{ invitations: WishInvitation[]; wishes: OwnerWish[] }>("/api/wishes");
-export const deleteWish = (invitationId: string, wishId: string) =>
-  call<{ ok: true }>(`/api/invitations/${invitationId}/wishes/${wishId}`, { method: "DELETE" });
+export const listMyWishes = async () => {
+  const r = await call<{ invitations: WishInvitation[]; wishes: OwnerWish[] }>("/api/wishes");
+  if (r.ok && Array.isArray(r.data.wishes)) setStudio(STUDIO_KEYS.wishes, { invitations: r.data.invitations ?? [], wishes: r.data.wishes });
+  return r;
+};
+export const deleteWish = async (invitationId: string, wishId: string) => {
+  const r = await call<{ ok: true }>(`/api/invitations/${invitationId}/wishes/${wishId}`, { method: "DELETE" });
+  if (r.ok || r.status === 404) {
+    // Buang dari cache agar kunjungan berikutnya tidak menampilkan ucapan yang sudah dihapus.
+    const c = peekStudio<{ invitations: WishInvitation[]; wishes: OwnerWish[] }>(STUDIO_KEYS.wishes);
+    if (c) setStudio(STUDIO_KEYS.wishes, { ...c, wishes: c.wishes.filter((w) => w.id !== wishId) });
+  }
+  return r;
+};

@@ -152,18 +152,6 @@ export const landingId = {
   "detail.language.title": "Bahasa undangan",
 
   // ---- Preview layar penuh ----
-  "preview.back": "Kembali ke Detail",
-  "preview.backShort": "Kembali",
-  "preview.title": "Preview",
-  "preview.newTabTitle": "Buka di tab baru",
-  "preview.newTab": "Tab Baru",
-  "preview.closeTitle": "Tutup preview",
-  "preview.loadingPrefix": "Memuat template",
-  "preview.notFoundTitle": "Template tidak ditemukan",
-  "preview.notFoundPrefix": "Template",
-  "preview.notFoundSuffix": "belum tersedia untuk pratinjau.",
-  "preview.backToDetail": "Kembali ke Detail Template",
-  "preview.iframeTitle": "Preview Template {title}",
 
   // ---- Cara Pesan ----
   "order.badge": "Panduan Cara Pesan",

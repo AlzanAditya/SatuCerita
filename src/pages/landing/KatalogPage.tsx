@@ -70,9 +70,9 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                     onClick={() => onNavigate(`/katalog/${item.slug}`)}
                     className="cursor-pointer"
                   >
-                    {/* Cover katalog: foto mockup 4:3 ditampilkan penuh */}
+                    {/* Cover katalog: foto mockup 3:4 ditampilkan penuh */}
                     <div
-                      className="relative w-full aspect-[4/3] rounded-xl sm:rounded-2xl border border-purple-100/80 mb-3 overflow-hidden bg-neutral-100"
+                      className="relative w-full aspect-[3/4] rounded-xl sm:rounded-2xl border border-purple-100/80 mb-3 overflow-hidden bg-neutral-100"
                       style={{ backgroundColor: item.frameBg }}
                     >
                       <img
@@ -110,7 +110,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onNavigate(`/preview/${item.slug}`)}
+                      onClick={() => onNavigate(`/templates/${item.slug}`)}
                       className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                     >
                       <Eye className="w-4 h-4 stroke-[2.2]" />
@@ -158,7 +158,7 @@ export const KatalogPage: React.FC<KatalogPageProps> = ({
 
             {/* Gambar Preview Besar */}
             <div
-              className="relative rounded-2xl border border-purple-100/80 mb-4 overflow-hidden aspect-[4/3] bg-neutral-100"
+              className="relative rounded-2xl border border-purple-100/80 mb-4 overflow-hidden aspect-[3/4] bg-neutral-100"
               style={{ backgroundColor: selectedDemo.frameBg }}
             >
               <img

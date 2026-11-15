@@ -8,7 +8,6 @@ import {
   LoginPage,
   KatalogPage,
   KatalogDetailPage,
-  TemplatePreviewPage,
   CaraPesanPage,
   KontakPage,
   KebijakanPage,
@@ -58,6 +57,12 @@ function LandingRouter() {
 
   const navigate = useCallback(
     (to: string) => {
+      // Halaman template mentah dilayani Worker/dev server, bukan SPA: pakai navigasi penuh.
+      if (to.startsWith("/templates/")) {
+        window.location.assign(to);
+        return;
+      }
+
       // Jika menuju ke studio dashboard, checkout, atau order dari landing page yang mandiri
       if (
         to.startsWith("/studio") ||
@@ -129,8 +134,6 @@ function LandingRouter() {
       return <KatalogPage currentPath={path} onNavigate={navigate} />;
     case "katalogDetail":
       return <KatalogDetailPage currentPath={path} onNavigate={navigate} />;
-    case "templatePreview":
-      return <TemplatePreviewPage currentPath={path} onNavigate={navigate} />;
     case "caraPesan":
       return <CaraPesanPage currentPath={path} onNavigate={navigate} />;
     case "kontak":

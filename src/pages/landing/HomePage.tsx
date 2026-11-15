@@ -43,6 +43,9 @@ type TemplateItem = Pick<
 // Satu sumber kebenaran: sama dengan katalog (src/data/templates.ts), yaitu template yang ada di src/templates/.
 const HOME_TEMPLATES: TemplateItem[] = TEMPLATES_DATA;
 
+// Kartu hero hanya memakai cover template (tengah, kiri, kanan); diulang jika template kurang dari 3.
+const heroCovers = [0, 1, 2].map((i) => TEMPLATES_DATA[i % TEMPLATES_DATA.length]);
+
 const FAQ_COUNT = 5;
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -125,18 +128,10 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* SISI KANAN (DESKTOP): Komponen Card Template Mockup (Lebih pendek & menyebar) */}
             <div className="lg:col-span-5 flex items-center justify-center w-full py-4">
               <div className="relative w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[340px] aspect-[4/3.2] flex items-center justify-center">
-                {/* Left Tilted Phone (Menjauh ke kiri) */}
-                <div className="absolute -left-8 sm:-left-12 top-2 w-[58%] aspect-[9/12] bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] -rotate-12 transform origin-bottom-left transition-transform hover:-rotate-14">
-                  <div className="w-full h-full rounded-xl overflow-hidden relative bg-neutral-900">
-                    <img
-                      src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80"
-                      alt="Wedding Preview 1"
-                      className="w-full h-full object-cover opacity-90"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-2 text-white text-center">
-                      <p className="text-[8px] uppercase tracking-wider opacity-80">Pawiwahan</p>
-                      <p className="text-[10px] font-serif font-bold">John & Jane</p>
-                    </div>
+                {/* Left Tilted Phone (Menjauh ke kiri) - cover template */}
+                <div className="absolute -left-8 sm:-left-12 top-2 w-[58%] aspect-[3/4] bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] -rotate-12 transform origin-bottom-left transition-transform hover:-rotate-14">
+                  <div className="w-full h-full rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[1].frameBg }}>
+                    <img src={heroCovers[1].image} alt={heroCovers[1].title} className="w-full h-full object-cover" />
                   </div>
 
                   {/* Red Badge across bottom left */}
@@ -145,51 +140,17 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </div>
                 </div>
 
-                {/* Right Tilted Phone (Menjauh ke kanan) */}
-                <div className="absolute -right-8 sm:-right-12 top-0 w-[58%] aspect-[9/12] bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] rotate-12 transform origin-bottom-right transition-transform hover:rotate-14">
-                  <div className="w-full h-full rounded-xl overflow-hidden relative bg-neutral-900">
-                    <img
-                      src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80"
-                      alt="Wedding Preview 2"
-                      className="w-full h-full object-cover opacity-90"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-2 text-white text-center">
-                      <p className="text-[8px] uppercase tracking-wider opacity-80">{t("home.mock.invitation")}</p>
-                      <p className="text-[10px] font-serif font-bold">John & Jane</p>
-                      <div className="mt-1 w-full py-0.5 bg-[#7D6AEE] rounded-md text-[8px] font-bold text-white shadow-2xs">
-                        {t("home.mock.open")}
-                      </div>
-                    </div>
+                {/* Right Tilted Phone (Menjauh ke kanan) - cover template */}
+                <div className="absolute -right-8 sm:-right-12 top-0 w-[58%] aspect-[3/4] bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-1.5 shadow-[0_8px_24px_rgba(125,106,238,0.12)] rotate-12 transform origin-bottom-right transition-transform hover:rotate-14">
+                  <div className="w-full h-full rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[2].frameBg }}>
+                    <img src={heroCovers[2].image} alt={heroCovers[2].title} className="w-full h-full object-cover" />
                   </div>
                 </div>
 
-                {/* Center Front Phone Mockup (Lebih pendek) */}
-                <div className="relative z-20 w-[62%] aspect-[9/12] bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-2 shadow-[0_16px_36px_rgba(125,106,238,0.16)] flex flex-col">
-                  {/* Notch */}
-                  <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-8 h-2 bg-neutral-900 rounded-full z-30" />
-
-                  {/* Inner Screen */}
-                  <div className="w-full h-full rounded-xl overflow-hidden relative bg-neutral-100 flex flex-col justify-between">
-                    <img
-                      src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80"
-                      alt="Wedding Preview Main"
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="relative z-10 p-1.5 pt-3 text-center">
-                      <p className="text-[7px] uppercase tracking-widest text-neutral-800 font-semibold bg-white/70 backdrop-blur-xs inline-block px-1.5 py-0.5 rounded-full border border-purple-100">
-                        The Wedding Of
-                      </p>
-                    </div>
-                    <div className="relative z-10 p-2 bg-gradient-to-t from-black/90 via-black/40 to-transparent text-white text-center">
-                      <p className="text-[10px] font-serif font-bold leading-tight">John & Jane</p>
-                      <p className="text-[7px] opacity-75 mt-0.5">{`15 . 05 . 2027`}</p>
-                      <p className="text-[7px] opacity-70 mt-0.5">{t("home.mock.dearGuest")}</p>
-                    </div>
-                  </div>
-
-                  {/* Bottom Label inside frame */}
-                  <div className="mt-1 py-0.5 px-2 bg-purple-50/60 border border-purple-100 rounded-lg text-center text-[9px] font-bold text-[#7D6AEE]">
-                    Olympia
+                {/* Center Front Phone - cover template */}
+                <div className="relative z-20 w-[62%] aspect-[3/4] bg-white rounded-2xl sm:rounded-3xl border border-purple-100 p-2 shadow-[0_16px_36px_rgba(125,106,238,0.16)] flex flex-col">
+                  <div className="w-full h-full rounded-xl overflow-hidden relative" style={{ backgroundColor: heroCovers[0].frameBg }}>
+                    <img src={heroCovers[0].image} alt={heroCovers[0].title} className="w-full h-full object-cover" />
                   </div>
 
                   {/* Top-right Pill Badge: satucerita.id/nama-kalian */}
@@ -215,7 +176,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Section Title & Desc (lebar dipersempit) */}
-            <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-black text-neutral-900 tracking-tight leading-[1.12] mb-3 max-w-[360px] sm:max-w-[420px]">
+            <h2 className="text-3xl sm:text-5xl font-black text-neutral-900 tracking-tight leading-[1.12] mb-3 max-w-[360px] sm:max-w-[560px] lg:max-w-[680px]">
               {t("home.why.title")}
             </h2>
             <p className="text-neutral-600 text-sm sm:text-base leading-relaxed mb-8 sm:mb-10 max-w-[360px] sm:max-w-[440px] font-normal">
@@ -354,6 +315,9 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* ========================================================= */}
         <section className="w-full bg-[#7d6aee] py-14 sm:py-20 px-4 sm:px-6 md:px-8 text-white text-left">
           <div className="max-w-6xl mx-auto w-full text-left">
+            {/* Header: badge, judul, deskripsi (kiri) + tombol (kanan, desktop) */}
+            <div className="lg:flex lg:items-end lg:justify-between lg:gap-8 lg:mb-6">
+            <div>
             {/* Section Badge */}
             <div className="inline-block mb-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold tracking-wide uppercase shadow-2xs">
@@ -362,15 +326,16 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Section Title & Desc */}
-            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-snug mb-3">
+            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-snug mb-3">
               {t("home.tpl.title")}
             </h2>
-            <p className="text-purple-100 text-sm sm:text-base leading-relaxed mb-6 max-w-2xl font-normal">
+            <p className="text-purple-100 text-sm sm:text-base leading-relaxed mb-6 lg:mb-0 max-w-2xl font-normal">
               {t("home.tpl.desc")}
             </p>
+            </div>
 
             {/* Button: Lihat semua template */}
-            <div className="mb-6">
+            <div className="mb-6 lg:mb-0 shrink-0">
               <button
                 type="button"
                 onClick={() => onNavigate(katalogPath)}
@@ -379,7 +344,10 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <span>{t("home.tpl.seeAll")}</span>
                 <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </button>
-            </div>            {/* Category Filter Pills */}
+            </div>
+            </div>
+
+            {/* Category Filter Pills */}
             <div className="relative -mx-4 sm:mx-0 mb-8">
               <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pl-6 pr-6 sm:px-0 scroll-pl-6 sm:scroll-pl-0 [scrollbar-width:none]">
                 <button
@@ -436,9 +404,9 @@ export const HomePage: React.FC<HomePageProps> = ({
                       onClick={() => onNavigate(`/katalog/${item.id}`)}
                       className="cursor-pointer"
                     >
-                      {/* Cover katalog: foto mockup 4:3 ditampilkan penuh */}
+                      {/* Cover katalog: foto mockup 3:4 ditampilkan penuh */}
                       <div
-                        className="relative w-full aspect-[4/3] rounded-xl sm:rounded-2xl border border-purple-100/80 mb-3 overflow-hidden bg-neutral-100"
+                        className="relative w-full aspect-[3/4] rounded-xl sm:rounded-2xl border border-purple-100/80 mb-3 overflow-hidden bg-neutral-100"
                         style={{ backgroundColor: item.frameBg }}
                       >
                         <img
@@ -475,7 +443,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onNavigate(`/preview/${item.id}`)}
+                        onClick={() => onNavigate(`/templates/${item.id}`)}
                         className="w-full !text-[0.85rem] !py-2.5 px-3 h-auto"
                       >
                         <Eye className="w-4 h-4 stroke-[2.2]" />
@@ -503,6 +471,9 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* ========================================================= */}
         <section className="w-full bg-[#7d6aee]/[0.06] py-14 sm:py-20 px-4 sm:px-6 text-left border-y border-[#7d6aee]/15">
           <div className="max-w-6xl mx-auto w-full text-left">
+            {/* Header: badge & judul (kiri) + tombol (kanan, desktop) */}
+            <div className="lg:flex lg:items-end lg:justify-between lg:gap-8 lg:mb-8">
+            <div>
             {/* Section Badge */}
             <div className="inline-block mb-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-xs font-bold tracking-wide uppercase shadow-2xs">
@@ -511,12 +482,13 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Section Title */}
-            <h2 className="text-2xl sm:text-4xl font-black text-neutral-900 tracking-tight leading-snug mb-3">
+            <h2 className="text-2xl sm:text-5xl font-black text-neutral-900 tracking-tight leading-snug mb-3 lg:mb-0">
               {t("home.how.title")}
             </h2>
+            </div>
 
             {/* Button: Lihat detail cara pesan */}
-            <div className="mb-8">
+            <div className="mb-8 lg:mb-0 shrink-0">
               <Button
                 variant="outline"
                 size="md"
@@ -526,6 +498,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <span>{t("home.how.detail")}</span>
                 <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
               </Button>
+            </div>
             </div>
 
             {/* 4 Steps Showcase - Dipaksa 1 baris di desktop (lg:grid-cols-4) */}
@@ -622,7 +595,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Section Title */}
-            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-snug mb-8">
+            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-snug mb-8">
               {t("home.faq.title")}
             </h2>
 
@@ -662,7 +635,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             <div
-              className="relative rounded-2xl border border-purple-100/80 mb-4 overflow-hidden aspect-[4/3] bg-neutral-100"
+              className="relative rounded-2xl border border-purple-100/80 mb-4 overflow-hidden aspect-[3/4] bg-neutral-100"
               style={{ backgroundColor: selectedDemo.frameBg }}
             >
               <img

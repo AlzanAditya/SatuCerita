@@ -23,6 +23,7 @@
   --color-foreground: #f7f7f7;
   --color-text-primary: #0a0a0a;
   --color-text-secondary: #707070;
+  --text-base: 1.125rem;
 }
 
 html {

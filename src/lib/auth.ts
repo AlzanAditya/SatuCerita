@@ -2,6 +2,8 @@
  * Client auth: semua request lewat Cloudflare Worker (/api/*).
  * Token disimpan di cookie HttpOnly oleh Worker — TIDAK ada token di JavaScript/localStorage.
  */
+import { clearStudioCache } from "@/lib/studioCache";
+
 export type Role = "user" | "admin";
 
 export interface SessionUser {
@@ -41,8 +43,48 @@ export async function fetchSession(): Promise<SessionUser | null> {
   return r.ok ? r.data.user : null;
 }
 
+/**
+ * Cache sesi level-modul: dipakai bersama oleh Navbar & BottomNav supaya saat pindah halaman
+ * (komponen di-mount ulang) status login tidak kembali ke "Login" sesaat.
+ * undefined = belum diketahui, null = belum login.
+ */
+let sessionCache: SessionUser | null | undefined;
+let sessionFetchedAt = 0;
+let sessionInflight: Promise<void> | null = null;
+const sessionListeners = new Set<() => void>();
+
+export const getCachedSession = () => sessionCache;
+
+export function setSessionCache(u: SessionUser | null): void {
+  sessionCache = u;
+  sessionFetchedAt = Date.now();
+  sessionListeners.forEach((fn) => fn());
+}
+
+export function subscribeSession(fn: () => void): () => void {
+  sessionListeners.add(fn);
+  return () => {
+    sessionListeners.delete(fn);
+  };
+}
+
+/** Ambil ulang sesi di latar belakang (hanya jika cache sudah lebih tua dari maxAgeMs). Cache lama tetap tampil selama menunggu. */
+export function refreshSession(maxAgeMs = 30_000): Promise<void> {
+  if (sessionCache !== undefined && Date.now() - sessionFetchedAt < maxAgeMs) return Promise.resolve();
+  if (sessionInflight) return sessionInflight;
+  sessionInflight = (async () => {
+    const r = await api<{ user: SessionUser | null }>("/api/auth/me");
+    // Gagal jaringan: jangan timpa cache (hindari "logout" semu).
+    if (r.ok) setSessionCache(r.data.user ?? null);
+  })().finally(() => {
+    sessionInflight = null;
+  });
+  return sessionInflight;
+}
+
 export async function loginWithEmail(email: string, password: string) {
   const r = await api<{ user: SessionUser }>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+  if (r.ok && r.data.user) setSessionCache(r.data.user);
   return { ok: r.ok, error: r.data.error, user: r.data.user };
 }
 
@@ -60,6 +102,8 @@ export async function logoutRequest(): Promise<void> {
   } catch (_err) {
     console.warn("[Auth] Logout request failed on API, proceeding with client cleanup", _err);
   }
+  setSessionCache(null);
+  clearStudioCache();
 
   // 1. Bersihkan cookies document (non-HttpOnly)
   if (typeof document !== "undefined") {
@@ -91,6 +135,7 @@ export async function logoutRequest(): Promise<void> {
             key.startsWith("sb-") ||
             key.startsWith("supabase") ||
             key.startsWith("satucerita_avatar_") ||
+            key.startsWith("satucerita_blast_") ||
             key === "satucerita_active_user" ||
             key === "satucerita_app_active_tab" ||
             key === "satucerita_dash_active_tab" ||
@@ -111,6 +156,7 @@ export async function logoutRequest(): Promise<void> {
 
 export async function updateProfile(p: { name?: string; phone?: string }) {
   const r = await api<{ user: SessionUser }>("/api/me", { method: "PATCH", body: JSON.stringify(p) });
+  if (r.ok && r.data.user) setSessionCache(r.data.user);
   return { ok: r.ok, error: r.data.error, user: r.data.user };
 }
 

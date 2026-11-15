@@ -5,6 +5,7 @@ import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { Button } from "@/components/ui/Button";
 import { deleteWish, listMyWishes, type OwnerWish, type WishInvitation } from "@/lib/invitationApi";
 import { DEMO_INVITATIONS, DEMO_WISHES, isDemo } from "@/lib/studioDemo";
+import { STUDIO_KEYS, isStudioFresh, peekStudio } from "@/lib/studioCache";
 import { useT, formatShortDate, type TKey } from "@/i18n";
 import type { Language } from "@/context/LanguageContext";
 
@@ -32,29 +33,33 @@ const PAGE_SIZE = 5;
 
 export const UcapanPage: React.FC<UcapanPageProps> = ({ onNavigate, showToast }) => {
   const { t, tr, lang } = useT();
-  const [loading, setLoading] = useState(true);
+  // Data terakhir dari cache tampil seketika; segarkan diam-diam bila sudah basi.
+  const cached = isDemo() ? undefined : peekStudio<{ invitations: WishInvitation[]; wishes: OwnerWish[] }>(STUDIO_KEYS.wishes);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
-  const [invitations, setInvitations] = useState<WishInvitation[]>([]);
-  const [wishes, setWishes] = useState<OwnerWish[]>([]);
+  const [invitations, setInvitations] = useState<WishInvitation[]>(cached?.invitations ?? []);
+  const [wishes, setWishes] = useState<OwnerWish[]>(cached?.wishes ?? []);
   const [filter, setFilter] = useState<string>("all");
   const [showAll, setShowAll] = useState(false);
   const [toDelete, setToDelete] = useState<OwnerWish | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const load = useCallback(async (force = false) => {
     if (isDemo()) {
       setInvitations(DEMO_INVITATIONS);
       setWishes(DEMO_WISHES);
       setLoading(false);
       return;
     }
+    if (!force && isStudioFresh(STUDIO_KEYS.wishes)) return;
+    const hasCache = !!peekStudio(STUDIO_KEYS.wishes);
+    if (!hasCache) setLoading(true);
+    setError(null);
     const res = await listMyWishes();
     if (res.ok && Array.isArray(res.data.wishes)) {
       setInvitations(res.data.invitations ?? []);
       setWishes(res.data.wishes);
-    } else {
+    } else if (!hasCache) {
       setError(res.data.error || "Gagal memuat ucapan.");
     }
     setLoading(false);
@@ -150,7 +155,7 @@ export const UcapanPage: React.FC<UcapanPageProps> = ({ onNavigate, showToast })
             <p className="text-sm text-[#5a5476]">{error}</p>
             <button
               type="button"
-              onClick={() => void load()}
+              onClick={() => void load(true)}
               className="mt-4 h-10 px-6 rounded-full bg-[#e9e4fb] hover:bg-[#e0daf8] text-sm font-bold text-[#5b49c9] cursor-pointer"
             >
               {t("common.retry")}

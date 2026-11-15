@@ -281,10 +281,10 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                   </button>
                 </div>
 
-                {/* Buka Layar Penuh Button -> navigate ke /preview/:slug */}
+                {/* Buka Layar Penuh Button -> buka /templates/:slug */}
                 <button
                   type="button"
-                  onClick={() => onNavigate(`/preview/${template.slug}`)}
+                  onClick={() => onNavigate(`/templates/${template.slug}`)}
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-purple-50 text-neutral-800 border border-purple-200 border-b-[3px] border-b-purple-300 font-bold text-xs shadow-2xs transition-all cursor-pointer"
                 >
                   <Maximize2 className="w-3.5 h-3.5 text-[#7d6aee]" />
@@ -332,7 +332,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                         <div className="absolute bottom-3 right-3 z-30 pointer-events-auto">
                           <button
                             type="button"
-                            onClick={() => onNavigate(`/preview/${template.slug}`)}
+                            onClick={() => onNavigate(`/templates/${template.slug}`)}
                             title={t("detail.fullscreenTitle")}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-900 text-white text-[11px] font-bold backdrop-blur-md shadow-lg border border-white/20 transition-all cursor-pointer hover:scale-105"
                           >
@@ -374,7 +374,7 @@ export const KatalogDetailPage: React.FC<KatalogDetailPageProps> = ({
                           <div className="pb-8">
                             <button
                               type="button"
-                              onClick={() => onNavigate(`/preview/${template.slug}`)}
+                              onClick={() => onNavigate(`/templates/${template.slug}`)}
                               className="px-5 py-2 rounded-xl bg-white text-neutral-900 font-bold text-xs shadow-md hover:bg-neutral-100 transition-all inline-flex items-center gap-1.5 cursor-pointer"
                             >
                               <span>{t("detail.openFullPreview")}</span>

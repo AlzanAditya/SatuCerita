@@ -74,12 +74,5 @@ export function localizeRouteMeta(route: RouteMeta | null, lang: Language): Meta
       description: `See the details, features, and live preview of the ${name} digital wedding invitation template at Satu Cerita.`,
     };
   }
-  if (route.id === "templatePreview") {
-    const name = titleCase(route.path.replace(/^\/preview\//, ""));
-    return {
-      title: `${name} Template Preview — Satu Cerita`,
-      description: `Live preview of the ${name} digital invitation template at Satu Cerita.`,
-    };
-  }
   return { title: route.title, description: route.description };
 }

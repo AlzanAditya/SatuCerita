@@ -11,7 +11,6 @@ import {
   KontakPage,
   KebijakanPage,
   NotFoundPage,
-  TemplatePreviewPage,
 } from "@/pages/landing";
 import { UserApp } from "@/pages/studio";
 import { CheckoutPage } from "@/pages/studio/CheckoutPage";
@@ -55,6 +54,12 @@ function AppRouter() {
 
   const navigate = useCallback(
     (to: string) => {
+      // Halaman template mentah dilayani Worker/dev server, bukan SPA: pakai navigasi penuh.
+      if (to.startsWith("/templates/")) {
+        window.location.assign(to);
+        return;
+      }
+
       const hashIndex = to.indexOf("#");
       const hash = hashIndex >= 0 ? to.slice(hashIndex) : "";
       const next = to.startsWith("#") ? path : normalizePath(to);
@@ -103,8 +108,6 @@ function AppRouter() {
       return <KatalogPage currentPath={path} onNavigate={navigate} />;
     case "katalogDetail":
       return <KatalogDetailPage currentPath={path} onNavigate={navigate} />;
-    case "templatePreview":
-      return <TemplatePreviewPage currentPath={path} onNavigate={navigate} />;
     case "caraPesan":
       return <CaraPesanPage currentPath={path} onNavigate={navigate} />;
     case "kontak":

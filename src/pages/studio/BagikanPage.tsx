@@ -5,6 +5,8 @@ import { SITE } from "@/config/site";
 import { isDemo } from "@/lib/studioDemo";
 import { TEMPLATES_DATA } from "@/data/templates";
 import { listInvitations, type InvitationSummary } from "@/lib/invitationApi";
+import { STUDIO_KEYS, isStudioFresh, peekStudio } from "@/lib/studioCache";
+import { WhatsappBlast } from "./WhatsappBlast";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { useT } from "@/i18n";
 import { OrderItem, UserInvitation } from "./types";
@@ -69,11 +71,13 @@ const TelegramIcon: React.FC = () => (
 export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orders = [], onNavigate, showToast }) => {
   const { t } = useT();
   // Semua undangan milik user (satu pesanan lunas = satu undangan). Pilih salah satu untuk dibagikan.
-  const [mine, setMine] = useState<InvitationSummary[]>([]);
-  const [selectedId, setSelectedId] = useState<string>("");
+  const cached = isDemo() ? undefined : peekStudio<InvitationSummary[]>(STUDIO_KEYS.invitations);
+  const [mine, setMine] = useState<InvitationSummary[]>(cached ?? []);
+  const [selectedId, setSelectedId] = useState<string>(cached?.[0]?.id ?? "");
 
   useEffect(() => {
     if (isDemo()) return;
+    if (isStudioFresh(STUDIO_KEYS.invitations)) return;
     let off = false;
     listInvitations().then((r) => {
       if (off || !r.ok || !Array.isArray(r.data.invitations)) return;
@@ -264,6 +268,13 @@ export const BagikanPage: React.FC<BagikanPageProps> = ({ invitations = [], orde
           )}
         </section>
       </div>
+
+      {/* WhatsApp Blast: daftar tamu + tombol bagikan per tamu */}
+      {link && (
+        <div className="max-w-2xl mx-auto md:mx-0 mt-5">
+          <WhatsappBlast storageId={selected?.id || slug} link={link} />
+        </div>
+      )}
     </div>
   );
 };

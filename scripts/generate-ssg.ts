@@ -207,7 +207,7 @@ export function runLandingSSG(distDir?: string) {
     (r) => !r.path.startsWith("/app") && !r.path.startsWith("/studio") && !r.path.startsWith("/dash")
   );
 
-  // Masukkan halaman detail katalog & preview template ke dalam SSG
+  // Masukkan halaman detail katalog ke dalam SSG
   for (const t of TEMPLATES_DATA) {
     landingRoutes.push({
       id: "katalogDetail",
@@ -217,13 +217,6 @@ export function runLandingSSG(distDir?: string) {
       indexable: true,
       changefreq: "weekly",
       priority: 0.85,
-    });
-    landingRoutes.push({
-      id: "templatePreview",
-      path: `/preview/${t.slug}`,
-      title: `Preview Template ${t.title} — Satu Cerita`,
-      description: `Pratinjau langsung template undangan digital ${t.title} di Satu Cerita.`,
-      indexable: false,
     });
   }
 

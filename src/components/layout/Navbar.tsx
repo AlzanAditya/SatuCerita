@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { PATHS } from "@/routes";
 import { Home, LayoutGrid, ShoppingBag, MessageCircle, UserRound } from "lucide-react";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
-import { fetchSession, type SessionUser } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
 import { useT } from "@/i18n";
 
 interface NavbarProps {
@@ -15,17 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
 }) => {
   const { t } = useT();
-  const [user, setUser] = useState<SessionUser | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-    fetchSession().then((u) => {
-      if (alive && u) setUser(u);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const user = useSession();
 
   const firstName = user?.name ? user.name.trim().split(/\s+/)[0] || user.name : "";
   const loginPath = PATHS.login;
@@ -133,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="hidden md:inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/80 text-neutral-800 transition-all duration-200 active:scale-95 cursor-pointer select-none"
                 title={t("nav.profileOf", { name: user.name })}
               >
-                <div className="size-7 rounded-full overflow-hidden bg-[#7d6aee] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                <div className="size-6 rounded-full overflow-hidden bg-[#7d6aee] text-white flex items-center justify-center font-bold text-[11px] shrink-0 shadow-2xs">
                   {user.avatar ? (
                     <img src={user.avatar} alt={firstName} className="w-full h-full object-cover" />
                   ) : (

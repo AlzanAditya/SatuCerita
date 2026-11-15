@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { PATHS } from "@/routes";
 import { Home, LayoutGrid, ShoppingBag, MessageCircle, UserRound } from "lucide-react";
 import { useT } from "@/i18n";
-import { fetchSession, type SessionUser } from "@/lib/auth";
+import { useSession } from "@/hooks/useSession";
 
 export interface BottomNavProps {
   currentPath?: string;
@@ -16,17 +16,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   activeTab: propActiveTab,
 }) => {
   const { t } = useT();
-  const [user, setUser] = useState<SessionUser | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-    fetchSession().then((u) => {
-      if (alive && u) setUser(u);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const user = useSession();
 
   const firstName = user?.name ? user.name.trim().split(/\s+/)[0] || user.name : "";
 
@@ -184,7 +174,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           aria-label={user ? firstName : t("nav.login")}
         >
           {user ? (
-            <div className={`size-5 rounded-full overflow-hidden flex items-center justify-center font-bold text-[10px] shrink-0 border ${
+            <div className={`size-6 rounded-full overflow-hidden flex items-center justify-center font-bold text-[10px] shrink-0 border ${
               effectiveActiveTab === "login" ? "border-[#7d6aee] ring-1 ring-[#7d6aee]" : "border-neutral-300"
             }`}>
               {user.avatar ? (

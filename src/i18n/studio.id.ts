@@ -141,6 +141,28 @@ export const studioId = {
   "share.shareTitle": "Undangan digital",
   "share.tgText": "Undangan digital kami",
 
+  // ---- WhatsApp Blast (Bagikan) ----
+  "blast.heading": "WhatsApp Blast",
+  "blast.desc": "Catat nama tamu, lalu kirim undangan ke tiap tamu lewat WhatsApp dengan nama mereka di sampul.",
+  "blast.editText": "Atur teks",
+  "blast.textLabel": "Teks pesan",
+  "blast.textHint": "Gunakan {nama} untuk nama tamu dan {link} untuk tautan undangan. Jika {link} dihapus, tautan tetap ditambahkan di akhir pesan.",
+  "blast.preview": "Contoh pesan",
+  "blast.resetText": "Kembalikan teks bawaan",
+  "blast.defaultText": "Halo {nama}, saya ingin memberitahukan pernikahan saya dan berharap Anda berkenan hadir. Buka undangan digitalnya di sini:\n{link}",
+  "blast.sampleName": "Nama Tamu",
+  "blast.progress": "{done} dari {total} tamu sudah dibagikan",
+  "blast.col.name": "Nama",
+  "blast.col.status": "Status",
+  "blast.col.share": "Bagikan",
+  "blast.status.pending": "Belum dibagikan",
+  "blast.status.shared": "Dibagikan",
+  "blast.toggleStatus": "Ubah status",
+  "blast.placeholder": "Ketik nama tamu, lalu Enter",
+  "blast.shareTo": "Bagikan ke WhatsApp untuk {name}",
+  "blast.remove": "Hapus {name}",
+  "blast.hint": "Tekan Enter untuk menambah tamu berikutnya. Tombol WhatsApp membuka WhatsApp, lalu Anda memilih penerimanya. Daftar ini tersimpan di browser ini.",
+
   // ---- Profil ----
   "profile.invitations": "Undangan",
   "profile.orders": "Pesanan",

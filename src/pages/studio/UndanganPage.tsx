@@ -6,6 +6,7 @@ import { TEMPLATES_DATA } from "@/data/templates";
 import { isDemo } from "@/lib/studioDemo";
 import { EDIT_STEPS, FINAL_PROGRESS, isEditFinished } from "@/lib/editSteps";
 import { listInvitations, previewUrl, type InvitationSummary } from "@/lib/invitationApi";
+import { STUDIO_KEYS, isStudioFresh, peekStudio } from "@/lib/studioCache";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { useT, formatRupiahLang, type TKey } from "@/i18n";
 import { UserInvitation, OrderItem } from "./types";
@@ -64,17 +65,21 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
   const { t, lang } = useT();
   const formatRupiah = (v: number) => formatRupiahLang(v, lang);
   const demo = isDemo();
-  const [load, setLoad] = useState<Load>(demo ? "ready" : "loading");
-  const [fromApi, setFromApi] = useState<InvitationSummary[]>([]);
+  // Tampilkan data terakhir dari cache seketika (tanpa layar memuat); segarkan diam-diam bila sudah basi.
+  const cached = demo ? undefined : peekStudio<InvitationSummary[]>(STUDIO_KEYS.invitations);
+  const [load, setLoad] = useState<Load>(demo || cached ? "ready" : "loading");
+  const [fromApi, setFromApi] = useState<InvitationSummary[]>(cached ?? []);
 
-  const fetchInvitations = useCallback(async () => {
+  const fetchInvitations = useCallback(async (force = false) => {
     if (demo) return;
-    setLoad("loading");
+    if (!force && isStudioFresh(STUDIO_KEYS.invitations)) return;
+    const hasCache = !!peekStudio(STUDIO_KEYS.invitations);
+    if (!hasCache) setLoad("loading");
     const res = await listInvitations();
     if (res.ok && Array.isArray(res.data.invitations)) {
       setFromApi(res.data.invitations);
       setLoad("ready");
-    } else {
+    } else if (!hasCache) {
       setLoad("error");
     }
   }, [demo]);
@@ -125,7 +130,7 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
       showToast?.("Pratinjau belum tersedia untuk undangan ini.");
       return;
     }
-    window.open(urls.landing(`/preview/${c.templateSlug}`), "_blank", "noopener");
+    window.open(urls.landing(`/templates/${c.templateSlug}`), "_blank", "noopener");
   };
 
   const openEditor = (c: InvitationCard) => onNavigate(c.id ? `/studio/edit?id=${encodeURIComponent(c.id)}` : "/studio/edit");
@@ -181,7 +186,7 @@ export const UndanganPage: React.FC<UndanganPageProps> = ({
             </p>
             <button
               type="button"
-              onClick={() => void fetchInvitations()}
+              onClick={() => void fetchInvitations(true)}
               className="mt-5 h-11 px-5 rounded-full bg-[#7d6aee] hover:bg-[#6b58e0] text-white font-bold text-sm inline-flex items-center gap-2 cursor-pointer"
             >
               <RefreshCw className="w-4 h-4" />

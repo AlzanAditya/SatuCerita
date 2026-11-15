@@ -149,18 +149,6 @@ export const landingEn: Record<keyof typeof landingId, string> = {
   "detail.language.title": "Invitation languages",
 
   // ---- Fullscreen preview ----
-  "preview.back": "Back to Details",
-  "preview.backShort": "Back",
-  "preview.title": "Preview",
-  "preview.newTabTitle": "Open in new tab",
-  "preview.newTab": "New Tab",
-  "preview.closeTitle": "Close preview",
-  "preview.loadingPrefix": "Loading template",
-  "preview.notFoundTitle": "Template not found",
-  "preview.notFoundPrefix": "Template",
-  "preview.notFoundSuffix": "isn't available for preview yet.",
-  "preview.backToDetail": "Back to Template Details",
-  "preview.iframeTitle": "Template Preview {title}",
 
   // ---- How to Order ----
   "order.badge": "How-to-Order Guide",
