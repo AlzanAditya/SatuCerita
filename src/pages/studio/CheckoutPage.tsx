@@ -1,16 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft,
-  ExternalLink,
-  ShieldCheck,
-  MessageCircle,
-  Tag,
-  CreditCard,
+  ArrowRight,
+  ChevronDown,
   CheckCircle2,
-  Building2,
-  Wallet,
-  QrCode,
+  ExternalLink,
   Loader2,
+  MessageCircle,
+  ShieldCheck,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PATHS } from "@/routes";
@@ -19,6 +16,9 @@ import { useT } from "@/i18n";
 import { localizeTemplate } from "@/i18n/templates";
 import { OrderItem, PaymentMethodId } from "@/pages/studio/types";
 import { createOrder, newIdempotencyKey, quoteOrder, openSnap, preloadSnap } from "@/lib/payments";
+import { PaymentLogo } from "@/components/payments/PaymentLogo";
+import { PayTopBar } from "@/components/payments/PayTopBar";
+import { Collapse } from "@/components/payments/Collapse";
 
 interface CheckoutPageProps {
   currentPath: string;
@@ -28,28 +28,14 @@ interface CheckoutPageProps {
 
 type PaymentMethod = PaymentMethodId;
 
-const PAYMENT_GROUPS: {
-  title: string;
-  methods: { id: PaymentMethod; label: string; description: string; icon: "bank" | "wallet" | "qr" }[];
-}[] = [
-  {
-    title: "TRANSFER VIRTUAL ACCOUNT",
-    methods: [
-      { id: "bni_va", label: "BNI", description: "Virtual Account", icon: "bank" },
-      { id: "bri_va", label: "BRI", description: "Virtual Account", icon: "bank" },
-      { id: "permata_va", label: "Permata", description: "Virtual Account", icon: "bank" },
-      { id: "mandiri_bill", label: "Mandiri", description: "Mandiri Bill Payment", icon: "bank" },
-    ],
-  },
-  {
-    title: "E-WALLET & QRIS",
-    methods: [
-      { id: "gopay", label: "GoPay", description: "Bayar lewat aplikasi GoPay", icon: "wallet" },
-      { id: "qris", label: "QRIS", description: "Scan dari semua e-wallet & m-banking", icon: "qr" },
-    ],
-  },
+const PAYMENT_METHODS: { id: PaymentMethod; label: string; description: string }[] = [
+  { id: "bni_va", label: "Bank BNI", description: "Virtual Account" },
+  { id: "bri_va", label: "Bank BRI", description: "Virtual Account" },
+  { id: "permata_va", label: "Bank Permata", description: "Virtual Account" },
+  { id: "mandiri_bill", label: "Bank Mandiri", description: "Mandiri Bill Payment" },
+  { id: "gopay", label: "GoPay", description: "Bayar lewat aplikasi GoPay" },
+  { id: "qris", label: "QRIS", description: "Scan dari semua e-wallet & m-banking" },
 ];
-const ALL_METHODS = PAYMENT_GROUPS.flatMap((g) => g.methods);
 
 export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   currentPath,
@@ -72,6 +58,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [payError, setPayError] = useState("");
+  // Detail template default tertutup; bisa dibuka.
+  const [detailOpen, setDetailOpen] = useState(false);
   // Anti klik ganda: satu permintaan dalam satu waktu + kunci idempoten per "niat bayar".
   // Mode Snap: muat snap.js lebih awal supaya popup langsung terbuka setelah tombol Bayar ditekan.
   useEffect(() => { preloadSnap(); }, []);
@@ -182,274 +170,229 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
     }
   };
 
+  const selected = PAYMENT_METHODS.find((m) => m.id === selectedMethod);
+  const card = "bg-white rounded-3xl border border-[#e9e4fb] shadow-[0_6px_24px_-12px_rgba(91,73,201,0.25)]";
+
   return (
-    <div className="min-h-screen bg-[#faf9ff] font-sans text-neutral-800">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
-        {/* Back Link + Title */}
-        <div className="mb-5 sm:mb-7">
+    <div className="min-h-screen bg-[#f6f4ff] font-sans text-neutral-800 pb-52">
+      <PayTopBar
+        title={t("pay.title")}
+        backLabel={t("pay.back")}
+        onBack={() => onNavigate(`/katalog/${template.slug}`)}
+      />
+
+      <div className="max-w-md mx-auto px-4 pt-3 space-y-5">
+        {/* Kartu pratinjau undangan (detail tertutup secara default) */}
+        <section className={`${card} overflow-hidden`}>
+          <div className="p-3.5 pb-0">
+            <div
+              className="rounded-2xl flex items-center justify-center p-4"
+              style={{ backgroundColor: template.frameBg }}
+            >
+              <img
+                src={template.image}
+                alt={template.title}
+                className="w-full aspect-[16/10] rounded-xl object-cover shadow-md"
+              />
+            </div>
+          </div>
+
+          <div className="px-4 pt-3.5 pb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-[#7d6aee] text-[11px] font-bold">
+                {template.category}
+              </span>
+              <span className="inline-flex px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-bold">
+                {template.badge}
+              </span>
+            </div>
+            <div className="flex items-end justify-between gap-3">
+              <h2 className="text-xl font-black text-[#17112e] tracking-tight leading-tight">{template.title}</h2>
+              <div className="text-right shrink-0">
+                <p className="text-[11px] text-neutral-400 line-through font-medium leading-none">
+                  {formatRupiah(originalPrice)}
+                </p>
+                <p className="text-base font-black text-[#5b49c9] leading-tight mt-0.5">{formatRupiah(discountPrice)}</p>
+              </div>
+            </div>
+          </div>
+
           <button
             type="button"
-            onClick={() => onNavigate(`/katalog/${template.slug}`)}
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-[#7d6aee] hover:text-[#6b58e0] transition-colors cursor-pointer mb-3"
+            aria-expanded={detailOpen}
+            aria-controls="checkout-detail"
+            onClick={() => setDetailOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 border-t border-[#efeafc] text-sm font-bold text-[#5b49c9] hover:bg-purple-50/50 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#7d6aee]"
           >
-            <ArrowLeft className="w-4 h-4" />
-            {t("checkout.backToMy")}
+            {detailOpen ? t("pay.hideDetail") : t("pay.showDetail")}
+            <ChevronDown
+              className={`w-4.5 h-4.5 transition-transform duration-300 motion-reduce:transition-none ${detailOpen ? "rotate-180" : ""}`}
+            />
           </button>
-          <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1">
-            {t("checkout.badge")}
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
-            {t("checkout.title")}
-          </h1>
-          <p className="text-sm text-neutral-500 mt-1">
-            {t("checkout.desc")}
-          </p>
-        </div>
 
-        <div className="flex flex-col lg:flex-row gap-5 lg:gap-7 items-start">
-          {/* LEFT COLUMN */}
-          <div className="flex-1 min-w-0 space-y-5">
-            {/* Template Card */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-200 border-b-[3px] border-b-neutral-300 shadow-2xs overflow-hidden">
-              <div className="flex flex-col sm:flex-row">
-                {/* Template Image */}
-                <div
-                  className="sm:w-52 lg:w-60 shrink-0 relative flex items-center justify-center p-4 sm:p-6"
-                  style={{ backgroundColor: template.frameBg }}
-                >
-                  <img
-                    src={template.image}
-                    alt={template.title}
-                    className="w-full aspect-[4/3] rounded-xl object-cover shadow-md"
-                  />
-                </div>
-
-                {/* Template Info */}
-                <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
-                  <div>
-                    {/* Badges */}
-                    <div className="flex items-center gap-2 mb-2.5">
-                      <span className="inline-flex px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-[#7d6aee] text-[11px] font-bold uppercase tracking-wide">
-                        {template.category}
-                      </span>
-                      <span className="inline-flex px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-bold uppercase tracking-wide">
-                        {template.badge}
-                      </span>
-                    </div>
-                    <h2 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
-                      {template.title}
-                    </h2>
-                    <p className="text-sm text-neutral-600 leading-relaxed mt-2 font-normal">
-                      {template.description}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => onNavigate(`/katalog/${template.slug}`)}
-                      className="inline-flex items-center gap-1.5 mt-3 text-sm font-bold text-[#7d6aee] hover:text-[#6b58e0] transition-colors cursor-pointer underline underline-offset-4"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      {t("checkout.preview")}
-                    </button>
-                  </div>
-
-                  {/* Feature Highlights */}
-                  <div className="mt-4 pt-4 border-t border-neutral-100 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {[
-                      t("checkout.feat1"),
-                      t("checkout.feat2"),
-                      t("checkout.feat3"),
-                    ].map((feat, i) => (
-                      <div key={i} className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-[#7d6aee] shrink-0 mt-0.5" />
-                        <span className="text-xs text-neutral-700 font-medium leading-snug">{feat}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Method Card */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-200 border-b-[3px] border-b-neutral-300 shadow-2xs p-4 sm:p-5">
-              <h3 className="text-base sm:text-lg font-black text-neutral-900 mb-4">
-                {t("checkout.chooseMethod")}
-              </h3>
-              <div className="space-y-5">
-                {PAYMENT_GROUPS.map((group) => (
-                  <div key={group.title}>
-                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-neutral-400 mb-3">
-                      {tr(group.title)}
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {group.methods.map((method) => (
-                        <button
-                          key={method.id}
-                          type="button"
-                          disabled={submitting}
-                          onClick={() => setSelectedMethod(method.id)}
-                          className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all cursor-pointer text-left disabled:opacity-60 disabled:cursor-not-allowed ${
-                            selectedMethod === method.id
-                              ? "border-[#7d6aee] bg-purple-50/50 shadow-xs"
-                              : "border-neutral-200 hover:border-neutral-300 bg-white"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="size-10 rounded-xl bg-neutral-100 flex items-center justify-center shrink-0">
-                              {method.icon === "wallet" ? (
-                                <Wallet className="w-5 h-5 text-neutral-600" />
-                              ) : method.icon === "qr" ? (
-                                <QrCode className="w-5 h-5 text-neutral-600" />
-                              ) : (
-                                <Building2 className="w-5 h-5 text-neutral-600" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-sm font-extrabold text-neutral-900">{method.label}</p>
-                              <p className="text-xs text-neutral-500 font-medium">{tr(method.description)}</p>
-                            </div>
-                          </div>
-                          <div
-                            className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                              selectedMethod === method.id ? "border-[#7d6aee] bg-[#7d6aee]" : "border-neutral-300"
-                            }`}
-                          >
-                            {selectedMethod === method.id && <div className="size-2 rounded-full bg-white" />}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN: Order Summary */}
-          <div className="w-full lg:w-80 xl:w-88 shrink-0 space-y-4">
-            <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-200 border-b-[3px] border-b-neutral-300 shadow-2xs p-5">
-              <h3 className="text-base font-black text-neutral-900 mb-4">
-                {t("checkout.summary")}
-              </h3>
-
-              {/* Price Row */}
-              <div className="flex items-center justify-between mb-4 pb-4 border-b border-neutral-100">
-                <span className="text-sm text-neutral-600 font-medium">{t("checkout.templateLine", { title: template.title })}</span>
-                <div className="text-right">
-                  <p className="text-xs text-neutral-400 line-through font-medium">
-                    {formatRupiah(originalPrice)}
-                  </p>
-                  <p className="text-sm font-bold text-neutral-900">
-                    {formatRupiah(discountPrice)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Voucher */}
-              <div className="mb-4">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <Tag className="w-4 h-4 text-neutral-500" />
-                  <span className="text-sm font-semibold text-neutral-600">
-                    {t("checkout.haveVoucher")}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={voucherCode}
-                    onChange={(e) => {
-                      setVoucherCode(e.target.value);
-                      setVoucherError("");
-                      setVoucherApplied(false); // kode diubah -> harus divalidasi ulang
-                      setAppliedDiscount(null);
-                    }}
-                    placeholder={t("checkout.voucherPh")}
-                    className="flex-1 border border-neutral-200 rounded-xl px-3 py-2 text-xs font-semibold placeholder:text-neutral-300 focus:outline-none focus:border-[#7d6aee] transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleApplyVoucher}
-                    disabled={voucherChecking || submitting}
-                    className="px-3 py-2 rounded-xl border border-neutral-200 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition-colors cursor-pointer shrink-0"
-                  >
-                    {voucherChecking ? t("checkout.checking") : t("checkout.apply")}
-                  </button>
-                </div>
-                {voucherError && (
-                  <p className="text-rose-500 text-xs font-medium mt-1">{tr(voucherError)}</p>
-                )}
-                {voucherApplied && (
-                  <p className="text-emerald-600 text-xs font-bold mt-1">
-                    {t("checkout.voucherOk", { amount: formatRupiah(discountAmount) })}
-                  </p>
-                )}
-              </div>
-
-              <div className="border-t border-dashed border-neutral-200 pt-4 mb-4">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-bold text-neutral-700">{t("checkout.total")}</span>
-                  <span className="text-2xl font-black text-neutral-900">
-                    {formatRupiah(finalTotal)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-neutral-400 font-medium">{t("checkout.method")}</span>
-                  <span className="text-xs font-bold text-neutral-600">
-                    {selectedMethod
-                      ? (() => {
-                          const m = ALL_METHODS.find((x) => x.id === selectedMethod);
-                          return m ? `${m.label} · ${tr(m.description)}` : "";
-                        })()
-                      : t("checkout.notChosen")}
-                  </span>
-                </div>
-              </div>
-
-              {/* Pay Button */}
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={handleBayar}
-                disabled={!selectedMethod || submitting}
-                className={`w-full !py-3.5 !text-base !font-extrabold flex items-center justify-center gap-2 ${
-                  !selectedMethod || submitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-                }`}
-              >
-                {submitting ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : <CreditCard className="w-4.5 h-4.5" />}
-                {submitting ? t("checkout.processing") : t("checkout.payNow")}
-              </Button>
-              {payError && (
-                <p role="alert" className="text-rose-500 text-xs font-semibold text-center mt-2.5 leading-relaxed">
-                  {tr(payError)}
-                </p>
-              )}
-              <p className="text-[11px] text-neutral-400 text-center mt-2.5 leading-relaxed">
-                {t("checkout.note")}
-              </p>
-            </div>
-
-            {/* Trust badges */}
-            <div className="bg-white rounded-2xl border border-dashed border-neutral-200 p-4 space-y-3">
-              <div className="flex items-start gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-neutral-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-neutral-600 font-medium leading-snug">
-                  {t("checkout.secure")}
-                </p>
-              </div>
+          <Collapse open={detailOpen} id="checkout-detail">
+            <div className="px-4 pb-4 pt-1 space-y-4">
+              <p className="text-sm text-neutral-600 leading-relaxed">{template.description}</p>
               <button
                 type="button"
-                onClick={() =>
-                  window.open(
-                    `https://wa.me/6285187978443?text=${encodeURIComponent(t("wa.paymentHelp"))}`,
-                    "_blank"
-                  )
-                }
-                className="inline-flex items-center gap-2 text-xs font-bold text-neutral-700 hover:text-[#7d6aee] transition-colors cursor-pointer underline underline-offset-4"
+                onClick={() => onNavigate(`/katalog/${template.slug}`)}
+                className="inline-flex items-center gap-1.5 text-sm font-bold text-[#7d6aee] hover:text-[#6b58e0] underline underline-offset-4 cursor-pointer"
               >
-                <MessageCircle className="w-3.5 h-3.5" />
-                {t("checkout.help")}
+                <ExternalLink className="w-3.5 h-3.5" />
+                {t("checkout.preview")}
               </button>
+              <ul className="space-y-2 pt-3 border-t border-[#efeafc]">
+                {[t("checkout.feat1"), t("checkout.feat2"), t("checkout.feat3")].map((feat, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#7d6aee] shrink-0 mt-0.5" />
+                    <span className="text-xs text-neutral-700 font-medium leading-snug">{feat}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="pt-3 border-t border-[#efeafc] space-y-1.5 text-xs">
+                <p className="font-extrabold text-neutral-800 text-[13px]">{t("pay.priceDetail")}</p>
+                <div className="flex justify-between items-baseline gap-3 text-neutral-700 font-medium">
+                  <span>{t("checkout.templateLine", { title: template.title })}</span>
+                  <span className="text-right">
+                    <span className="text-neutral-400 line-through mr-1.5">{formatRupiah(originalPrice)}</span>
+                    <span className="font-bold text-neutral-900">{formatRupiah(discountPrice)}</span>
+                  </span>
+                </div>
+                {voucherApplied && discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-bold">
+                    <span>{appliedDiscount?.code}</span>
+                    <span>-{formatRupiah(discountAmount)}</span>
+                  </div>
+                )}
+              </div>
             </div>
+          </Collapse>
+        </section>
+
+        {/* Kode redeem */}
+        <section className={`${card} p-4`}>
+          <div className="flex items-center gap-1.5 mb-2.5">
+            <Tag className="w-4 h-4 text-neutral-500" />
+            <span className="text-sm font-bold text-neutral-700">{t("checkout.haveVoucher")}</span>
           </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={voucherCode}
+              onChange={(e) => {
+                setVoucherCode(e.target.value);
+                setVoucherError("");
+                setVoucherApplied(false); // kode diubah -> harus divalidasi ulang
+                setAppliedDiscount(null);
+              }}
+              placeholder={t("checkout.voucherPh")}
+              className="flex-1 min-w-0 border border-[#e3ddf8] rounded-xl px-3 py-2.5 text-xs font-semibold placeholder:text-neutral-300 focus:outline-none focus:border-[#7d6aee] transition-colors select-text"
+            />
+            <button
+              type="button"
+              onClick={handleApplyVoucher}
+              disabled={voucherChecking || submitting}
+              className="px-4 py-2.5 rounded-xl bg-purple-50 border border-purple-200 text-xs font-bold text-[#5b49c9] hover:bg-purple-100 transition-colors cursor-pointer shrink-0 disabled:opacity-60"
+            >
+              {voucherChecking ? t("checkout.checking") : t("checkout.apply")}
+            </button>
+          </div>
+          {voucherError && <p className="text-rose-500 text-xs font-medium mt-1.5">{tr(voucherError)}</p>}
+          {voucherApplied && (
+            <p className="text-emerald-600 text-xs font-bold mt-1.5">
+              {t("checkout.voucherOk", { amount: formatRupiah(discountAmount) })}
+            </p>
+          )}
+        </section>
+
+        {/* Metode pembayaran */}
+        <section>
+          <h2 className="text-base font-extrabold text-[#17112e] mb-2.5 px-1">{t("pay.methods")}</h2>
+          <div role="radiogroup" aria-label={t("pay.methods")} className={`${card} overflow-hidden divide-y divide-[#f1edfd]`}>
+            {PAYMENT_METHODS.map((method) => {
+              const active = selectedMethod === method.id;
+              return (
+                <button
+                  key={method.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  disabled={submitting}
+                  onClick={() => setSelectedMethod(method.id)}
+                  className={`w-full flex items-center gap-3.5 px-4 py-3 text-left transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#7d6aee] ${
+                    active ? "bg-[#f3f0ff]" : "bg-white hover:bg-[#faf8ff]"
+                  }`}
+                >
+                  <PaymentLogo method={method.id} className="h-8 w-16 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-extrabold text-neutral-900 leading-tight">{method.label}</p>
+                    <p className="text-xs text-neutral-500 font-medium mt-0.5 truncate">{tr(method.description)}</p>
+                  </div>
+                  <span
+                    className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                      active ? "border-[#7d6aee]" : "border-neutral-300"
+                    }`}
+                  >
+                    <span
+                      className={`size-2.5 rounded-full bg-[#7d6aee] transition-transform duration-200 motion-reduce:transition-none ${
+                        active ? "scale-100" : "scale-0"
+                      }`}
+                    />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <div className="px-1 space-y-3">
+          <div className="flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-neutral-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-neutral-600 font-medium leading-snug">{t("checkout.secure")}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              window.open(`https://wa.me/6285187978443?text=${encodeURIComponent(t("wa.paymentHelp"))}`, "_blank")
+            }
+            className="inline-flex items-center gap-2 text-xs font-bold text-neutral-700 hover:text-[#7d6aee] transition-colors cursor-pointer underline underline-offset-4"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            {t("checkout.help")}
+          </button>
+        </div>
+      </div>
+
+      {/* Bar bawah: total + tombol lanjut */}
+      <div className="fixed bottom-0 inset-x-0 z-30 bg-white/92 backdrop-blur-md border-t border-[#e9e4fb] pb-[env(safe-area-inset-bottom)]">
+        <div className="max-w-md mx-auto px-4 pt-3 pb-3.5">
+          <div className="flex items-end justify-between mb-2.5">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-neutral-500">{t("pay.totalPay")}</p>
+              <p className="text-[11px] font-semibold text-neutral-400 truncate">
+                {selected ? `${selected.label} · ${tr(selected.description)}` : t("checkout.notChosen")}
+              </p>
+            </div>
+            <p className="text-2xl font-black text-[#5b49c9] leading-none">{formatRupiah(finalTotal)}</p>
+          </div>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleBayar}
+            disabled={!selectedMethod || submitting}
+            className={`w-full !py-3.5 !text-base !font-extrabold ${
+              !selectedMethod || submitting ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {submitting ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : null}
+            {submitting ? t("checkout.processing") : t("pay.continue")}
+            {!submitting && <ArrowRight className="w-4.5 h-4.5" />}
+          </Button>
+          {payError && (
+            <p role="alert" className="text-rose-500 text-xs font-semibold text-center mt-2 leading-relaxed">
+              {tr(payError)}
+            </p>
+          )}
         </div>
       </div>
     </div>

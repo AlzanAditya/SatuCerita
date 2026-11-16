@@ -149,4 +149,5 @@ export default {
     }
     return fetch(req);
   },
+
 } satisfies ExportedHandler<Env>;

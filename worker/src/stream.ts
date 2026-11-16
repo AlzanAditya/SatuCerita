@@ -7,7 +7,7 @@
  *  - Ditutup server ketika status final, atau setelah MAX_LIFETIME_MS (klien lalu reconnect & menerima snapshot baru).
  *  - Heartbeat berkala agar proxy tidak memutus koneksi diam.
  *  - Dibatasi per user (RL_STREAM) dan per pesanan (MAX_SUBSCRIBERS di hub).
- *  - Tidak memanggil Midtrans sama sekali. Hanya membaca database.
+ *  - Tidak ada pemeriksaan Midtrans berkala. Webhook adalah sumber perubahan status; hub hanya mendorong event ke browser.
  */
 import type { Env } from "./types";
 import { json } from "./http";

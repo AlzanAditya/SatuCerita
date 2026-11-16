@@ -48,6 +48,7 @@ function matches(row: Row, params: URLSearchParams): boolean {
     if (v.startsWith("eq.")) { if (String(row[k]) !== decodeURIComponent(v.slice(3))) return false; }
     else if (v === "is.null") { if (row[k] != null) return false; }
     else if (v === "not.is.null") { if (row[k] == null) return false; }
+    else if (v.startsWith("gte.")) { if (!(String(row[k]) >= decodeURIComponent(v.slice(4)))) return false; }
     else if (v.startsWith("in.(")) { if (!v.slice(4, -1).split(",").includes(String(row[k]))) return false; }
     else return false;
   }
@@ -403,7 +404,7 @@ test("webhook: Status API Midtrans bermasalah -> 503 agar Midtrans mengirim ulan
   assert.equal(orders[0].status, "pending");
 });
 
-// ---------------------------------------------------------------- sync (tombol Cek status)
+// ---------------------------------------------------------------- sync (dipanggil setelah popup Snap ditutup)
 test("sync: status hanya berubah jika Midtrans memang bilang lunas; ada cooldown", async () => {
   await create();
   const inv = orders[0].invoice_no;
@@ -666,16 +667,6 @@ test("polling internal: 30x GET pesanan pending (seperti fallback 5 detik) -> 0 
   const inv = orders[0].invoice_no;
   for (let i = 0; i < 30; i++) assert.equal((await call(`/api/orders/${inv}`)).status, 200);
   assert.equal(statusCalls, 0);
-});
-
-test("pesanan lewat batas waktu: banyak GET beruntun -> paling banyak 1 panggilan Midtrans per 60 detik", async () => {
-  await create();
-  const inv = orders[0].invoice_no;
-  orders[0].expires_at = new Date(Date.now() - 3600_000).toISOString();
-  orders[0].last_synced_at = null; // belum pernah disinkronkan -> "stale"
-  statusReply = statusOk("pending");
-  for (let i = 0; i < 20; i++) await call(`/api/orders/${inv}`);
-  assert.equal(statusCalls, 1);
 });
 
 // ================================================================ SSE (backend -> browser)

@@ -66,3 +66,16 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .sc-anim, .sc-anim * { animation-duration: .01ms !important; animation-delay: 0s !important; }
 }
+
+/* Halaman pembayaran: urutan animasi "berhasil" (disc -> centang -> konfeti -> teks -> kartu -> tombol) */
+@keyframes pay-disc { 0% { transform: scale(0); opacity: 0 } 60% { transform: scale(1.12); opacity: 1 } 100% { transform: scale(1); opacity: 1 } }
+@keyframes pay-ring { 0% { transform: scale(.85); opacity: .45 } 100% { transform: scale(2.1); opacity: 0 } }
+@keyframes pay-check { to { stroke-dashoffset: 0 } }
+@keyframes pay-up { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes pay-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes pay-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
+.pay-float { animation: pay-float 3.4s ease-in-out infinite }
+@media (prefers-reduced-motion: reduce) {
+  .pay-float { animation: none }
+  .pay-seq, .pay-seq * { animation-duration: .01ms !important; animation-delay: 0s !important; }
+}

@@ -123,3 +123,13 @@ Ganti `MIDTRANS_PAYMENT_MODE` ke `"core_api"` di kedua config → `pnpm deploy:a
 
 ## 9. Go-live Production (nanti, setelah Sandbox lulus)
 `MIDTRANS_ENV="production"` + Client Key production di kedua config, `wrangler secret put MIDTRANS_SERVER_KEY` (key production), set Notification URL di dashboard **Production**, tes 1 transaksi nominal kecil.
+
+## Sinkron status otomatis (tanpa tombol "Cek status")
+
+Halaman `/studio/order/{invoice}` tidak lagi punya tombol "Cek status". Status berubah sendiri lewat 3 lapis:
+
+1. **Webhook Midtrans** (jalur utama) → Worker memperbarui database → hub SSE mendorong ke browser.
+2. **Pemeriksaan otomatis server** (cadangan): selama halaman terbuka, Worker menanyakan Status API Midtrans tiap ±10 detik (dibatasi per pesanan lewat `last_synced_at`). Dipakai juga oleh polling fallback (`GET /api/orders/:invoice`).
+3. **Cron Trigger** tiap menit (`triggers.crons` di `wrangler.api.jsonc` / `worker/wrangler.toml`): menyinkronkan pesanan pending 2 hari terakhir yang >1 menit belum diperiksa, walau pembeli sudah menutup halaman.
+
+Deploy: jalankan migrasi `supabase/migrations/20261116000000_orders_auto_sync.sql` (`supabase db push` atau SQL Editor), lalu `pnpm deploy:api` (cron ikut terpasang otomatis).

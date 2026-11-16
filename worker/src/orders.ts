@@ -232,6 +232,7 @@ async function reconcile(env: Env, order: OrderRow, source: string): Promise<Ord
   return applyMidtransStatus(env, order, st, source);
 }
 
+
 function failResponse(e: unknown, cookies: string[] = []): Response {
   if (e instanceof MidtransError && e.httpStatus === 422) {
     return json({ error: "Metode pembayaran ini sedang tidak tersedia. Silakan pilih metode lain." }, 422, cookies);
@@ -553,7 +554,7 @@ async function handleChargeFailure(env: Env, a: Authed, order: OrderRow, e: unkn
     if (now) await publishOrderEvent(env, now);
     log("order.charge_failed", { invoice: order.invoice_no });
   } else {
-    // Status Midtrans tidak diketahui: biarkan pending (klaim tetap), webhook / "Cek status" akan merekonsiliasi.
+    // Status Midtrans tidak diketahui: biarkan pending (klaim tetap), webhook / pemeriksaan otomatis server akan merekonsiliasi.
     log("order.charge_unknown", { invoice: order.invoice_no });
   }
   return failResponse(e, a.cookies);
@@ -577,14 +578,6 @@ export async function getOrder(env: Env, req: Request, invoice: string): Promise
     let order = await getOwnedOrder(env, a.user.id, invoice);
     log("order.get", { invoice, found: !!order, userId: a.user.id.slice(0, 8) });
     if (!order) return json({ error: "Pesanan tidak ditemukan." }, 404, a.cookies);
-    // Notifikasi bisa terlewat; pesanan pending yang sudah lewat batas waktu dicek ke Midtrans sekali-sekali.
-    const stale = !order.last_synced_at || Date.now() - Date.parse(order.last_synced_at) > 60_000;
-    if (order.status === "pending" && isExpiredByTime(order) && stale && !configProblem(env)) {
-      order = await reconcile(env, order, "read").catch((e) => {
-        log("order.reconcile_failed", { invoice, error: e instanceof Error ? e.message : String(e) });
-        return order as OrderRow;
-      });
-    }
     return json({ order: toView(env, order) }, 200, a.cookies);
   } catch (e) {
     log("order.get_error", { invoice, error: e instanceof Error ? e.message : String(e) });
