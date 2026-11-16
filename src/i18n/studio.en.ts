@@ -276,6 +276,8 @@ export const studioEn: Record<keyof typeof studioId, string> = {
   "od.amountNote":
     "The amount must match the total above exactly. The status updates automatically once we receive your payment.",
   "od.changeMethod": "Change payment method",
+  "od.checkStatus": "Check status",
+  "od.checking": "Checking...",
   "od.live.sse": "Connected. The status updates automatically once payment is received.",
   "od.live.connecting": "Connecting status monitoring...",
   "od.paidTitle": "Payment Successful!",

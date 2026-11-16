@@ -9,13 +9,14 @@ import {
   Home,
   Loader2,
   QrCode,
+  RefreshCw,
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { OrderItem } from "@/pages/studio/types";
 import { formatRupiah as formatRupiahBase } from "@/data/templates";
 import { useT, formatDateTimeWib } from "@/i18n";
-import { getOrder, openSnap, orderEventsUrl, preloadSnap } from "@/lib/payments";
+import { getOrder, openSnap, orderEventsUrl, preloadSnap, syncOrder } from "@/lib/payments";
 import { createOrderWatcher, type WatcherMode } from "@/lib/orderStream";
 import { PAYMENT_INSTRUCTIONS } from "@/lib/paymentInstructions";
 import { PaymentLogo } from "@/components/payments/PaymentLogo";
@@ -254,6 +255,13 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
         setNotFound(false);
         setApiError(null);
         applyRef.current(res.data.order);
+        // Halaman dibuka & masih pending -> minta server mengecek Midtrans SEKALI (jaring pengaman
+        // untuk pesanan lama yang sudah dibayar; webhook tetap jalur utama, ini bukan polling).
+        if (res.data.order.status === "pending") {
+          void syncOrder(invoiceNo)
+            .then((r) => { if (alive && r.ok && r.data.order) applyRef.current(r.data.order); })
+            .catch(() => undefined);
+        }
       } else if (res.status === 404) {
         setNotFound(true);
         setApiError({ status: 404, message: res.data.error || "Pesanan tidak ditemukan.", path });
@@ -290,7 +298,15 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
         },
       },
     );
-    const onVis = () => (document.visibilityState === "visible" ? watcher.resume() : watcher.pause());
+    const onVis = () => {
+      if (document.visibilityState !== "visible") { watcher.pause(); return; }
+      watcher.resume();
+      // Tab kembali aktif -> minta server mengecek Midtrans SEKALI (bukan polling). Server membatasi
+      // sendiri: cooldown 8 detik per pesanan + rate limit RL_SYNC 20/menit.
+      void syncOrder(invoiceNo).then((res) => {
+        if (alive && res.ok && res.data.order) applyRef.current(res.data.order);
+      }).catch(() => undefined);
+    };
     document.addEventListener("visibilitychange", onVis);
     watcher.start();
     return () => {
@@ -317,12 +333,16 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
     if (!order?.snapToken || busy.current) return;
     busy.current = true;
     setSnapOpening(true);
-    // Status akan diperbarui oleh webhook Midtrans melalui SSE; tidak melakukan cek status tambahan.
+    // Setelah popup selesai / ditutup, minta server memeriksa status ke Midtrans SEKALI (webhook tetap jalur utama).
+    const check = async () => {
+      const res = await syncOrder(order.invoiceNo).catch(() => null);
+      if (res?.ok && res.data.order) applyRef.current(res.data.order);
+    };
     try {
       await openSnap(order.snapToken, {
-        onSuccess: () => undefined,
-        onPending: () => undefined,
-        onClose: () => undefined,
+        onSuccess: () => void check(),
+        onPending: () => void check(),
+        onClose: () => void check(),
         onError: () => { if (showToast) showToast("Pembayaran gagal diproses. Coba lagi atau ganti metode."); },
       });
     } catch (e) {
@@ -331,6 +351,24 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
       busy.current = false;
       setSnapOpening(false);
     }
+  };
+
+  // "Cek status" = server bertanya ke Midtrans sekali, atas permintaan user (dibatasi RL_SYNC + cooldown 8s).
+  const [verifying, setVerifying] = useState(false);
+  const handleVerify = async () => {
+    if (!order || verifying || busy.current) return;
+    setVerifying(true);
+    const res = await syncOrder(order.invoiceNo).catch(() => null);
+    setVerifying(false);
+    if (!res?.ok || !res.data?.order) {
+      if (showToast) showToast("Gagal memeriksa status. Coba lagi.");
+      return;
+    }
+    applyRef.current(res.data.order);
+    if (!showToast) return;
+    if (res.data.order.status === "paid") showToast("Pembayaran diterima. Terima kasih!");
+    else if ((res.data as { throttled?: boolean }).throttled) showToast("Status baru saja diperiksa. Coba lagi beberapa detik lagi.");
+    else showToast("Pembayaran belum kami terima.");
   };
 
   const handleCopy = (text: string, label: string) => {
@@ -467,6 +505,19 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
       </p>
     );
 
+  // Jaring pengaman: webhook tetap jalur utama, tapi user selalu bisa meminta satu pemeriksaan manual.
+  const checkStatusButton = (
+    <button
+      type="button"
+      onClick={handleVerify}
+      disabled={verifying}
+      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-[#e1d9fb] bg-white text-[#5b49c9] font-bold text-sm cursor-pointer hover:bg-[#f3f0ff] transition-colors disabled:opacity-60"
+    >
+      <RefreshCw className={`w-4 h-4 ${verifying ? "animate-spin" : ""}`} />
+      {verifying ? t("od.checking") : t("od.checkStatus")}
+    </button>
+  );
+
   const sandboxNote =
     order.environment === "sandbox" ? (
       <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-2.5 text-[11px] font-bold text-amber-800">
@@ -581,6 +632,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
             {changeMethodButton}
 
             {liveHint}
+            {checkStatusButton}
             {sandboxNote}
           </div>
         </div>
@@ -751,6 +803,7 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
           </div>
 
           {liveHint}
+          {checkStatusButton}
           {sandboxNote}
         </div>
       </div>

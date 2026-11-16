@@ -288,6 +288,8 @@ export const studioId = {
   "od.amountNote":
     "Nominal harus persis sama dengan total di atas. Status berubah otomatis setelah pembayaran kami terima.",
   "od.changeMethod": "Ganti metode pembayaran",
+  "od.checkStatus": "Cek status",
+  "od.checking": "Memeriksa...",
   "od.live.sse": "Terhubung. Status berubah otomatis begitu pembayaran diterima.",
   "od.live.connecting": "Menghubungkan pemantauan status...",
   "od.paidTitle": "Pembayaran Berhasil!",
