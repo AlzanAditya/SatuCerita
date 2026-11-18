@@ -175,7 +175,7 @@ export const landingId = {
   "order.3.subtitle": "Isi data mempelai, acara, foto, musik, dan daftar tamu sesuka hati.",
   "order.3.p1": "Lengkapi setiap section: mempelai, acara, galeri, kisah cinta, hadiah, dan lainnya.",
   "order.3.p2": "Unggah foto dengan drag & drop dan pilih musik latar.",
-  "order.3.p3": "Atur link custom satucerita.id/nama-kalian lalu terbitkan.",
+  "order.3.p3": "Atur link custom satucerita.app/nama-kalian lalu terbitkan.",
   "order.4.title": "Bagikan",
   "order.4.subtitle": "Kirim undangan personal ke setiap tamu lewat WhatsApp.",
   "order.4.p1": "Tambahkan tamu satu per satu atau sekaligus, lengkap dengan label VIP atau Reguler.",

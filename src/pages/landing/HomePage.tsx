@@ -398,34 +398,34 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="relative z-10 max-w-6xl mx-auto w-full text-left">
             {/* Header: badge, judul, deskripsi (kiri) + tombol (kanan, desktop) */}
             <div className="lg:flex lg:items-end lg:justify-between lg:gap-8 lg:mb-6">
-            <div>
-            {/* Section Badge */}
-            <div className="inline-block mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-[12px] sm:text-[14px] font-bold tracking-wide uppercase shadow-2xs">
-                {t("home.tpl.badge")}
-              </span>
-            </div>
+              <div>
+                {/* Section Badge */}
+                <div className="inline-block mb-3">
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white border border-white/30 text-[12px] sm:text-[14px] font-bold tracking-wide uppercase shadow-2xs">
+                    {t("home.tpl.badge")}
+                  </span>
+                </div>
 
-            {/* Section Title & Desc */}
-            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-snug mb-3 lg:max-w-[600px]">
-              {t("home.tpl.title")}
-            </h2>
-            <p className="text-purple-100 text-[16px] sm:text-base leading-relaxed mb-6 lg:mb-0 max-w-2xl lg:max-w-[640px] font-normal">
-              {t("home.tpl.desc")}
-            </p>
-            </div>
+                {/* Section Title & Desc */}
+                <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-snug mb-3 lg:max-w-[600px]">
+                  {t("home.tpl.title")}
+                </h2>
+                <p className="text-purple-100 text-[16px] sm:text-base leading-relaxed mb-6 lg:mb-0 max-w-2xl lg:max-w-[640px] font-normal">
+                  {t("home.tpl.desc")}
+                </p>
+              </div>
 
-            {/* Button: Lihat semua template (style outline seperti tombol cara pesan, warna disesuaikan latar gelap) */}
-            <div className="mb-6 lg:mb-0 shrink-0">
-              <button
-                type="button"
-                onClick={() => onNavigate(katalogPath)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2.5 sm:py-3 px-5 sm:px-6 rounded-xl border border-purple-200 border-b-[3px] border-b-purple-300 bg-white hover:bg-purple-50 text-[#7d6aee] font-bold text-[16px] tracking-tight shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] transition-all duration-150 select-none cursor-pointer"
-              >
-                <span>{t("home.tpl.seeAll")}</span>
-                <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
-              </button>
-            </div>
+              {/* Button: Lihat semua template (style outline seperti tombol cara pesan, warna disesuaikan latar gelap) */}
+              <div className="mb-6 lg:mb-0 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onNavigate(katalogPath)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2.5 sm:py-3 px-5 sm:px-6 rounded-xl border border-purple-200 border-b-[3px] border-b-purple-300 bg-white hover:bg-purple-50 text-[#7d6aee] font-bold text-[16px] tracking-tight shadow-2xs hover:shadow-xs active:scale-[0.98] active:border-b-[2px] transition-all duration-150 select-none cursor-pointer"
+                >
+                  <span>{t("home.tpl.seeAll")}</span>
+                  <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
+                </button>
+              </div>
             </div>
 
             {/* Category Filter Pills */}
@@ -562,32 +562,32 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="relative z-10 max-w-6xl mx-auto w-full text-left">
             {/* Header: badge & judul (kiri) + tombol (kanan, desktop) */}
             <div className="lg:flex lg:items-end lg:justify-between lg:gap-8 lg:mb-8">
-            <div>
-            {/* Section Badge */}
-            <div className="inline-block mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-[12px] sm:text-[14px] font-bold tracking-wide uppercase shadow-2xs">
-                {t("home.how.badge")}
-              </span>
-            </div>
+              <div>
+                {/* Section Badge */}
+                <div className="inline-block mb-3">
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 text-[#7d6aee] border border-purple-200 text-[12px] sm:text-[14px] font-bold tracking-wide uppercase shadow-2xs">
+                    {t("home.how.badge")}
+                  </span>
+                </div>
 
-            {/* Section Title */}
-            <h2 className="text-2xl sm:text-5xl font-black text-neutral-900 tracking-tight leading-snug mb-3 lg:mb-0 lg:max-w-[600px]">
-              {t("home.how.title")}
-            </h2>
-            </div>
+                {/* Section Title */}
+                <h2 className="text-3xl sm:text-5xl font-black text-neutral-900 tracking-tight leading-snug mb-3 lg:mb-0 lg:max-w-[600px]">
+                  {t("home.how.title")}
+                </h2>
+              </div>
 
-            {/* Button: Lihat detail cara pesan */}
-            <div className="mb-8 lg:mb-0 shrink-0">
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => onNavigate(caraPesanPath)}
-                className="w-full sm:w-auto text-[16px]"
-              >
-                <span>{t("home.how.detail")}</span>
-                <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
-              </Button>
-            </div>
+              {/* Button: Lihat detail cara pesan */}
+              <div className="mb-8 lg:mb-0 shrink-0">
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={() => onNavigate(caraPesanPath)}
+                  className="w-full sm:w-auto text-[16px]"
+                >
+                  <span>{t("home.how.detail")}</span>
+                  <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
+                </Button>
+              </div>
             </div>
 
             {/* 4 Steps Showcase - Dipaksa 1 baris di desktop (lg:grid-cols-4) */}
@@ -691,7 +691,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Section Title */}
-            <h2 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-snug mb-8 lg:max-w-[600px]">
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-snug mb-8 lg:max-w-[600px]">
               {t("home.faq.title")}
             </h2>
 
